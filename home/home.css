@@ -1,0 +1,736 @@
+/*
+  home/home.css
+  Styles for the Chat Interface
+*/
+
+/* --- VIEW SECTION (SCROLL FIX) --- */
+/* MODIFIED: Changed to row layout */
+#home-view {
+  overflow: hidden; /* Hide overflow on parent */
+  padding-bottom: 0; /* Remove padding */
+  flex-direction: row; /* Make chat and canvas side-by-side */
+}
+
+/* NEW: Wrapper for chat column */
+#chat-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden; /* Ensure this column doesn't overflow */
+  /* ADDED: Smooth transition when canvas opens/closes */
+  transition: flex-basis 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* --- CHAT MESSAGES & ACTIONS --- */
+#chat-container {
+  flex: 1;
+  padding: 20px var(--primary-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  overflow-y: auto; /* Chat container scrolls */
+  /* NEW: Custom scrollbar styling */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: var(--border-secondary) var(--bg-primary); /* For Firefox */
+}
+
+/* For WebKit browsers (Chrome, Safari, Edge) */
+#chat-container::-webkit-scrollbar {
+  width: 6px;
+}
+#chat-container::-webkit-scrollbar-track {
+  background: transparent; /* Make track invisible */
+}
+#chat-container::-webkit-scrollbar-thumb {
+  background-color: var(--border-secondary);
+  border-radius: 3px;
+  border: 1px solid var(--bg-primary); /* Adds padding around thumb */
+}
+#chat-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}
+
+/* REMOVED: #home-view #chat-container rule was here */
+
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  gap: 2rem;
+}
+.welcome-text h1 {
+  font-size: 2.8rem;
+  color: var(--text-heading);
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+.welcome-text span {
+  background: linear-gradient(45deg, #999, #333);
+  background-clip: text;
+  color: var(--text-heading);
+}
+
+.suggestion-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  max-width: 650px;
+  width: 100%;
+}
+.suggestion-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-capsule);
+  padding: 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.3s;
+}
+.suggestion-card:hover {
+  border-color: var(--border-secondary);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+}
+.suggestion-card i {
+  margin-bottom: 12px;
+  display: block;
+  color: var(--text-heading);
+}
+.suggestion-card p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.message {
+  display: flex;
+  gap: 15px;
+  max-width: 850px;
+  margin: 0 auto;
+  width: 100%;
+  animation: slideUp 0.3s ease;
+}
+.message.user {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+.avatar.ai {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+}
+.avatar.user {
+  background: var(--text-heading);
+  color: var(--bg-secondary);
+}
+
+.msg-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%;
+  position: relative;
+}
+.message.user .msg-content-wrapper {
+  align-items: flex-end;
+}
+.message.ai .msg-content-wrapper {
+  align-items: flex-start;
+}
+
+.bubble {
+  /* background: var(--bg-tertiary); */
+  padding: 20px 24px;
+  border-radius: 24px;
+  border-top-left-radius: 4px;
+  line-height: 1.7;
+  font-size: 1rem;
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); */
+  color: var(--text-primary);
+  width: fit-content;
+}
+.message.user .bubble {
+  background: var(--bg-chat-bubble-user);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 4px;
+}
+.bubble pre {
+  background: #282c34;
+  color: #abb2bf;
+  padding: 15px;
+  border-radius: 12px;
+  /* overflow-x: auto; */ /* <-- This was removed */
+  margin: 12px 0;
+  /* NEW: Added text wrapping to remove horizontal scrollbar */
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.bubble ul,
+.bubble ol {
+  margin: 10px 0 10px 20px;
+}
+.bubble h3 {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* --- MODIFIED: ERROR BUBBLE STYLE (from image) --- */
+.bubble.error {
+  background-color: #ffe0e0; /* Light red background */
+  color: #c00; /* Darker red text */
+  border: 1px dashed #ff4d4d; /* Red dashed border */
+  border-radius: 8px; /* Flatter corners */
+  padding: 15px 20px;
+  display: flex; /* To align icon and text */
+  align-items: center;
+}
+.bubble.error::before {
+  content: '⚡️'; /* Lightning bolt icon */
+  margin-right: 10px;
+  font-size: 1.2rem;
+  opacity: 0.8;
+}
+.bubble.error strong {
+  color: #c00; /* Darker red bold text */
+  font-weight: 600;
+}
+/* --- END MODIFIED --- */
+
+/* THINKING ANIMATION */
+.thinking-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  height: 24px;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.edit-container {
+  background: var(--bg-chat-bubble-user);
+  border: 1px solid var(--border-secondary);
+  border-radius: 24px;
+  border-top-right-radius: 4px;
+  padding: 15px;
+  width: 100%;
+  min-width: 320px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.2s ease;
+}
+.edit-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  resize: none;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: inherit;
+  padding: 0;
+  line-height: 1.6;
+}
+.edit-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 5px;
+}
+.btn-edit-action {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+.btn-edit-action:hover {
+  transform: translateY(-1px);
+}
+.btn-cancel {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+.btn-save {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+}
+body.dark-mode .btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Improved Message Actions (Pill Style) */
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-capsule);
+  border-radius: 30px;
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.message:hover .message-actions {
+  opacity: 1;
+}
+
+.action-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.action-icon:hover {
+  background: var(--bg-primary);
+  color: var(--text-heading);
+}
+.action-icon i {
+  font-size: 0.9rem;
+}
+
+/* Improved Input Toolbar Icons */
+.input-area-wrapper {
+  /* padding: 20px var(--primary-padding); */
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  /* z-index: 20; */
+}
+.input-container {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  border-radius: 26px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-soft);
+  transition: border-color 0.2s;
+  position: relative;
+}
+.input-container:focus-within {
+  border-color: var(--text-heading);
+}
+textarea#chat-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  min-height: 24px;
+  /* max-height: 200px; --- This was removed to allow infinite growth */
+  /* max-height: 200px; */ /* <-- This was removed */
+  line-height: 1.5;
+  overflow: hidden; /* This hides the scrollbar */
+}
+.input-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 6px;
+}
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tool-btn-round {
+  background: var(--bg-primary);
+  border: 1px solid transparent;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+.tool-btn-round:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+  color: var(--text-heading);
+  transform: translateY(-1px);
+}
+
+/* START: ENHANCED CANVAS TOGGLE STYLES */
+#canvas-toggle-btn.active {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  border-color: var(--bg-accent);
+  /* Added glow for enhancement */
+  box-shadow: 0 0 12px var(--bg-accent);
+}
+#canvas-toggle-btn.active:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  color: var(--text-accent);
+}
+/* END: ENHANCED CANVAS TOGGLE STYLES */
+
+.send-btn {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  width: 42px;
+  height: 42px;
+}
+.send-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+  border-color: transparent;
+}
+
+/* --- MARKDOWN CONTENT STYLING (Fixes Typography & Tables) --- */
+
+/* 1. General Typography & Spacing */
+.bubble p {
+  margin-bottom: 1rem; /* Consistent spacing between paragraphs */
+  line-height: 1.6; /* Relaxed line height for reading */
+}
+
+.bubble p:last-child {
+  margin-bottom: 0; /* No gap at the bottom of the bubble */
+}
+
+/* 2. Headings (Fixes uneven line heights) */
+.bubble h1,
+.bubble h2,
+.bubble h3,
+.bubble h4 {
+  color: var(--text-heading);
+  margin-top: 1.5rem; /* clear separation above sections */
+  margin-bottom: 0.75rem; /* nice gap below title */
+  line-height: 1.3; /* tighter line height for headers */
+  font-weight: 600;
+}
+
+/* Remove top margin if the header is the first thing in the message */
+.bubble h1:first-child,
+.bubble h2:first-child,
+.bubble h3:first-child {
+  margin-top: 0;
+}
+
+/* 3. Lists (Bullets & Numbers) */
+.bubble ul,
+.bubble ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.bubble li {
+  margin-bottom: 0.4rem; /* Spacing between list items */
+  line-height: 1.5;
+}
+
+/* 4. Table Styling (Fixes "Ugly/Broken Tables") */
+.bubble table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  /* Critical for mobile: allows scrolling if table is too wide */
+  display: block;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+}
+
+.bubble th,
+.bubble td {
+  padding: 12px 15px;
+  border: 1px solid var(--border-primary);
+  text-align: left;
+  vertical-align: top;
+}
+
+.bubble th {
+  background-color: rgba(0, 0, 0, 0.03); /* Subtle header bg */
+  font-weight: 600;
+  color: var(--text-heading);
+  white-space: nowrap; /* Prevents headers from wrapping awkwardly */
+}
+
+/* Zebra Striping for readability */
+.bubble tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+
+/* Dark Mode Table Adjustments */
+body.dark-mode .bubble th {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .bubble tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* 5. Inline Code & Bold Text */
+.bubble strong {
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.bubble code:not(pre code) {
+  background: rgba(128, 128, 128, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+  color: var(--text-heading);
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .suggestion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* MODIFIED: Canvas pane responsive (fullscreen overlay) */
+  #canvas-pane {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    z-index: 150; /* Above main content */
+    border-left: none;
+    flex-basis: auto !important; /* Override desktop flex-basis */
+    transform: translateX(100%); /* Start off-screen */
+    opacity: 1 !important; /* No fade, just slide */
+    transition: transform 0.3s ease-in-out;
+    /* NEW: Reset margin/radius for mobile overlay */
+    margin: 0 !important;
+    border-radius: 0;
+    height: 100%;
+    border: none;
+    box-shadow: none;
+    /* NEW: Ensure background matches for mobile */
+    background: #2e2e2e; /* Dark background for mobile too */
+  }
+  #canvas-pane.active {
+    transform: translateX(0); /* Slide in */
+  }
+}
+
+/* --- MODIFIED: CANVAS PANE STYLES (Card-style from image) --- */
+#canvas-pane {
+  flex-basis: 0; /* Start closed */
+  height: calc(100% - 20px); /* Full height minus margin */
+  margin: 10px 10px 10px 0; /* Margin on top/right/bottom */
+  
+  /* NEW: Card appearance from image */
+  background: #2e2e2e; /* Dark content background */
+  border-radius: 12px; /* Rounded corners */
+  border: 1px solid #444; /* Light border */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* This is key for rounded corners */
+  opacity: 0;
+  
+  transition: flex-basis 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.3s ease 0.1s, margin-right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  /* Handle closed state margin */
+  margin-right: -10px; 
+}
+#canvas-pane.active {
+  flex-basis: 40%; /* Open to this width */
+  min-width: 320px;
+  opacity: 1;
+  margin-right: 10px; /* Add right margin when open */
+}
+/* REMOVED: @keyframes slideIn */
+
+/* --- NEW: CANVAS HEADER (to match image) --- */
+.canvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px 10px 20px;
+  border-bottom: 1px solid #444; /* Darker border */
+  flex-shrink: 0;
+  background: #3a3a3a; /* Lighter header background */
+}
+
+.canvas-tabs {
+  display: flex;
+  align-items: center;
+}
+
+.canvas-tab {
+  background: none;
+  border: none;
+  color: #aaa; /* Light text for dark bg */
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.canvas-tab:hover {
+  color: #fff; /* White hover */
+}
+.canvas-tab.active {
+  color: #fff; /* White active */
+  border-bottom-color: #fff;
+}
+
+.canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Make action buttons in canvas header smaller */
+.canvas-actions .tool-btn-round {
+  width: 32px;
+  height: 32px;
+  font-size: 0.9rem;
+  background: #2e2e2e; /* Match content bg */
+  color: #aaa; /* Light icon */
+}
+.canvas-actions .tool-btn-round:hover {
+  background: #4f4f4f; /* Slightly lighter hover */
+  color: #fff;
+}
+/* --- END NEW CANVAS HEADER --- */
+
+/* MODIFIED: Canvas Content */
+#canvas-content {
+  flex: 1; /* Takes up available space */
+  overflow-y: auto;
+  position: relative;
+  background: #2e2e2e; /* Match pane background */
+}
+#canvas-content pre {
+  margin: 0;
+  height: 100%;
+}
+#canvas-code-block {
+  padding: 20px;
+  display: block;
+  min-height: 100%;
+  /* Styled by atom-one-dark theme */
+}
+
+/* MODIFIED: Canvas Placeholder */
+#canvas-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; /* Keep this */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #888; /* Lightened for dark bg */
+  gap: 15px;
+}
+#canvas-placeholder i {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+#canvas-placeholder p {
+  font-size: 0.9rem;
+  max-width: 250px;
+  line-height: 1.5;
+  color: #888; /* Lightened for dark bg */
+  opacity: 0.8;
+}
+
+/* --- NEW: CANVAS PREVIEW STYLES --- */
+#canvas-preview-wrapper {
+  flex: 1; /* Takes up available space */
+  overflow: hidden; /* Iframe will handle scrolling */
+  background: #ffffff; /* White background for preview */
+  position: relative;
+  /* Add rounded corners to fit parent */
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+#canvas-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+#canvas-preview-placeholder {
+  /* This placeholder shows when iframe is empty */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none; /* Hidden by default, shown by JS */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #888;
+  gap: 15px;
+}
+#canvas-preview-placeholder i {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+/* --- END NEW PREVIEW --- */

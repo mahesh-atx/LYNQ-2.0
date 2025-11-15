@@ -1,0 +1,76 @@
+/*
+plugins/plugins.css
+Styles for the Plugins page
+*/
+
+/* --- VIEW SECTION (SCROLL FIX) --- */
+#plugins-view {
+overflow-y: auto;
+padding-bottom: 20px;
+}
+
+/* --- NEW STYLES FOR CARD LINK --- */
+.tool-card-link {
+text-decoration: none;
+color: inherit;
+display: block; /* Makes the <a> fill the grid space */
+}
+
+.tool-card-link .tool-card {
+height: 100%; /* Make card fill the <a> */
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tool-card-link:hover .tool-card {
+transform: translateY(-4px);
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+}
+
+.dark-mode .tool-card-link:hover .tool-card {
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Placeholder for the "Open Tool" text to mimic button */
+.plugin-btn-placeholder {
+background: var(--bg-primary);
+border: 1px solid var(--border-secondary);
+color: var(--text-heading);
+padding: 8px 16px;
+border-radius: 8px;
+font-size: 0.85rem;
+font-weight: 500;
+width: fit-content;
+margin-top: auto;
+transition: 0.2s;
+}
+.tool-card-link:hover .plugin-btn-placeholder {
+background: var(--bg-secondary);
+border-color: var(--border-primary);
+}
+
+/* --- EXISTING STYLES --- /
+/ Install Plugin Button Specifics */
+.plugin-btn {
+background: var(--bg-primary);
+border: 1px solid var(--border-secondary);
+color: var(--text-heading);
+padding: 8px 16px;
+border-radius: 8px;
+font-size: 0.85rem;
+font-weight: 500;
+cursor: pointer;
+width: fit-content;
+margin-top: auto;
+transition: 0.2s;
+}
+.plugin-btn:hover {
+background: var(--bg-secondary);
+}
+.plugin-btn.installed {
+background: rgba(16, 163, 127, 0.15);
+color: #10a37f;
+border-color: transparent;
+}
+.plugin-btn.installed i {
+margin-right: 5px;
+}

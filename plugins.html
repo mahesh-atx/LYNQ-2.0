@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plugins — LYNQ AI</title>
+
+    <!-- Icons -->
+    <script
+      src="https://kit.fontawesome.com/ae8ff12b97.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Syntax Highlighting CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+    <!-- Make sure this path is correct -->
+    <link rel="stylesheet" href="./plugins/plugins.css" />
+  </head>
+  <body>
+    <div id="app-container">
+      <!-- SIDEBAR -->
+      <aside id="sidebar">
+        <!-- ... (sidebar content remains the same) ... -->
+        <div style="flex-shrink: 0">
+          <div class="sidebar-header">
+            <span style="display: flex; align-items: center; gap: 10px"
+              ><i class="fa-solid fa-bolt"></i> LYNQ AI</span
+            >
+            <button class="action-btn mobile-only" onclick="toggleSidebar()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <nav class="nav-menu">
+          <div class="nav-label">Menu</div>
+          <!-- Links updated -->
+          <a
+            href="index.html"
+            class="nav-item"
+            id="nav-new-chat"
+            ><i class="fa-solid fa-plus"></i> New Chat</a
+          >
+          <a
+            href="index.html"
+            class="nav-item"
+            id="nav-home"
+            ><i class="fa-solid fa-house"></i> Home</a
+          >
+          <a
+            href="plugins.html"
+            class="nav-item active"
+            id="nav-plugins"
+            ><i class="fa-solid fa-plug"></i> Plugins</a
+          >
+          <a
+            href="projects.html"
+            class="nav-item"
+            id="nav-projects"
+            ><i class="fa-solid fa-layer-group"></i> Projects</a
+          >
+
+          <div
+            class="nav-label"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-right: 5px;
+              position: relative;
+            "
+          >
+            <span id="recent-chats-label">Recent Chats</span>
+            <input
+              type="text"
+              id="chat-search-input"
+              placeholder="Search chats..."
+              style="
+                display: none;
+                width: 100%;
+                background: var(--bg-primary);
+                border: 1px solid var(--border-primary);
+                border-radius: 6px;
+                padding: 4px 8px;
+                color: var(--text-primary);
+              "
+              onkeyup="filterRecentChats()"
+              onblur="toggleChatSearch(false)"
+            />
+            <i
+              class="fa-solid fa-magnifying-glass search-trigger"
+              id="chat-search-trigger"
+              onclick="toggleChatSearch(true)"
+            ></i>
+          </div>
+          <div id="recent-chats-container"></div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="settings.html" class="nav-item" id="nav-settings"
+            ><i class="fa-solid fa-gear"></i> Settings</a
+          >
+          <a
+            href="profile.html"
+            class="nav-item"
+            id="nav-profile"
+            style="margin-top: 5px"
+          >
+            <div
+              class="avatar user"
+              style="
+                width: 24px;
+                height: 24px;
+                font-size: 0.7rem;
+                margin-right: 0;
+              "
+            >
+              MD
+            </div>
+            Mahesh Dongare
+          </a>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main id="main-content">
+        <div class="top-bar">
+          <!-- ... (top-bar content remains the same) ... -->
+          <button class="action-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div style="flex: 1"></div>
+          <div class="top-actions">
+            <button class="upgrade-btn" onclick="togglePricing()">
+              <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
+            </button>
+            <button class="top-profile-btn" onclick="location.href='profile.html'">
+              <div class="avatar user">MD</div>
+              <span>Mahesh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PLUGINS VIEW -->
+        <div id="plugins-view" class="view-section active">
+          <div class="hero-header">
+            <h1>Plugins Store</h1>
+            <p>Extend LYNQ with powerful capabilities.</p>
+          </div>
+          <div class="grid-layout">
+            
+            <!-- UPDATED PDF READER CARD -->
+            <a href="pdf-chat.html" class="tool-card-link">
+              <div class="tool-card">
+                <div class="tool-icon">
+                  <i class="fa-regular fa-file-pdf"></i>
+                </div>
+                <h3>PDF Reader</h3>
+                <p>Chat with your PDF documents directly.</p>
+                <!-- This button is now gone, the whole card is a link -->
+                <div class="plugin-btn-placeholder">
+                  <i class="fa-solid fa-arrow-right"></i> Open Tool
+                </div>
+              </div>
+            </a>
+
+            <!-- WEB BROWSER PLUGIN REMOVED -->
+            
+            <div class="tool-card">
+              <div class="tool-icon"><i class="fa-solid fa-chart-pie"></i></div>
+              <h3>Data Analyst</h3>
+              <p>Visualize CSV and Excel data effortlessly.</p>
+              <!-- This button remains as-is, using the original logic -->
+              <button class="plugin-btn" data-plugin-id="data-analyst" onclick="togglePlugin(this, 'data-analyst')">
+                <i class="fa-solid fa-plus"></i> Install
+              </button>
+            </div>
+            <div class="tool-card">
+              <div class="tool-icon"><i class="fa-brands fa-github"></i></div>
+              <h3>GitHub Sync</h3>
+              <p>Connect repositories for code review.</p>
+              <!-- This button remains as-is, using the original logic -->
+              <button class="plugin-btn" data-plugin-id="github-sync" onclick="togglePlugin(this, 'github-sync')">
+                <i class="fa-solid fa-plus"></i> Install
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+      <i class="fa-solid fa-circle-check"></i> Link copied to clipboard!
+    </div>
+
+    <!-- PRICING MODAL (Shared component) -->
+    <div class="modal-overlay" id="pricing-modal">
+        <!-- ... (Modal content) ... -->
+    </div>
+
+    <!-- Shared script for all pages -->
+    <script src="script.js"></script>
+    <!-- Page-specific script -->
+    <script src="plugins.js"></script>
+  </body>
+</html>

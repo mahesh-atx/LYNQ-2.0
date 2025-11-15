@@ -1,0 +1,615 @@
+/*
+  explore/explore.css
+  Styles for the Explore page and all Tool views
+*/
+
+/* --- VIEW SECTION (SCROLL FIX) --- */
+#explore-view {
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+/* --- NEW TOOL VIEW STYLES --- */
+.tool-hero-section {
+  padding: 40px var(--primary-padding);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  position: relative;
+  flex-shrink: 0; /* Prevent hero from shrinking */
+  transition: all 0.3s ease;
+}
+
+.tool-hero-icon {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  box-shadow: var(--shadow-soft);
+}
+/* Specific Colors */
+.tool-hero-icon.code {
+  color: #3296fa;
+  background: rgba(50, 150, 250, 0.1);
+}
+.tool-hero-icon.roadmap {
+  color: #ff4500;
+  background: rgba(255, 69, 0, 0.1);
+}
+.tool-hero-icon.seo {
+  color: #10a37f;
+  background: rgba(16, 163, 127, 0.1);
+}
+.tool-hero-icon.regex {
+  color: #9333ea;
+  background: rgba(147, 51, 234, 0.1);
+}
+
+/* --- NEW --- Hide hero when generation starts */
+.view-section.generation-active .tool-hero-section {
+  display: none;
+}
+.view-section.generation-active .tool-content-area {
+  padding: 15px var(--primary-padding);
+}
+/* --- END NEW --- */
+
+/* --- TOOL CONTENT (SCROLL FIX) --- */
+.tool-content-area {
+  padding: 30px var(--primary-padding);
+  max-width: 1400px; /* Increased max-width for side-by-side */
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Fix for flex scrolling */
+  overflow: hidden; /* Main content area does NOT scroll */
+  transition: all 0.3s ease;
+}
+.tool-input-container {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 30px;
+  flex-shrink: 0; /* Prevent input from shrinking */
+  transition: all 0.3s ease;
+}
+/* New style for when input moves */
+.tool-input-container.moved {
+  flex-shrink: 0;
+  margin-bottom: 0;
+  border-radius: 0;
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  padding: 0; /* Remove padding */
+}
+
+/* New style for the followup bar */
+.tool-followup-bar {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+}
+.tool-followup-bar input {
+  flex: 1;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  padding: 10px 15px;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+.tool-followup-bar input:focus {
+  border-color: var(--text-heading);
+}
+.tool-followup-bar .send-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--bg-accent);
+  color: var(--text-accent);
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+.tool-followup-bar .send-btn:hover {
+  opacity: 0.9;
+}
+
+/* --- NEW --- Style for tool stop button */
+.tool-followup-bar .stop-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--bg-primary); /* Same as tool-btn-round */
+  border: 1px solid transparent; /* Same as tool-btn-round */
+  color: var(--text-secondary); /* Same as tool-btn-round */
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tool-followup-bar .stop-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+  color: var(--text-heading);
+}
+/* --- END NEW --- */
+
+.tool-label {
+  display: block;
+  color: var(--text-heading);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+/* New toggle style for Canvas */
+.tool-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+.tool-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Re-using settings.css styles */
+.toggle-switch {
+  position: relative;
+  width: 50px;
+  height: 28px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-secondary);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: var(--bg-accent);
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+.custom-textarea {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 15px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  margin-top: 10px;
+}
+.custom-textarea:focus {
+  border-color: var(--text-heading);
+}
+.input-field-styled {
+  padding: 10px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+.input-field-styled:focus {
+  border-color: var(--text-heading);
+}
+/* End re-used styles */
+
+
+/* Initial Placeholder Style */
+.tool-placeholder {
+  flex: 1;
+  border: 1px dashed var(--border-primary);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  min-height: 300px;
+  text-align: center;
+  overflow: hidden;
+}
+.tool-placeholder i {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+/* --- NEW Side-by-Side Grid Layout --- */
+.tool-result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr; /* Right column is 50% wider */
+  gap: 20px;
+  flex: 1; /* Make it fill space */
+  overflow: hidden; /* Prevent grid from scrolling */
+  min-height: 0; /* Fix for flex scrolling */
+}
+
+/* New class to make grid single-column */
+.tool-result-grid.regular-mode {
+  grid-template-columns: 1fr; /* Single column */
+}
+
+.tool-result-column {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-tertiary);
+  border-radius: 16px;
+  border: 1px solid var(--border-primary);
+  overflow: hidden;
+}
+
+/* Hide right column in regular mode */
+.tool-result-grid.regular-mode .tool-result-column:nth-child(2) {
+  display: none;
+}
+
+.tool-column-header {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-heading);
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative; /* Added for absolute child positioning */
+}
+.tool-column-header .action-icon {
+  font-size: 0.8rem;
+  padding: 4px 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tool-column-header .action-icon:hover {
+  background: var(--bg-primary);
+  color: var(--text-heading);
+}
+
+
+/* New Tabs inside right column */
+.code-view-tabs {
+  display: flex;
+  gap: 5px;
+  background: var(--bg-primary);
+  padding: 4px;
+  border-radius: 10px;
+}
+.tab-btn {
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-btn.active {
+  background: var(--bg-tertiary);
+  color: var(--text-heading);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Text & Code Content Panes */
+.tool-result-pane {
+  flex: 1; /* CRITICAL: This pane must grow */
+  padding: 15px;
+  overflow-y: auto; /* CRITICAL: This pane scrolls */
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 0;
+}
+.tool-result-pane p {
+  margin-bottom: 10px;
+}
+.tool-result-pane ul,
+.tool-result-pane ol {
+  margin: 10px 0 10px 20px;
+}
+/* Add rules from .bubble for regular mode */
+.tool-result-pane pre {
+  background: #282c34;
+  color: #abb2bf;
+  padding: 15px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.tool-result-pane ul,
+.tool-result-pane ol {
+  margin: 10px 0 10px 20px;
+}
+.tool-result-pane h3 {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* Specific for Code Block Pane */
+#view-code-content {
+  padding: 0; /* Remove padding to let pre tag fill */
+  background: #282c34; /* Dark bg for code */
+  flex: 1;
+  overflow: hidden; /* Let <pre> handle scroll */
+}
+#view-code-content pre {
+  margin: 0;
+  border-radius: 0;
+  height: 100%;
+  padding: 15px;
+  overflow: auto; /* Scrollable code block */
+  background: transparent; /* Override pane pre style */
+}
+#view-code-content code {
+  color: #abb2bf;
+  font-family: monospace;
+}
+
+/* Specific for Preview Pane */
+#view-preview-content {
+  flex: 1;
+  background: white;
+  overflow: auto; /* Changed from hidden */
+  position: relative;
+}
+#preview-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Other Tool Result Panes */
+.tool-visualizer-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--text-secondary);
+  height: 100%;
+  gap: 15px;
+}
+.tool-visualizer-placeholder i {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+/* --- NEW PROMPT DISPLAY STYLES --- */
+.prompt-display {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 20px;
+  flex-shrink: 0; /* Prevent prompts from shrinking */
+}
+.prompt-display.ai {
+  align-items: flex-start;
+}
+.prompt-display.user {
+  align-items: flex-start;
+}
+.prompt-display .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+.prompt-display .avatar.ai {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+}
+.prompt-display .avatar.user {
+  background: var(--text-heading);
+  color: var(--bg-secondary);
+}
+.prompt-display .bubble {
+  background: var(
+    --bg-primary
+  ); /* Slightly different from tool-result-column bg */
+  padding: 15px 20px;
+  border-radius: 24px;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  width: fit-content;
+  max-width: 90%; /* Ensure it doesn't overflow */
+  white-space: pre-wrap;
+}
+.prompt-display.user .bubble {
+  border-top-left-radius: 4px;
+  background: var(--bg-chat-bubble-user);
+}
+.prompt-display.ai .bubble {
+  border-top-left-radius: 4px;
+}
+/* Rules for .bubble content */
+.prompt-display .bubble pre {
+  background: #282c34;
+  color: #abb2bf;
+  padding: 15px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.prompt-display .bubble ul,
+.prompt-display .bubble ol {
+  margin: 10px 0 10px 20px;
+}
+.prompt-display .bubble h3 {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* --- NEW --- Generation History Nav */
+.generation-history-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-primary);
+  border-radius: 20px;
+  padding: 2px;
+  /* This will push it to the center in the flex container */
+  margin-left: auto;
+  margin-right: auto;
+  position: absolute; /* Position it in the center */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5; /* Ensure it's above tabs if they wrap */
+}
+.history-nav-btn {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+.history-nav-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-heading);
+}
+.history-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.history-nav-status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+/* --- END NEW --- */
+
+/* --- NEW --- Make visualizer placeholder fill container */
+.tool-visualizer-placeholder {
+  width: 100%;
+}
+
+/* --- NEW --- Keyword Cloud Styles */
+.keyword-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+  border: 1px solid var(--border-capsule);
+}
+.keyword-tag:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-soft);
+}
+
+/* --- NEW --- Mermaid.js Graph Styles */
+#roadmap-visualizer-pane {
+  background-color: #fcfcfc; /* Light bg for the graph */
+  display: flex; /* Helps center the SVG */
+  align-items: center;
+  justify-content: center;
+}
+/* Ensure the SVG rendered by Mermaid is responsive */
+#roadmap-visualizer-pane svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+  z-index: 0;
+}
+
+@media (max-width: 768px) {
+  .tool-result-grid {
+    grid-template-columns: 1fr;
+  } /* Stack on mobile */
+  
+  /* Move history nav on mobile */
+  .generation-history-nav {
+    position: static;
+    transform: none;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    justify-content: center;
+  }
+  .tool-column-header {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+  }
+}

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings — LYNQ AI</title>
+
+    <!-- Icons -->
+    <script
+      src="https://kit.fontawesome.com/ae8ff12b97.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Syntax Highlighting CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="./settings/settings.css" />
+  </head>
+  <body>
+    <div id="app-container">
+      <!-- SIDEBAR -->
+      <aside id="sidebar">
+        <div style="flex-shrink: 0">
+          <div class="sidebar-header">
+            <span style="display: flex; align-items: center; gap: 10px"
+              ><i class="fa-solid fa-bolt"></i> LYNQ AI</span
+            >
+            <button class="action-btn mobile-only" onclick="toggleSidebar()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <nav class="nav-menu">
+          <div class="nav-label">Menu</div>
+          <!-- Links updated -->
+          <a
+            href="index.html"
+            class="nav-item"
+            id="nav-new-chat"
+            ><i class="fa-solid fa-plus"></i> New Chat</a
+          >
+          <a
+            href="index.html"
+            class="nav-item"
+            id="nav-home"
+            ><i class="fa-solid fa-house"></i> Home</a
+          >
+          
+          <a
+            href="plugins.html"
+            class="nav-item"
+            id="nav-plugins"
+            ><i class="fa-solid fa-plug"></i> Plugins</a
+          >
+          <a
+            href="projects.html"
+            class="nav-item"
+            id="nav-projects"
+            ><i class="fa-solid fa-layer-group"></i> Projects</a
+          >
+
+          <div
+            class="nav-label"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-right: 5px;
+              position: relative;
+            "
+          >
+            <span id="recent-chats-label">Recent Chats</span>
+            <input
+              type="text"
+              id="chat-search-input"
+              placeholder="Search chats..."
+              style="
+                display: none;
+                width: 100%;
+                background: var(--bg-primary);
+                border: 1px solid var(--border-primary);
+                border-radius: 6px;
+                padding: 4px 8px;
+                color: var(--text-primary);
+              "
+              onkeyup="filterRecentChats()"
+              onblur="toggleChatSearch(false)"
+            />
+            <i
+              class="fa-solid fa-magnifying-glass search-trigger"
+              id="chat-search-trigger"
+              onclick="toggleChatSearch(true)"
+            ></i>
+          </div>
+          <div id="recent-chats-container"></div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <!-- Active class added here -->
+          <a href="settings.html" class="nav-item active" id="nav-settings"
+            ><i class="fa-solid fa-gear"></i> Settings</a
+          >
+          <a
+            href="profile.html"
+            class="nav-item"
+            id="nav-profile"
+            style="margin-top: 5px"
+          >
+            <div
+              class="avatar user"
+              style="
+                width: 24px;
+                height: 24px;
+                font-size: 0.7rem;
+                margin-right: 0;
+              "
+            >
+              MD
+            </div>
+            Mahesh Dongare
+          </a>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main id="main-content">
+        <div class="top-bar">
+          <button class="action-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div style="flex: 1"></div>
+          <div class="top-actions">
+            <button class="upgrade-btn" onclick="togglePricing()">
+              <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
+            </button>
+            <button class="top-profile-btn" onclick="location.href='profile.html'">
+              <div class="avatar user">MD</div>
+              <span>Mahesh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- DETAILED SETTINGS VIEW -->
+        <div id="settings-view" class="view-section active">
+          <div class="settings-container">
+            <div class="settings-header"><h1>Settings</h1></div>
+
+            <!-- Personalization (Theme & Customization) -->
+            <div class="settings-group">
+              <h3>
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Personalization
+              </h3>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Theme</h4>
+                  <p>Switch between light and dark mode</p>
+                </div>
+                <label class="toggle-switch"
+                  ><input
+                    type="checkbox"
+                    id="settings-theme-toggle"
+                    onchange="toggleTheme()" /><span class="slider"></span
+                ></label>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Accent Color</h4>
+                  <p>Choose your preferred interface color</p>
+                </div>
+                <div style="display: flex; gap: 10px">
+                  <div style="width: 20px; height: 20px; background: #ffd700; border-radius: 50%; cursor: pointer; border: 2px solid var(--text-heading);"></div>
+                  <div style="width: 20px; height: 20px; background: #10a37f; border-radius: 50%; cursor: pointer;"></div>
+                  <div style="width: 20px; height: 20px; background: #3296fa; border-radius: 50%; cursor: pointer;"></div>
+                  <div style="width: 20px; height: 20px; background: #ff4500; border-radius: 50%; cursor: pointer;"></div>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Font Size</h4>
+                  <p>Adjust the text size of chats</p>
+                </div>
+                <select class="select-box">
+                  <option>Small</option>
+                  <option selected>Medium</option>
+                  <option>Large</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Intelligence -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-brain"></i> Intelligence</h3>
+              <div class="setting-item vertical">
+                <div class="setting-info" style="width: 100%">
+                  <h4>Custom Instructions</h4>
+                  <p>How would you like LYNQ to respond?</p>
+                  <textarea class="custom-textarea" id="custom-instructions-textarea" placeholder="e.g. Always answer in Python, be concise, act as a senior engineer..."></textarea>
+                </div>
+                <button class="btn-secondary" style="margin-left: auto" id="save-instructions-btn" onclick="saveCustomInstructions()">
+                  Save Instructions
+                </button>
+              </div>
+            </div>
+
+            <!-- Voice Mode -->
+            <div class="settings-group">
+              <h3>
+                <i class="fa-solid fa-microphone-lines"></i> Voice & Speech
+              </h3>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Text-to-Speech Voice</h4>
+                  <p>Select the AI voice personality</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center">
+                  <select class="select-box" id="voice-selector">
+                    <option value="onyx">Onyx (Deep & Calm)</option>
+                    <option value="nova" selected>Nova (Energetic)</option>
+                    <option value="shimmer">Shimmer (Soft & Warm)</option>
+                  </select>
+                  <button class="btn-secondary" onclick="showToast('Playing voice sample...')">
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feedback & Help -->
+            <div class="settings-group">
+              <h3>
+                <i class="fa-regular fa-life-ring"></i> Support & Feedback
+              </h3>
+              <!-- Link to help.html -->
+              <div
+                class="setting-item"
+                onclick="location.href='help.html'"
+                style="cursor: pointer"
+              >
+                <div class="setting-info">
+                  <h4>Help Center</h4>
+                  <p>Guides, FAQ, and troubleshooting</p>
+                </div>
+                <i
+                  class="fa-solid fa-chevron-right"
+                  style="color: var(--text-secondary)"
+                ></i>
+              </div>
+              <div class="setting-item vertical">
+                <div class="setting-info">
+                  <h4>Send Feedback</h4>
+                  <p>Help us improve LYNQ AI</p>
+                </div>
+                <textarea class="custom-textarea" placeholder="Tell us what you think..." style="min-height: 80px"></textarea>
+                <button class="btn-secondary" style="margin-top: 10px; align-self: flex-end" onclick="showToast('Feedback sent successfully!')">
+                  Submit Feedback
+                </button>
+              </div>
+            </div>
+
+            <!-- API Configuration -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-key"></i> Developer Settings</h3>
+              <div class="setting-item vertical">
+                <div class="setting-info">
+                  <h4>API Keys</h4>
+                  <p>Use your own keys to bypass rate limits.</p>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                    <label style="min-width: 100px; font-size: 0.9rem; color: var(--text-secondary);">OpenAI Key</label>
+                    <input type="password" class="input-field-styled" placeholder="sk-..." />
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                    <label style="min-width: 100px; font-size: 0.9rem; color: var(--text-secondary);">Gemini Key</label>
+                    <input type="password" class="input-field-styled" placeholder="AIzaSy..." />
+                  </div>
+                </div>
+                <button class="btn-secondary" style="margin-left: auto; margin-top: 10px" onclick="showToast('API Keys Saved Securely')">
+                  Save Keys
+                </button>
+              </div>
+            </div>
+
+            <!-- Data Management -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-database"></i> Data & Privacy</h3>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Export Data</h4>
+                  <p>Download all your chat history (JSON)</p>
+                </div>
+                <button class="action-btn" id="export-data-btn">
+                  <i class="fa-solid fa-download"></i>
+                </button>
+              </div>
+              <div class="setting-item" style="border-color: var(--bg-danger)">
+                <div class="setting-info">
+                  <h4 style="color: var(--text-danger)">Clear All History</h4>
+                  <p>Permanently delete all chats</p>
+                </div>
+                <button class="btn-danger">Delete All</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+      <i class="fa-solid fa-circle-check"></i> Link copied to clipboard!
+    </div>
+
+    <!-- PRICING MODAL (Shared component) -->
+    <div class="modal-overlay" id="pricing-modal">
+        <!-- ... (Modal content copied from index.html) ... -->
+         <div class="pricing-modal">
+        <button class="close-modal" onclick="togglePricing()">&times;</button>
+        <div class="pricing-header">
+          <h2>Upgrade Your Plan</h2>
+          <p style="color: var(--text-secondary)">
+            Unlock the full power of AI with Pro features.
+          </p>
+        </div>
+        <div class="pricing-grid">
+          <div class="price-card">
+            <h3>Starter</h3>
+            <div class="price">
+              $0<span style="font-size: 1rem; font-weight: 400">/mo</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fa-solid fa-check"></i> Gemini Flash Model</li>
+              <li><i class="fa-solid fa-check"></i> Standard Speed</li>
+              <li><i class="fa-solid fa-check"></i> 5 Projects Limit</li>
+            </ul>
+            <button class="plan-btn free">Current Plan</button>
+          </div>
+          <div class="price-card pro">
+            <div class="popular-tag">MOST POPULAR</div>
+            <h3>Pro Member</h3>
+            <div class="price">
+              $19<span style="font-size: 1rem; font-weight: 400">/mo</span>
+            </div>
+            <ul class="features-list">
+              <li>
+                <i class="fa-solid fa-check"></i> <b>Gemini 1.5 Pro & GPT-4o</b>
+              </li>
+              <li><i class="fa-solid fa-check"></i> Unlimited Fast Projects</li>
+              <li><i class="fa-solid fa-check"></i> Priority Support</li>
+              <li><i class="fa-solid fa-check"></i> Code Execution</li>
+            </ul>
+            <button class="plan-btn pro">Upgrade Now</button>
+          </div>
+          <div class="price-card">
+            <h3>Team</h3>
+            <div class="price">
+              $49<span style="font-size: 1rem; font-weight: 400">/mo</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
+              <li><i class="fa-solid fa-check"></i> Admin Dashboard</li>
+              <li><i class="fa-solid fa-check"></i> Shared Workspace</li>
+              <li><i class="fa-solid fa-check"></i> SSO Integration</li>
+            </ul>
+            <button class="plan-btn free">Contact Sales</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared script for all pages -->
+    <script src="script.js"></script>
+    <!-- Page-specific script -->
+    <script src="./settings/settings.js"></script>
+  </body>
+</html>

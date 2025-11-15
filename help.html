@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help Center — LYNQ AI</title>
+
+    <!-- Icons -->
+    <script
+      src="https://kit.fontawesome.com/ae8ff12b97.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Syntax Highlighting CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
+<link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="./help/help.css" />
+  </head>
+  <body>
+    <div id="app-container">
+      <!-- SIDEBAR -->
+      <aside id="sidebar">
+        <div style="flex-shrink: 0">
+          <div class="sidebar-header">
+            <span style="display: flex; align-items: center; gap: 10px"
+              ><i class="fa-solid fa-bolt"></i> LYNQ AI</span
+            >
+            <button class="action-btn mobile-only" onclick="toggleSidebar()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <nav class="nav-menu">
+          <div class="nav-label">Menu</div>
+          <!-- Links updated -->
+          <a
+            href="index.html"
+            class="nav-item"
+            id="nav-new-chat"
+            ><i class="fa-solid fa-plus"></i> New Chat</a
+          >
+          <a
+            href="index.html"
+            class="nav-item"
+            id="nav-home"
+            ><i class="fa-solid fa-house"></i> Home</a
+          >
+          <a
+            href="plugins.html"
+            class="nav-item"
+            id="nav-plugins"
+            ><i class="fa-solid fa-plug"></i> Plugins</a
+          >
+          <a
+            href="projects.html"
+            class="nav-item"
+            id="nav-projects"
+            ><i class="fa-solid fa-layer-group"></i> Projects</a
+          >
+
+          <div
+            class="nav-label"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-right: 5px;
+              position: relative;
+            "
+          >
+            <span id="recent-chats-label">Recent Chats</span>
+            <input
+              type="text"
+              id="chat-search-input"
+              placeholder="Search chats..."
+              style="
+                display: none;
+                width: 100%;
+                background: var(--bg-primary);
+                border: 1px solid var(--border-primary);
+                border-radius: 6px;
+                padding: 4px 8px;
+                color: var(--text-primary);
+              "
+              onkeyup="filterRecentChats()"
+              onblur="toggleChatSearch(false)"
+            />
+            <i
+              class="fa-solid fa-magnifying-glass search-trigger"
+              id="chat-search-trigger"
+              onclick="toggleChatSearch(true)"
+            ></i>
+          </div>
+          <div id="recent-chats-container"></div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="settings.html" class="nav-item" id="nav-settings"
+            ><i class="fa-solid fa-gear"></i> Settings</a
+          >
+          <a
+            href="profile.html"
+            class="nav-item"
+            id="nav-profile"
+            style="margin-top: 5px"
+          >
+            <div
+              class="avatar user"
+              style="
+                width: 24px;
+                height: 24px;
+                font-size: 0.7rem;
+                margin-right: 0;
+              "
+            >
+              MD
+            </div>
+            Mahesh Dongare
+          </a>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main id="main-content">
+        <div class="top-bar">
+          <button class="action-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div style="flex: 1"></div>
+          <div class="top-actions">
+            <button class="upgrade-btn" onclick="togglePricing()">
+              <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
+            </button>
+            <button class="top-profile-btn" onclick="location.href='profile.html'">
+              <div class="avatar user">MD</div>
+              <span>Mahesh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- UPDATED HELP VIEW -->
+        <div id="help-view" class="view-section active">
+          <div class="help-container">
+            <div class="help-header"><h1>Help Center</h1></div>
+            <!-- Back button now links to settings.html -->
+            <button
+              class="btn-secondary"
+              onclick="location.href='settings.html'"
+              style="margin-bottom: 20px"
+            >
+              <i class="fa-solid fa-arrow-left"></i> Back to Settings
+            </button>
+
+            <div class="help-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="text"
+                placeholder="Search for articles, guides, and troubleshooting..."
+              />
+            </div>
+
+            <div class="help-grid">
+              <div class="help-card">
+                <i class="fa-solid fa-rocket"></i>
+                <h4>Getting Started</h4>
+                <p>Learn the basics of LYNQ AI prompts.</p>
+              </div>
+              <div class="help-card">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <h4>Billing & Plans</h4>
+                <p>Manage subscriptions and payments.</p>
+              </div>
+              <div class="help-card">
+                <i class="fa-solid fa-users"></i>
+                <h4>Community</h4>
+                <p>Join our Discord server.</p>
+              </div>
+            </div>
+
+            <h3 style="margin-bottom: 20px">Frequently Asked Questions</h3>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                What is LYNQ AI Pro? <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                LYNQ AI Pro is our advanced tier giving you access to Gemini 1.5
+                Pro and GPT-4o models, priority support, and unlimited fast
+                project generation.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                How do I generate an API Key?
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                Go to Settings > Account > API Keys. You can generate up to 5
+                keys for personal use in your custom applications.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                Can I use LYNQ AI for commercial projects?
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                Yes! All code and content generated by LYNQ AI (Pro Plan) is
+                yours to use commercially without attribution.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                How do I reset my chat history?
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                You can clear your entire history in Settings > Data & Privacy.
+                Be careful, as this action cannot be undone.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                Is my data private? <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                Absolutely. We do not train our public models on data from Pro
+                users. Your workspace is private and encrypted.
+              </div>
+            </div>
+
+            <div class="contact-form">
+              <div class="contact-header">
+                <h3>Contact Support</h3>
+                <div class="status-indicator">
+                  <div class="status-dot"></div>
+                  All Systems Operational
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Name</label
+                  ><input type="text" value="Mahesh Dongare" />
+                </div>
+                <div class="form-group">
+                  <label>Email</label
+                  ><input type="email" value="dongaremahesh10@gmail.com" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Message</label
+                ><textarea
+                  rows="4"
+                  placeholder="Describe your issue..."
+                ></textarea>
+              </div>
+              <button class="upgrade-btn" style="margin-top: 20px">
+                Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+      <i class="fa-solid fa-circle-check"></i> Link copied to clipboard!
+    </div>
+
+    <!-- PRICING MODAL (Shared component) -->
+    <div class="modal-overlay" id="pricing-modal">
+        <!-- ... (Modal content copied from index.html) ... -->
+         <div class="pricing-modal">
+        <button class="close-modal" onclick="togglePricing()">&times;</button>
+        <div class="pricing-header">
+          <h2>Upgrade Your Plan</h2>
+          <p style="color: var(--text-secondary)">
+            Unlock the full power of AI with Pro features.
+          </p>
+        </div>
+        <div class="pricing-grid">
+          <div class="price-card">
+            <h3>Starter</h3>
+            <div class="price">
+              $0<span style="font-size: 1rem; font-weight: 400">/mo</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fa-solid fa-check"></i> Gemini Flash Model</li>
+              <li><i class="fa-solid fa-check"></i> Standard Speed</li>
+              <li><i class="fa-solid fa-check"></i> 5 Projects Limit</li>
+            </ul>
+            <button class="plan-btn free">Current Plan</button>
+          </div>
+          <div class="price-card pro">
+            <div class="popular-tag">MOST POPULAR</div>
+            <h3>Pro Member</h3>
+            <div class="price">
+              $19<span style="font-size: 1rem; font-weight: 400">/mo</span>
+            </div>
+            <ul class="features-list">
+              <li>
+                <i class="fa-solid fa-check"></i> <b>Gemini 1.5 Pro & GPT-4o</b>
+              </li>
+              <li><i class="fa-solid fa-check"></i> Unlimited Fast Projects</li>
+              <li><i class="fa-solid fa-check"></i> Priority Support</li>
+              <li><i class="fa-solid fa-check"></i> Code Execution</li>
+            </ul>
+            <button class="plan-btn pro">Upgrade Now</button>
+          </div>
+          <div class="price-card">
+            <h3>Team</h3>
+            <div class="price">
+              $49<span style="font-size: 1rem; font-weight: 400">/mo</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
+              <li><i class="fa-solid fa-check"></i> Admin Dashboard</li>
+              <li><i class="fa-solid fa-check"></i> Shared Workspace</li>
+              <li><i class="fa-solid fa-check"></i> SSO Integration</li>
+            </ul>
+            <button class="plan-btn free">Contact Sales</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared script for all pages -->
+    <script src="script.js"></script>
+    <!-- Page-specific script -->
+    <script src="./help/help.js"></script>
+  </body>
+</html>

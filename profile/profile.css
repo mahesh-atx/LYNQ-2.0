@@ -1,0 +1,100 @@
+/*
+  profile/profile.css
+  Styles for the Profile page
+*/
+
+/* --- VIEW SECTION (SCROLL FIX) --- */
+#profile-view {
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.profile-container {
+  max-width: 700px;
+  margin: 40px auto;
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 30px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+.profile-avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--text-heading);
+  color: var(--bg-secondary);
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.edit-badge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: var(--bg-accent);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 3px solid var(--bg-tertiary);
+}
+.profile-name {
+  font-size: 2rem;
+  color: var(--text-heading);
+  margin-bottom: 5px;
+}
+.profile-role {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 25px;
+}
+.profile-plan-badge {
+  display: inline-block;
+  background: var(--bg-gold);
+  color: #2a2a2a;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+.profile-form {
+  text-align: left;
+  display: grid;
+  gap: 15px;
+  margin-top: 10px;
+}
+.profile-form label {
+  color: var(--text-heading);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.profile-form input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+.save-profile-btn {
+  margin-top: 30px;
+  width: fit-content;
+  padding: 12px 30px;
+  margin-left: auto;
+  margin-right: auto;
+}
