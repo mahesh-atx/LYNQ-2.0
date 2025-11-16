@@ -11,10 +11,19 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.2.1",
+    "mongoose": "^8.19.4",
     "node-fetch": "^3.3.2"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {}
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mahesh-atx/LYNQ-2.0.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mahesh-atx/LYNQ-2.0/issues"
+  },
+  "homepage": "https://github.com/mahesh-atx/LYNQ-2.0#readme"
 }

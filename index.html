@@ -24,6 +24,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
+    <!-- Added PDF.js library for text extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      // Required by PDF.js
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+    </script>
+
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="./home/home.css" />
 
@@ -221,6 +228,8 @@
         <div id="home-view" class="view-section active">
           
           <div id="chat-wrapper">
+            <!-- PDF Attachment bar removed from here -->
+
             <div id="chat-container">
               <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-text">
@@ -264,7 +273,17 @@
             </div>
 
             <div class="input-area-wrapper">
+              <!-- Hidden file input for PDF uploads -->
+              <input
+                type="file"
+                id="file-upload"
+                accept="application/pdf"
+                style="display: none"
+              />
               <div class="input-container">
+                <!-- NEW: Container for file pills above the textarea -->
+                <div id="attachment-preview-container"></div>
+                
                 <textarea
                   id="chat-input"
                   rows="1"
@@ -272,12 +291,34 @@
                 ></textarea>
                 <div class="input-toolbar">
                   <div class="toolbar-left">
-                    <button class="tool-btn-round">
+                    <!-- This button now triggers file upload -->
+                    <button class="tool-btn-round" id="attach-file-btn" title="Attach PDF File">
                       <i class="fa-solid fa-plus"></i>
                     </button>
-                    <button class="tool-btn-round" id="canvas-toggle-btn" title="Toggle Canvas Mode">
-                      <i class="fa-solid fa-file-invoice"></i>
-                    </button>
+                    <!-- Tools Dropdown -->
+                    <div class="tool-dropdown-wrapper">
+                      <button class="tool-btn-round" id="tools-toggle-btn" title="Toggle Tools">
+                        <i class="fa-solid fa-tools"></i> <!-- New Icon -->
+                      </button>
+                      <div class="tool-dropdown-menu" id="tools-dropdown">
+                        <button class="tool-dropdown-item" id="canvas-toggle-btn">
+                          <i class="fa-solid fa-file-invoice"></i>
+                          <div>
+                            <span>Canvas</span>
+                            <span class="tool-desc">Open the code canvas</span>
+                          </div>
+                        </button>
+                        <!-- PDF Chat is now a toggle, but we won't use it. Logic is automatic. -->
+                        <button class="tool-dropdown-item" id="pdf-chat-btn" style="display: none;">
+                          <i class="fa-solid fa-file-pdf"></i>
+                          <div>
+                            <span>PDF Chat</span>
+                            <span class="tool-desc">Toggle chat with attached PDF</span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                    <!-- End: Tools Dropdown -->
                     <div class="model-selector-wrapper">
                       <button
                         class="model-btn"
@@ -297,7 +338,7 @@
                               class="fa-solid fa-bolt"
                               style="color: #ffd700; margin-right: 8px"
                             ></i>
-                            Gemini 1.5 Pro</span
+                            Llama 3.1 8B</span
                           >
                           <span class="pro-badge">Pro</span>
                           <i class="fa-solid fa-check check-icon"></i>
@@ -311,7 +352,7 @@
                               class="fa-solid fa-robot"
                               style="color: #10a37f; margin-right: 8px"
                             ></i>
-                            GPT-4o</span
+                            GPT-OSS-120B</span
                           >
                           <span class="pro-badge">Pro</span>
                           <i
@@ -328,7 +369,7 @@
                               class="fa-solid fa-bolt-lightning"
                               style="color: #ff4500; margin-right: 8px"
                             ></i>
-                            Gemini Flash</span
+                            Qwen3 32B</span
                           >
                           <i
                             class="fa-solid fa-check check-icon"

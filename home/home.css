@@ -22,6 +22,10 @@
   transition: flex-basis 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+/* --- REMOVED: PDF ATTACHMENT BAR --- */
+/* #pdf-attachment-bar styles removed */
+
+
 /* --- CHAT MESSAGES & ACTIONS --- */
 #chat-container {
   flex: 1;
@@ -162,6 +166,15 @@
   color: var(--text-primary);
   width: fit-content;
 }
+/* NEW: Hide bubble if it's empty (e.g., user only sent a file) */
+.bubble:empty {
+  display: none;
+}
+/* NEW: Add margin between attachment and bubble */
+.message-attachment-container + .bubble {
+  margin-top: 10px;
+}
+
 .message.user .bubble {
   background: var(--bg-chat-bubble-user);
   border-top-left-radius: 24px;
@@ -341,7 +354,7 @@ body.dark-mode .btn-cancel {
 /* Improved Input Toolbar Icons */
 .input-area-wrapper {
   /* padding: 20px var(--primary-padding); */
-  width: 100%;
+  width: 82%;
   max-width: 800px;
   margin: 0 auto;
   /* z-index: 20; */
@@ -409,20 +422,41 @@ textarea#chat-input {
   transform: translateY(-1px);
 }
 
-/* START: ENHANCED CANVAS TOGGLE STYLES */
-#canvas-toggle-btn.active {
-  background: var(--bg-accent);
-  color: var(--text-accent);
-  border-color: var(--bg-accent);
-  /* Added glow for enhancement */
-  box-shadow: 0 0 12px var(--bg-accent);
+/* START: TOOLS/CANVAS TOGGLE STYLES */
+
+/* Active state for the main tools button when dropdown is open */
+#tools-toggle-btn.active {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+  color: var(--text-heading);
 }
-#canvas-toggle-btn.active:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  color: var(--text-accent);
+
+/* Active state for the "Canvas" item inside the dropdown */
+.tool-dropdown-item#canvas-toggle-btn.active {
+  background: var(--bg-primary); /* Use a subtle background */
+  border: 1px solid var(--border-secondary);
 }
-/* END: ENHANCED CANVAS TOGGLE STYLES */
+
+.tool-dropdown-item#canvas-toggle-btn.active span {
+  color: var(--text-heading);
+}
+
+.tool-dropdown-item#canvas-toggle-btn.active i {
+  color: var(--text-heading);
+}
+
+/* --- NEW: Active state for "PDF Chat" item --- */
+.tool-dropdown-item#pdf-chat-btn.active {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-secondary);
+}
+.tool-dropdown-item#pdf-chat-btn.active span,
+.tool-dropdown-item#pdf-chat-btn.active i {
+  color: var(--text-heading);
+}
+
+
+/* END: TOOLS/CANVAS TOGGLE STYLES */
 
 .send-btn {
   background: var(--bg-accent);
@@ -435,6 +469,168 @@ textarea#chat-input {
   transform: scale(1.05);
   border-color: transparent;
 }
+
+/* --- NEW: TOOLS DROPDOWN STYLES --- */
+.tool-dropdown-wrapper {
+  position: relative; /* For dropdown positioning */
+  display: flex;
+}
+
+.tool-dropdown-menu {
+  display: none; /* Hidden by default */
+  position: absolute;
+  bottom: calc(100% + 10px); /* Position above the button */
+  left: 0;
+  width: 300px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-strong);
+  padding: 8px;
+  z-index: 100;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+.tool-dropdown-menu.active {
+  display: block; /* Show when active */
+}
+
+/* Simple fade-in animation */
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tool-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid transparent; /* For active state alignment */
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+  color: var(--text-primary);
+}
+
+.tool-dropdown-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.tool-dropdown-item i {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  width: 20px; /* Align icons */
+  text-align: center;
+}
+
+.tool-dropdown-item span {
+  display: block;
+  font-weight: 500;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.tool-dropdown-item .tool-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-top: 2px;
+}
+/* --- END: TOOLS DROPDOWN STYLES --- */
+
+
+/* --- NEW: ATTACHMENT PREVIEW STYLES --- */
+#attachment-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 8px; /* Space between pill and textarea */
+  margin-top: -4px; /* Pull it up a bit */
+}
+
+.attachment-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-secondary);
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  max-width: 100%;
+}
+
+.attachment-pill i {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.attachment-pill span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* Limit width */
+}
+
+.attachment-pill .close-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.attachment-pill .close-btn:hover {
+  opacity: 1;
+  color: var(--text-heading);
+}
+
+/* This is the container *inside* the sent message bubble */
+.message-attachment-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Re-use the pill style for the message bubble */
+.message-attachment-container .attachment-pill {
+  background-color: var(--bg-tertiary);
+  border-radius: 12px; /* Match bubble radius */
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  border: 1px solid var(--border-capsule);
+}
+
+.message.user .message-attachment-container .attachment-pill {
+  /* Match user bubble color */
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--text-heading);
+  color: var(--text-heading);
+}
+.message.user .message-attachment-container .attachment-pill i {
+  color: var(--text-heading);
+  opacity: 0.9;
+}
+
+
+/* --- END: ATTACHMENT PREVIEW STYLES --- */
+
 
 /* --- MARKDOWN CONTENT STYLING (Fixes Typography & Tables) --- */
 
@@ -592,7 +788,7 @@ body.dark-mode .bubble tr:nth-child(even) {
   margin-right: -10px; 
 }
 #canvas-pane.active {
-  flex-basis: 40%; /* Open to this width */
+  flex-basis: 60%; /* Open to this width */
   min-width: 320px;
   opacity: 1;
   margin-right: 10px; /* Add right margin when open */
@@ -661,7 +857,7 @@ body.dark-mode .bubble tr:nth-child(even) {
   flex: 1; /* Takes up available space */
   overflow-y: auto;
   position: relative;
-  background: #2e2e2e; /* Match pane background */
+  background: #2e2e2e; /* Match content bg */
 }
 #canvas-content pre {
   margin: 0;

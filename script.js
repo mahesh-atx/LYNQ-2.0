@@ -92,12 +92,12 @@ function getSystemMessage(taskSpecificPrompt) {
 
 function saveState() {
   const state = {
-    mainChatHistory,
+    // mainChatHistory, // REMOVED to clear chat history on refresh
     codeHistory,
     installedPlugins, // ADDED
-    recentChats,
-    isNewChat,
-    activeChatId,
+    // recentChats, // REMOVED to clear chat history on refresh
+    // isNewChat, // REMOVED to clear chat history on refresh
+    // activeChatId, // REMOVED to clear chat history on refresh
     codeSnapshots,
     currentSnapshotIndex,
     generatedRawCode,
@@ -182,6 +182,9 @@ async function getApiResponse(
   history = [],
   signal = null
 ) {
+  // ADDED: Close sidebar when starting a new response
+  closeSidebar();
+
   try {
     // Set your desired max_tokens value directly.
     // const maxTokensValue = 4096; // <-- Or 8192, 1024, etc.
@@ -278,6 +281,22 @@ function toggleSidebar() {
     sidebar.classList.toggle("active"); // For mobile
   } else {
     sidebar.classList.toggle("collapsed"); // For desktop
+  }
+}
+
+// NEW FUNCTION to close the sidebar
+function closeSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  if (!sidebar) return;
+
+  if (window.innerWidth <= 768) {
+    // On mobile, 'active' means open. Remove it to close.
+    sidebar.classList.remove("active");
+  } else {
+    // On desktop, 'collapsed' means closed (shrunk). Add it to close.
+    if (!sidebar.classList.contains("collapsed")) {
+      sidebar.classList.add("collapsed");
+    }
   }
 }
 
