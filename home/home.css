@@ -867,6 +867,9 @@ body.dark-mode .bubble tr:nth-child(even) {
   padding: 20px;
   display: block;
   min-height: 100%;
+  /* Fix 1: Add word wrapping */
+  white-space: pre-wrap;
+  word-wrap: break-word;
   /* Styled by atom-one-dark theme */
 }
 
