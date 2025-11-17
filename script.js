@@ -39,6 +39,13 @@ let confirmDeleteModal;
 let confirmDeleteText;
 let confirmDeleteCancelBtn;
 let confirmDeleteConfirmBtn;
+let sidebar; // NEW: Global reference for sidebar
+let mobileOverlay; // NEW: Global reference for mobile overlay
+
+// --- NEW: SWIPE AND CLICK OUTSIDE LOGIC GLOBALS ---
+let touchStartX = 0;
+let touchEndX = 0;
+const SWIPE_THRESHOLD = 50; // Minimum distance for a recognized swipe
 
 // --- NEW: API FUNCTIONS FOR CHAT PERSISTENCE ---
 // --- SIMPLE LOGIN HANDLER (FAKE LOGIN FOR NOW) ---
@@ -119,7 +126,7 @@ async function loadAllChats() {
 
     // If a chat was previously active, ensure it's loaded back if still exists
     if (activeChatId) {
-      const activeChatExists = recentChats.some((c) => c.id === activeChatId);
+      const activeChatExists = recentChats.some((c) => c.id == activeChatId);
       if (!activeChatExists) {
         // The active chat was likely deleted or doesn't exist anymore
         activeChatId = null;
@@ -133,7 +140,7 @@ async function loadAllChats() {
       (window.location.pathname.endsWith("index.html") ||
         window.location.pathname.endsWith("/")) &&
       typeof loadChat === "function" &&
-      activeChatId // FIX: Only attempt to load if activeChatId is valid
+      activeChatId // activeChatId is now populated by loadState from URL on initial load
     ) {
       // Load the full history for the active chat
       await loadChat(activeChatId);
@@ -231,9 +238,10 @@ function saveSidebarState(isCollapsed) {
   );
 }
 
-// --- UPDATED: loadState function (now async and loads sidebar state) ---
+/**
+ * Loads non-chat state and initializes the active chat from the URL.
+ */
 async function loadState() {
-  const sidebar = document.getElementById("sidebar");
   // 1. Load non-chat state from localStorage (theme, model, etc.)
 
   // Theme check
@@ -245,20 +253,35 @@ async function loadState() {
     localStorage.setItem("lynq-theme", "dark");
   }
 
-  // Sidebar state check
+  // Sidebar state check (only applies to desktop)
   const isSidebarCollapsed = localStorage.getItem("lynq-sidebar-collapsed");
 
   if (sidebar) {
-    if (isSidebarCollapsed === "false") {
-      // If state is explicitly saved as open, remove 'collapsed' class
-      sidebar.classList.remove("collapsed");
-    } else if (isSidebarCollapsed === null) {
-      // If no state is saved (first run), ensure it's collapsed by default.
-      sidebar.classList.add("collapsed");
-      saveSidebarState(true);
+    if (window.innerWidth > 768) {
+      if (isSidebarCollapsed === "false") {
+        // If state is explicitly saved as open, remove 'collapsed' class
+        sidebar.classList.remove("collapsed");
+      } else if (isSidebarCollapsed === null) {
+        // If no state is saved (first run), ensure it's collapsed by default.
+        sidebar.classList.add("collapsed");
+        saveSidebarState(true);
+      }
+    } else {
+      // Always start collapsed on mobile, regardless of saved desktop state
+      sidebar.classList.remove("active");
     }
-    // If isSidebarCollapsed is 'true' or null (and we set it to true), the default HTML class handles it.
   }
+
+  // --- NEW: Check URL for active chat ID on initial load ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlChatId = urlParams.get("chatId");
+
+  if (urlChatId) {
+    // Must convert to number since chat IDs are generated with Date.now()
+    activeChatId = parseInt(urlChatId, 10);
+    isNewChat = false;
+  }
+  // --- END NEW ---
 
   // 2. Load the recent chats from the server
   await loadAllChats();
@@ -345,28 +368,37 @@ function toggleTheme() {
   }
 }
 
+/**
+ * Toggles the sidebar visibility, handling desktop collapsed state and mobile overlay.
+ */
 function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
   if (!sidebar) return;
 
-  // On mobile (less than 768px), we use the 'active' class for the overlay slide
   if (window.innerWidth <= 768) {
-    sidebar.classList.toggle("active");
+    // Mobile mode
+    const isActive = sidebar.classList.toggle("active");
+    if (mobileOverlay) {
+      mobileOverlay.classList.toggle("active", isActive);
+    }
   } else {
-    // On desktop, we toggle the 'collapsed' class
-    const isCollapsed = !sidebar.classList.contains("collapsed");
-    sidebar.classList.toggle("collapsed");
-    saveSidebarState(!isCollapsed); // Save the new state
+    // Desktop mode
+    const isCollapsed = sidebar.classList.toggle("collapsed");
+    saveSidebarState(isCollapsed); // Save the new state
   }
 }
 
+/**
+ * Explicitly closes the sidebar, handling both mobile and desktop states.
+ */
 function closeSidebar() {
-  const sidebar = document.getElementById("sidebar");
   if (!sidebar) return;
 
   if (window.innerWidth <= 768) {
     // Mobile mode
     sidebar.classList.remove("active");
+    if (mobileOverlay) {
+      mobileOverlay.classList.remove("active");
+    }
   } else {
     // Desktop mode
     sidebar.classList.add("collapsed");
@@ -399,17 +431,36 @@ function renderRecentChats() {
     if (chat.id == activeChatId) {
       navLink.classList.add("active");
     }
-    navLink.href = "index.html";
-    navLink.onclick = (e) => {
-      // NOTE: We don't preventDefault here because we want the page refresh
-      // This ensures sidebar state persists across navigation clicks without JS hacks
-      // The state is saved/restored in loadState/toggleSidebar
+    // MODIFIED: Change href to a fragment for better SPA behavior
+    navLink.href = `#chat-${chat.id}`;
+
+    // MODIFIED: Fix the link handler to prevent refresh and dynamically load the chat
+    navLink.onclick = async (e) => {
+      e.preventDefault(); // <-- CRITICAL FIX: Stop the page refresh!
 
       // Update global state immediately
       activeChatId = chat.id;
       isNewChat = false;
 
-      // Navigate and load (handled by browser's default link behavior)
+      // Update UI: Remove 'active' class from all, add to this one
+      document
+        .querySelectorAll("#recent-chats-container .nav-item")
+        .forEach((item) => item.classList.remove("active"));
+      navLink.classList.add("active");
+
+      // Update URL to persist the state for refreshes
+      const newUrl = window.location.pathname + `?chatId=${chat.id}`;
+      history.pushState({ chatId: activeChatId }, chat.title, newUrl);
+
+      // Load the full history for the active chat
+      if (typeof loadChat === "function") {
+        await loadChat(activeChatId);
+      }
+
+      // Close sidebar on mobile
+      if (window.innerWidth <= 768) {
+        closeSidebar();
+      }
     };
 
     const icon = chat.pinned
@@ -612,6 +663,47 @@ function selectModel(element, modelName, iconClass, iconColor) {
   document.getElementById("model-dropdown")?.classList.remove("show");
 }
 
+// --- NEW: SWIPE DETECTION HANDLERS ---
+function handleTouchStart(event) {
+  // Only capture touch start to get initial X coordinate
+  touchStartX = event.touches[0].clientX;
+  touchEndX = 0; // Reset end X for new gesture
+}
+
+function handleTouchMove(event) {
+  // Continuously capture touch end to calculate difference
+  touchEndX = event.touches[0].clientX;
+}
+
+function handleTouchEnd(event) {
+  if (window.innerWidth > 768 || !sidebar || touchEndX === 0) return; // Only apply on mobile and if touch moved
+
+  const isSidebarOpen = sidebar.classList.contains("active");
+  const diffX = touchEndX - touchStartX;
+
+  // MODIFIED: Increased touchStartX boundary from 50px to 100px for easier opening swipe.
+  const OPEN_TRIGGER_AREA = 300; // Pixels from left edge to start swipe-to-open
+
+  if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+    if (diffX > 0 && touchStartX < OPEN_TRIGGER_AREA && !isSidebarOpen) {
+      // Swipe right near the edge to open
+      toggleSidebar();
+      // Prevent scrolling on the main content right after opening
+      event.preventDefault();
+    } else if (diffX < 0 && isSidebarOpen) {
+      // Check if swipe started on the sidebar itself (approximate check)
+      // If the swipe starts roughly within the sidebar width (80% of screen), close it.
+      if (touchStartX < window.innerWidth * 0.8) {
+        // Swipe left to close
+        closeSidebar();
+      }
+    }
+  }
+  // Reset touch coordinates is redundant here but good practice
+  touchStartX = 0;
+  touchEndX = 0;
+}
+
 // --- GLOBAL EVENT LISTENERS ---
 
 window.onclick = function (event) {
@@ -629,7 +721,6 @@ window.onclick = function (event) {
   if (event.target === document.getElementById("confirm-delete-modal")) {
     document.getElementById("confirm-delete-modal").classList.remove("active");
   }
-
   // Note: toolsDropdown closure logic is now in home.js
 };
 
@@ -637,6 +728,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Get shared elements
   body = document.body;
   toast = document.getElementById("toast");
+  sidebar = document.getElementById("sidebar"); // Initialize global sidebar reference
+  mobileOverlay = document.getElementById("mobile-overlay"); // Initialize global overlay reference
 
   // Get modal elements
   confirmDeleteModal = document.getElementById("confirm-delete-modal");
@@ -646,6 +739,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load state will now handle setting dark-mode as default and restoring sidebar state
   loadState();
+
+  // --- NEW: Attach global swipe listeners ---
+  // Attaching to document or window handles swipe events regardless of what element the touch starts on.
+  document.addEventListener("touchstart", handleTouchStart, { passive: true });
+  document.addEventListener("touchmove", handleTouchMove, { passive: false });
+  document.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+  // --- NEW: Attach click listener to mobile overlay to close sidebar ---
+  if (mobileOverlay) {
+    mobileOverlay.addEventListener("click", closeSidebar);
+  }
 
   // --- SHOW AUTH POPUP FOR NEW / LOGGED-OUT USERS ---
   const isLoggedIn = localStorage.getItem("lynq_user_logged_in");

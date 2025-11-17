@@ -793,3 +793,39 @@ body.dark-mode .pro-badge {
     transform: none;
   }
 }
+
+@media (max-width: 480px) {
+  /* Hide text on the Upgrade button for very small phones */
+  .upgrade-btn span {
+    display: none;
+  }
+  .upgrade-btn {
+    padding: 8px 12px; /* Reduce padding when text is hidden */
+  }
+
+  /* Hide the profile name */
+  .top-profile-btn span {
+    display: none;
+  }
+  /* Re-adjust profile button padding */
+  .top-profile-btn {
+      padding: 5px; 
+      border-radius: 50%; /* Make it circular */
+  }
+  .top-profile-btn .avatar {
+      margin-right: 0;
+  }
+
+  .top-bar {
+      padding: 0 10px; /* Reduce horizontal padding */
+  }
+  
+  /* Login/Signup Buttons */
+  #login-btn span, 
+  #signup-btn span {
+      display: none;
+  }
+  #login-btn, #signup-btn {
+      padding: 8px; /* Circular button */
+  }
+}

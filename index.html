@@ -189,21 +189,14 @@
           <a href="settings.html" class="nav-item" id="nav-settings"
             ><i class="fa-solid fa-gear"></i> Settings</a
           >
-          <!-- MODIFIED: Removed icons from Log In and Sign Up links -->
+          <!-- UPDATED: Login / Logout Link (Visible when logged out, shows "Login / Sign Up") -->
           <a
-            href="login.html?action=login"
+            href="login.html"
             class="nav-item"
             id="nav-login-link"
             style="margin-top: 5px;"
           >
-            Log In
-          </a>
-          <a
-            href="login.html?action=signup"
-            class="nav-item"
-            id="nav-signup-link"
-          >
-            Sign Up
+            <i class="fa-solid fa-right-to-bracket"></i> Login / Sign Up
           </a>
           <!-- UPDATED: Profile Link - Initially hidden, visible only when logged in -->
           <a
@@ -237,12 +230,9 @@
             <button class="upgrade-btn" onclick="togglePricing()">
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
-            <!-- MODIFIED: Removed icons from Log In and Sign Up buttons -->
-            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-btn" style="margin-right: 8px;">
-              <span>Log In</span>
-            </button>
-            <button class="top-profile-btn" onclick="location.href='login.html?action=signup'" id="signup-btn" style="margin-right: 8px; background: var(--bg-accent); color: var(--text-accent);">
-              <span>Sign Up</span>
+            <!-- UPDATED: Login/Signup Button - Visible only when logged out -->
+            <button class="top-profile-btn" onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px;">
+              <i class="fa-solid fa-right-to-bracket"></i> <span>Log In / Sign Up</span>
             </button>
             <!-- UPDATED: Profile Button - Initially hidden, visible only when logged in -->
             <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">

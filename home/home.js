@@ -85,8 +85,7 @@ function initVoiceInput() {
 
     recognition.onerror = (event) => {
       console.error("Speech recognition error", event.error);
-      if (typeof showToast === "function")
-        showToast("Voice error: " + event.error);
+      if (typeof showToast === "function") showToast("Voice error: " + event.error);
       micBtn.style.color = "";
       micBtn.style.borderColor = "";
     };
@@ -398,44 +397,76 @@ function resetChat() {
 
   // Global function calls
   if (typeof renderRecentChats === "function") renderRecentChats();
-  if (typeof saveState === "function") saveState();
+  // We no longer call saveState, saving is tied to saveChat/handleSend.
+
+  // Update URL to remove chatId param
+  if (window.history && window.history.pushState) {
+    const newUrl = window.location.pathname;
+    history.pushState({}, document.title, newUrl);
+  }
 }
 
 /**
  * Loads an existing chat's history into the view.
  */
 async function loadChat(chatId) {
+  // Check if we already loaded this chat
+  if (activeChatId == chatId && mainChatHistory.length > 0) {
+    // Already loaded, just ensure welcome screen is hidden
+    if (welcomeScreen) welcomeScreen.style.display = "none";
+    if (typeof closeSidebar === "function") closeSidebar();
+    return;
+  }
+
   if (typeof recentChats === "undefined") return;
-  const chat = recentChats.find((chat) => chat.id == chatId);
-  if (!chat) return;
+  const chat = recentChats.find((c) => c.id == chatId);
+  
+  if (!chat) {
+    if (typeof showToast === "function") showToast("Error: Chat history not found.");
+    resetChat();
+    return;
+  }
 
   if (welcomeScreen) welcomeScreen.style.display = "none";
   if (messagesWrapper) messagesWrapper.innerHTML = "";
+  
+  // 1. Fetch the full chat history from the server
+  try {
+    const response = await fetch(`${CHAT_API_BASE}/${chatId}`);
+    if (!response.ok) throw new Error("Failed to fetch full chat history.");
+    const fullChat = await response.json();
 
-  mainChatHistory = chat.history;
-  activeChatId = chat.id;
-  isNewChat = false;
+    mainChatHistory = fullChat.history;
+    activeChatId = chatId;
+    isNewChat = false;
 
-  mainChatHistory.forEach((msg) => {
-    addMessage(msg.content, msg.role, true, msg.attachment);
-  });
+    // 2. Render messages
+    mainChatHistory.forEach((msg) => {
+      addMessage(msg.content, msg.role, true, msg.attachment);
+    });
 
-  const chatContainer = document.getElementById("chat-container");
-  if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+    const chatContainer = document.getElementById("chat-container");
+    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 
-  // Reset attachments and canvas when loading a chat (clean slate)
-  currentAttachment = null;
-  if (attachmentPreviewContainer) attachmentPreviewContainer.innerHTML = "";
+    // 3. Reset attachments and canvas when loading a chat (clean slate)
+    currentAttachment = null;
+    if (attachmentPreviewContainer) attachmentPreviewContainer.innerHTML = "";
 
-  if (canvasPlaceholder) canvasPlaceholder.style.display = "flex";
-  if (canvasCodeBlock) canvasCodeBlock.textContent = "";
-  if (canvasPreviewIframe) canvasPreviewIframe.srcdoc = "";
-  if (canvasPreviewPlaceholder) canvasPreviewPlaceholder.style.display = "flex";
-  switchCanvasTab("code");
-  toggleCanvasMode(false);
+    if (canvasPlaceholder) canvasPlaceholder.style.display = "flex";
+    if (canvasCodeBlock) canvasCodeBlock.textContent = "";
+    if (canvasPreviewIframe) canvasPreviewIframe.srcdoc = "";
+    if (canvasPreviewPlaceholder) canvasPreviewPlaceholder.style.display = "flex";
+    switchCanvasTab("code");
+    toggleCanvasMode(false);
 
-  if (typeof renderRecentChats === "function") renderRecentChats();
-  if (typeof saveState === "function") saveState();
+    // 4. Update sidebar visual state (which happens in renderRecentChats)
+    if (typeof renderRecentChats === "function") renderRecentChats();
+
+  } catch (error) {
+    console.error("Error loading chat:", error);
+    if (typeof showToast === "function") showToast(`Failed to load chat history: ${error.message}`);
+    resetChat(); // Reset to new chat state on failure
+  }
 }
 
 /**
@@ -456,6 +487,8 @@ async function handleSend() {
   if (attachmentPreviewContainer) attachmentPreviewContainer.innerHTML = "";
 
   // --- NEW CHAT LOGIC ---
+  let currentChat = recentChats.find((chat) => chat.id === activeChatId);
+
   if (isNewChat) {
     let chatTitle = text || `Chat about ${newlyAttachedFile.name}`;
 
@@ -475,6 +508,12 @@ async function handleSend() {
     activeChatId = newChat.id;
     isNewChat = false;
     mainChatHistory = newChat.history;
+    currentChat = newChat;
+
+    // Update URL immediately for the new chat
+    const newUrl = window.location.pathname + `?chatId=${activeChatId}`;
+    history.pushState({ chatId: activeChatId }, newChat.title, newUrl);
+
     if (typeof renderRecentChats === "function") renderRecentChats();
   }
 
@@ -492,12 +531,22 @@ async function handleSend() {
   });
 
   // Update the master list
-  const currentChat = recentChats.find((chat) => chat.id === activeChatId);
   if (currentChat) {
     currentChat.history = mainChatHistory;
   }
 
   addMessage(text, "user", false, newlyAttachedFile);
+
+  // --- Save to DB before calling AI ---
+  if (currentChat) {
+    await saveChat({
+      id: activeChatId,
+      title: currentChat.title,
+      history: mainChatHistory,
+      pinned: currentChat.pinned,
+    });
+  }
+  // --- End Save to DB ---
 
   const thinkingBubble = showThinking();
 
@@ -551,7 +600,7 @@ ${pdfContext}
 You are an AI Software Engineer specializing in **Modern Web Development**.
 - Your primary output should be **code blocks** (HTML, React, Angular, JS, etc.) for the Canvas.
 - Use **Tailwind CSS** use latest play cdn (via CDN in HTML).
-- use google fonts for fonts, use fontawsome cdn for icons, texts, etc
+- use google fonts for fonts, use fontawsoeme cdn for icons, texts, etc
 - **Single-File Mandate:** All code, styling, and logic must be in a single file (e.g., \`.html\`, \`.jsx\`).
 - If generating code, you **MUST** provide a brief, summary of the code and the changes you made in the conversational chat pane **before** outputting the code block, using the following structure:
 \`\`\`markdown
@@ -600,7 +649,21 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
     }
 
     if (thinkingBubble) thinkingBubble.remove();
-    if (isResponding) streamResponse(response);
+    if (isResponding) {
+        await streamResponse(response);
+    }
+    
+    // --- Save to DB after receiving AI response ---
+    if (currentChat) {
+      await saveChat({
+        id: activeChatId,
+        title: currentChat.title,
+        history: mainChatHistory,
+        pinned: currentChat.pinned,
+      });
+    }
+    // --- End Save to DB ---
+
   } catch (error) {
     if (typeof showApiError === "function")
       showApiError(
@@ -715,7 +778,6 @@ async function streamResponse(fullText) {
   if (sendBtn) sendBtn.style.display = "flex";
   if (stopBtn) stopBtn.style.display = "none";
   isResponding = false;
-  if (typeof saveState === "function") saveState();
 
   // 4. Set final message actions
   const parentWrapper = bubble.parentElement;
@@ -1060,6 +1122,18 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
 
     thinking.remove();
     streamResponse(response);
+    
+    // --- Save to DB after receiving AI response ---
+    if (currentChat) {
+      await saveChat({
+        id: activeChatId,
+        title: currentChat.title,
+        history: mainChatHistory,
+        pinned: currentChat.pinned,
+      });
+    }
+    // --- End Save to DB ---
+
   } catch (error) {
     if (typeof showApiError === "function")
       showApiError(error.message || "An unknown API error occurred.", thinking);
@@ -1308,7 +1382,8 @@ document.addEventListener("DOMContentLoaded", () => {
       fileUploadInput.addEventListener("change", handlePdfUpload);
     }
 
-    // Hide welcome screen if a chat is loaded via loadState in script.js
+    // --- FIX: Hide welcome screen if a chat is loaded via URL on page load ---
+    // The activeChatId is set in script.js's loadState() which runs before this.
     if (welcomeScreen && activeChatId) {
       welcomeScreen.style.display = "none";
     }
