@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login / Sign Up — LYNQ AI</title>
+
+    <!-- Icons -->
+    <script
+      src="https://kit.fontawesome.com/ae8ff12b97.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* Styles specific to the login page layout, inheriting colors from style.css */
+      #login-view {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: var(--bg-primary);
+        padding: 20px;
+      }
+
+      .login-container {
+        max-width: 400px;
+        width: 100%;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 30px;
+        padding: 40px;
+        text-align: center;
+        box-shadow: var(--shadow-soft);
+      }
+      .login-header {
+        margin-bottom: 30px;
+      }
+      .login-header h1 {
+        font-size: 2.5rem;
+        color: var(--text-heading);
+        margin-bottom: 10px;
+      }
+      .login-header p {
+        color: var(--text-secondary);
+      }
+      .login-form {
+        display: grid;
+        gap: 15px;
+        text-align: left;
+      }
+      .login-form label {
+        color: var(--text-heading);
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+      }
+      .login-form input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .login-form input:focus {
+        border-color: var(--text-heading);
+      }
+      .login-btn {
+        margin-top: 20px;
+        width: 100%;
+        padding: 14px;
+        background: var(--bg-accent);
+        color: var(--text-accent);
+        border-radius: 15px;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.2s;
+      }
+      .login-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+      .toggle-link {
+        margin-top: 25px;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+      }
+      .toggle-link a {
+        color: var(--text-heading);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .toggle-link a:hover {
+        color: var(--bg-accent);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- The login page should not have the sidebar -->
+    <div id="login-view">
+      <div class="login-container">
+        <div class="login-header">
+          <span style="display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-heading); margin-bottom: 10px;">
+            <i class="fa-solid fa-bolt"></i> LYNQ AI
+          </span>
+          <h1>Welcome Back</h1>
+          <p id="form-subtitle">Log in to continue your work.</p>
+        </div>
+
+        <form class="login-form">
+          <div>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="you@example.com" required />
+          </div>
+          <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="login-btn" id="submit-btn">
+            Log In
+          </button>
+        </form>
+
+        <p class="toggle-link">
+          Don't have an account? 
+          <a href="#" id="toggle-form-link" onclick="toggleForm(event)">Sign Up</a>
+        </p>
+      </div>
+    </div>
+    
+    <!-- Shared script for theme switching (minimal required global script) -->
+    <script src="script.js"></script>
+
+    <script>
+      let isLogin = true;
+      const form = document.querySelector('.login-form');
+      const submitBtn = document.getElementById('submit-btn');
+      const subtitle = document.getElementById('form-subtitle');
+      const toggleLink = document.getElementById('toggle-form-link');
+
+      function toggleForm(event) {
+        event?.preventDefault(); // Make event optional for programmatic call
+        isLogin = !isLogin;
+        
+        // Update form inputs (e.g., add 'Confirm Password')
+        if (!isLogin && form.querySelector('#confirm-password') === null) {
+          const confirmPasswordDiv = document.createElement('div');
+          confirmPasswordDiv.innerHTML = `
+            <label for="confirm-password">Confirm Password</label>
+            <input type="password" id="confirm-password" placeholder="••••••••" required />
+          `;
+          confirmPasswordDiv.id = 'confirm-password-div';
+          // Insert after password
+          form.querySelector('#password').parentElement.insertAdjacentElement('afterend', confirmPasswordDiv);
+        } else if (isLogin && form.querySelector('#confirm-password-div')) {
+          form.querySelector('#confirm-password-div').remove();
+        }
+
+        // Update button and text
+        submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
+        subtitle.innerText = isLogin ? 'Log in to continue your work.' : 'Create your new LYNQ AI account.';
+        toggleLink.innerText = isLogin ? 'Sign Up' : 'Log In';
+        document.querySelector('.toggle-link').innerHTML = isLogin 
+          ? `Don't have an account? <a href="#" id="toggle-form-link" onclick="toggleForm(event)">Sign Up</a>`
+          : `Already have an account? <a href="#" id="toggle-form-link" onclick="toggleForm(event)">Log In</a>`;
+      }
+
+      // NEW: Check URL parameters on load
+      document.addEventListener('DOMContentLoaded', () => {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('action') === 'signup') {
+              // Programmatically toggle to the signup form if param is present
+              isLogin = true; // Set to true first so toggleForm flips it to false
+              toggleForm(null); 
+          }
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        if (isLogin) {
+            // Call the global login handler, which simulates login, shows toast, and updates UI
+            if (typeof handleLogin === 'function') {
+                handleLogin();
+            } else if (typeof showToast === 'function') {
+                showToast("Simulating login...");
+            }
+        } else {
+             if (typeof showToast === 'function') {
+                showToast("Simulating sign up...");
+            }
+        }
+        
+        // For successful login, redirect to home. This ensures the UI is fully updated.
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 500);
+      });
+      
+    </script>
+  </body>
+</html>

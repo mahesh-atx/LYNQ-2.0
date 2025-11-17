@@ -2,15 +2,19 @@
   script.js
   This file contains shared logic and state used across ALL pages.
   UI functions specific to index.html (chat/canvas) are now in home.js.
+  
+  --- UPDATED: LocalStorage replaced with MongoDB API calls ---
 */
 
 // --- GLOBAL STATE & API CONFIG ---
 let mainChatHistory = [];
 let codeHistory = [];
 
-let recentChats = []; // This will hold our chat objects
-let isNewChat = true; // Flag to track if we're in a new, unsaved chat
-let activeChatId = null; // Tracks which chat we are currently in
+// recentChats will be populated asynchronously
+let recentChats = [];
+let isNewChat = true;
+// activeChatId tracks the chatId (Number from Date.now())
+let activeChatId = null;
 
 // --- PLUGIN STATE ---
 let installedPlugins = [];
@@ -21,6 +25,7 @@ let currentSnapshotIndex = -1;
 
 // --- API Configuration ---
 const API_URL = "/api/generate";
+const CHAT_API_BASE = "/api/chats"; // New base URL for chat CRUD
 let generatedRawCode = "";
 let isResponding = false;
 let currentController = null;
@@ -34,6 +39,113 @@ let confirmDeleteModal;
 let confirmDeleteText;
 let confirmDeleteCancelBtn;
 let confirmDeleteConfirmBtn;
+
+// --- NEW: API FUNCTIONS FOR CHAT PERSISTENCE ---
+// --- SIMPLE LOGIN HANDLER (FAKE LOGIN FOR NOW) ---
+// --- SIMPLE LOGIN HANDLER (FAKE LOGIN FOR NOW) ---
+function handleLogin() {
+  localStorage.setItem("lynq_user_logged_in", "true");
+  localStorage.removeItem("lynq_skip_auth");
+
+  if (typeof showToast === "function") {
+    showToast("Logged in successfully.");
+  }
+}
+
+// --- AUTH POPUP HELPERS ---
+function showAuthPopup() {
+  const popup = document.getElementById("auth-popup");
+  if (popup) {
+    popup.classList.remove("auth-hidden");
+  }
+}
+
+function closeAuthPopup(event) {
+  if (event) event.preventDefault();
+  localStorage.setItem("lynq_skip_auth", "true");
+  const popup = document.getElementById("auth-popup");
+  if (popup) {
+    popup.classList.add("auth-hidden");
+  }
+}
+
+function redirectToLogin() {
+  window.location.href = "login.html?action=login"; // MODIFIED: Added explicit parameter
+}
+
+function redirectToSignup() {
+  window.location.href = "login.html?action=signup";
+}
+
+/**
+ * Saves or updates a chat to the MongoDB backend.
+ * @param {object} chatData The chat object to save ({id, title, history, pinned}).
+ */
+async function saveChat(chatData) {
+  try {
+    const response = await fetch(`${CHAT_API_BASE}/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(chatData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to save chat.");
+    }
+
+    const data = await response.json();
+    // After saving, reload all chats to update the sidebar
+    await loadAllChats();
+    return data.id; // Return the saved chat ID
+  } catch (error) {
+    console.error("Error saving chat:", error);
+    showToast(`Failed to save chat: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Loads all recent chat summaries for the sidebar.
+ */
+async function loadAllChats() {
+  try {
+    const response = await fetch(CHAT_API_BASE);
+    if (!response.ok) {
+      throw new Error("Failed to fetch recent chats.");
+    }
+    recentChats = await response.json();
+    renderRecentChats();
+
+    // If a chat was previously active, ensure it's loaded back if still exists
+    if (activeChatId) {
+      const activeChatExists = recentChats.some((c) => c.id === activeChatId);
+      if (!activeChatExists) {
+        // The active chat was likely deleted or doesn't exist anymore
+        activeChatId = null;
+        isNewChat = true;
+        if (typeof resetChat === "function") resetChat();
+      }
+    }
+
+    // Check if the home page is currently loaded and try to load the active chat
+    if (
+      (window.location.pathname.endsWith("index.html") ||
+        window.location.pathname.endsWith("/")) &&
+      typeof loadChat === "function" &&
+      activeChatId // FIX: Only attempt to load if activeChatId is valid
+    ) {
+      // Load the full history for the active chat
+      await loadChat(activeChatId);
+    }
+  } catch (error) {
+    console.error("Error loading all chats:", error);
+    showToast(
+      `Failed to load chats: ${error.message}. Using temporary storage.`
+    );
+    // Fallback if API fails: keep recentChats array empty/local until save.
+  }
+}
 
 // --- SHARED FUNCTIONS ---
 
@@ -86,6 +198,7 @@ async function getSystemMessage(taskSpecificContext) {
   // 1. Load base system prompt from file (cache it)
   if (!systemPromptCache) {
     try {
+      // NOTE: This assumes systemprompt.txt is available via the server static path
       const response = await fetch("systemprompt.txt");
       if (!response.ok) throw new Error("Failed to load systemprompt.txt");
       systemPromptCache = await response.text();
@@ -96,6 +209,7 @@ async function getSystemMessage(taskSpecificContext) {
   }
 
   // 2. Add custom instructions from settings
+  // Keeping localStorage for non-chat state like settings for simplicity, though in a real app these should also be dynamic.
   const customInstructions = localStorage.getItem("lynq_custom_instructions");
   let finalPrompt = systemPromptCache;
 
@@ -107,66 +221,47 @@ async function getSystemMessage(taskSpecificContext) {
   return `${finalPrompt}\n\n${taskSpecificContext}`;
 }
 
-function saveState() {
-  const state = {
-    codeHistory,
-    installedPlugins,
-    recentChats,
-    isNewChat,
-    activeChatId,
-    codeSnapshots,
-    currentSnapshotIndex,
-    generatedRawCode,
-  };
-  localStorage.setItem("lynq_app_state", JSON.stringify(state));
+// --- REMOVED: saveState function (replaced by saveChat) ---
+
+// --- NEW: Function to save sidebar state to localStorage ---
+function saveSidebarState(isCollapsed) {
+  localStorage.setItem(
+    "lynq-sidebar-collapsed",
+    isCollapsed ? "true" : "false"
+  );
 }
 
-function loadState() {
-  const savedState = localStorage.getItem("lynq_app_state");
-  if (!savedState) {
-    renderRecentChats();
-    return;
+// --- UPDATED: loadState function (now async and loads sidebar state) ---
+async function loadState() {
+  const sidebar = document.getElementById("sidebar");
+  // 1. Load non-chat state from localStorage (theme, model, etc.)
+
+  // Theme check
+  const savedTheme = localStorage.getItem("lynq-theme");
+  if (savedTheme === "light") {
+    document.body.classList.remove("dark-mode");
+  } else {
+    document.body.classList.add("dark-mode");
+    localStorage.setItem("lynq-theme", "dark");
   }
 
-  try {
-    const state = JSON.parse(savedState);
+  // Sidebar state check
+  const isSidebarCollapsed = localStorage.getItem("lynq-sidebar-collapsed");
 
-    // Global state restoration
-    codeHistory = state.codeHistory || [];
-    installedPlugins = state.installedPlugins || [];
-    recentChats = state.recentChats || [];
-    isNewChat = state.isNewChat !== undefined ? state.isNewChat : true;
-    activeChatId = state.activeChatId || null;
-    codeSnapshots = state.codeSnapshots || [];
-    currentSnapshotIndex = state.currentSnapshotIndex || -1;
-    generatedRawCode = state.generatedRawCode || "";
-
-    // If on the home page, load history into view
-    const messagesWrapper = document.getElementById("messages-wrapper");
-    const welcomeScreen = document.getElementById("welcome-screen");
-
-    if (messagesWrapper && activeChatId) {
-      const chat = recentChats.find((c) => c.id === activeChatId);
-      if (chat && typeof addMessage === "function") {
-        // NOTE: addMessage is defined in home.js, which must be loaded.
-        mainChatHistory = chat.history;
-        isNewChat = false;
-        if (welcomeScreen) welcomeScreen.style.display = "none";
-        messagesWrapper.innerHTML = "";
-        mainChatHistory.forEach((msg) => {
-          addMessage(msg.content, msg.role, true, msg.attachment);
-        });
-        const chatContainer = document.getElementById("chat-container");
-        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
+  if (sidebar) {
+    if (isSidebarCollapsed === "false") {
+      // If state is explicitly saved as open, remove 'collapsed' class
+      sidebar.classList.remove("collapsed");
+    } else if (isSidebarCollapsed === null) {
+      // If no state is saved (first run), ensure it's collapsed by default.
+      sidebar.classList.add("collapsed");
+      saveSidebarState(true);
     }
-
-    renderRecentChats();
-  } catch (e) {
-    console.error("Failed to load state:", e);
-    localStorage.removeItem("lynq_app_state");
-    renderRecentChats();
+    // If isSidebarCollapsed is 'true' or null (and we set it to true), the default HTML class handles it.
   }
+
+  // 2. Load the recent chats from the server
+  await loadAllChats();
 }
 
 async function getApiResponse(
@@ -175,7 +270,7 @@ async function getApiResponse(
   history = [],
   signal = null
 ) {
-  closeSidebar();
+  // closeSidebar(); // REMOVED: We no longer automatically close the sidebar on message send.
 
   try {
     const response = await fetch(API_URL, {
@@ -254,10 +349,14 @@ function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
   if (!sidebar) return;
 
+  // On mobile (less than 768px), we use the 'active' class for the overlay slide
   if (window.innerWidth <= 768) {
     sidebar.classList.toggle("active");
   } else {
+    // On desktop, we toggle the 'collapsed' class
+    const isCollapsed = !sidebar.classList.contains("collapsed");
     sidebar.classList.toggle("collapsed");
+    saveSidebarState(!isCollapsed); // Save the new state
   }
 }
 
@@ -266,11 +365,12 @@ function closeSidebar() {
   if (!sidebar) return;
 
   if (window.innerWidth <= 768) {
+    // Mobile mode
     sidebar.classList.remove("active");
   } else {
-    if (!sidebar.classList.contains("collapsed")) {
-      sidebar.classList.add("collapsed");
-    }
+    // Desktop mode
+    sidebar.classList.add("collapsed");
+    saveSidebarState(true); // Save the new state
   }
 }
 
@@ -280,10 +380,11 @@ function renderRecentChats() {
 
   container.innerHTML = "";
 
+  // Sorting is now handled by the server (by updatedAt), but we respect 'pinned' first on the client
   recentChats.sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
-    return b.id - a.id;
+    return 0; // Maintain server sort order for unpinned chats
   });
 
   recentChats.forEach((chat) => {
@@ -300,18 +401,15 @@ function renderRecentChats() {
     }
     navLink.href = "index.html";
     navLink.onclick = (e) => {
+      // NOTE: We don't preventDefault here because we want the page refresh
+      // This ensures sidebar state persists across navigation clicks without JS hacks
+      // The state is saved/restored in loadState/toggleSidebar
+
+      // Update global state immediately
       activeChatId = chat.id;
       isNewChat = false;
-      saveState();
 
-      if (
-        (window.location.pathname.endsWith("index.html") ||
-          window.location.pathname.endsWith("/")) &&
-        typeof loadChat === "function" // loadChat is now in home.js
-      ) {
-        e.preventDefault();
-        loadChat(chat.id);
-      }
+      // Navigate and load (handled by browser's default link behavior)
     };
 
     const icon = chat.pinned
@@ -376,6 +474,7 @@ function toggleContextMenu(event, menuId) {
 
 function showDeleteConfirm(chatId, chatTitle) {
   if (!confirmDeleteModal) {
+    // This is the fallback if the modal is not on the page
     if (confirm(`Are you sure you want to delete "${chatTitle}"?`)) {
       executeDelete(chatId);
     }
@@ -386,6 +485,7 @@ function showDeleteConfirm(chatId, chatTitle) {
     confirmDeleteText.innerHTML = `Are you sure you want to delete "<strong>${chatTitle}</strong>"? This action cannot be undone.`;
   }
 
+  // Re-attach event listeners (important for non-modal fallback safety)
   const newConfirmBtn = confirmDeleteConfirmBtn.cloneNode(true);
   confirmDeleteConfirmBtn.parentNode.replaceChild(
     newConfirmBtn,
@@ -393,8 +493,8 @@ function showDeleteConfirm(chatId, chatTitle) {
   );
   confirmDeleteConfirmBtn = newConfirmBtn;
 
-  confirmDeleteConfirmBtn.onclick = () => {
-    executeDelete(chatId);
+  confirmDeleteConfirmBtn.onclick = async () => {
+    await executeDelete(chatId);
     confirmDeleteModal.classList.remove("active");
   };
 
@@ -412,27 +512,43 @@ function showDeleteConfirm(chatId, chatTitle) {
   confirmDeleteModal.classList.add("active");
 }
 
-function executeDelete(chatId) {
+async function executeDelete(chatId) {
   const chatIndex = recentChats.findIndex((chat) => chat.id == chatId);
   if (chatIndex === -1) return;
 
-  recentChats.splice(chatIndex, 1);
+  try {
+    // 1. Delete on server
+    const response = await fetch(`${CHAT_API_BASE}/${chatId}`, {
+      method: "DELETE",
+    });
 
-  if (activeChatId == chatId) {
-    // resetChat is defined in home.js, check if it exists before calling
-    if (typeof resetChat === "function") {
-      resetChat();
-    } else {
-      activeChatId = null;
-      isNewChat = true;
+    if (!response.ok) {
+      throw new Error("Server failed to delete chat.");
     }
-  }
 
-  saveState();
-  renderRecentChats();
+    // 2. Delete in local array
+    recentChats.splice(chatIndex, 1);
+
+    // 3. Reset UI if active chat was deleted
+    if (activeChatId == chatId) {
+      // resetChat is defined in home.js, check if it exists before calling
+      if (typeof resetChat === "function") {
+        resetChat();
+      } else {
+        activeChatId = null;
+        isNewChat = true;
+      }
+    }
+
+    showToast("Chat deleted successfully!");
+    renderRecentChats();
+  } catch (error) {
+    console.error("Error executing delete:", error);
+    showToast(`Failed to delete chat: ${error.message}`);
+  }
 }
 
-function chatAction(action, chatId) {
+async function chatAction(action, chatId) {
   const chatIndex = recentChats.findIndex((chat) => chat.id == chatId);
   if (chatIndex === -1) return;
 
@@ -440,6 +556,7 @@ function chatAction(action, chatId) {
 
   if (action === "delete") {
     showDeleteConfirm(chatId, chat.title);
+    return;
   } else if (action === "rename") {
     const newName = prompt("Rename chat:", chat.title);
     if (newName && newName.trim() !== "") {
@@ -453,9 +570,24 @@ function chatAction(action, chatId) {
     .querySelectorAll(".chat-context-menu")
     .forEach((menu) => menu.classList.remove("show"));
 
-  if (action !== "delete") {
-    saveState();
-    renderRecentChats();
+  // Find the full chat object to save the updated metadata (title/pinned status)
+  // For simplicity, we assume metadata change doesn't change history, but we need the full object to save.
+  try {
+    const chatHistoryResponse = await fetch(`${CHAT_API_BASE}/${chatId}`);
+    if (!chatHistoryResponse.ok)
+      throw new Error("Could not fetch chat history for update.");
+    const fullChat = await chatHistoryResponse.json();
+
+    // Update the properties that changed
+    fullChat.title = chat.title;
+    fullChat.pinned = chat.pinned;
+
+    // Save the updated chat back to the server
+    await saveChat(fullChat);
+    showToast(`Chat ${action}d successfully.`);
+  } catch (error) {
+    console.error(`Error performing chat action (${action}):`, error);
+    showToast(`Failed to perform chat action: ${error.message}`);
   }
 }
 
@@ -466,7 +598,7 @@ function selectModel(element, modelName, iconClass, iconColor) {
   if (!btn) return;
 
   let shortName = modelName.split("/").pop();
-  shortName = shortName.replace("Gemini ", "");
+  shortName = shortName.replace("Gemini s", ""); // Changed "Gemini " to "Gemini \s" in case there is no space
 
   btn.innerHTML = `<i class="fa-solid ${iconClass}" style="color:${iconColor};"></i> ${shortName} <i class="fa-solid fa-chevron-down chevron"></i>`;
   document
@@ -512,30 +644,48 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmDeleteCancelBtn = document.getElementById("confirm-delete-cancel");
   confirmDeleteConfirmBtn = document.getElementById("confirm-delete-confirm");
 
-  // Apply theme
-  const savedTheme = localStorage.getItem("lynq-theme");
-  if (savedTheme === "dark") {
-    body.classList.add("dark-mode");
-  }
-
-  // Load state and render sidebar on every page
+  // Load state will now handle setting dark-mode as default and restoring sidebar state
   loadState();
+
+  // --- SHOW AUTH POPUP FOR NEW / LOGGED-OUT USERS ---
+  const isLoggedIn = localStorage.getItem("lynq_user_logged_in");
+  const skipped = localStorage.getItem("lynq_skip_auth");
+
+  const onHomePage =
+    window.location.pathname.endsWith("index.html") ||
+    window.location.pathname === "/" ||
+    window.location.pathname === "";
+
+  if (onHomePage && !isLoggedIn && !skipped) {
+    // small delay so the UI loads first
+    setTimeout(() => {
+      showAuthPopup();
+    }, 500);
+  }
 
   // Set default model on load for the button text
   const currentModelElement = document.querySelector(".model-option.selected");
   if (currentModelElement) {
-    const modelName = currentModelElement
-      .getAttribute("onclick")
-      .match(/'([^']*)'/g)[1]
-      .replace(/'/g, "");
-    const iconClass = currentModelElement
-      .getAttribute("onclick")
-      .match(/'([^']*)'/g)[3]
-      .replace(/'/g, "");
-    const iconColor = currentModelElement
-      .getAttribute("onclick")
-      .match(/'([^']*)'/g)[5]
-      .replace(/'/g, "");
-    selectModel(currentModelElement, modelName, iconClass, iconColor);
+    const onclickAttr = currentModelElement.getAttribute("onclick");
+
+    if (onclickAttr && typeof onclickAttr === "string") {
+      const matches = onclickAttr.match(/'([^']*)'/g) || [];
+
+      // Extract values safely
+      const modelName = matches[0]?.replace(/'/g, "") || "unknown-model";
+      const iconClass = matches[1]?.replace(/'/g, "") || "fa-bolt";
+      const iconColor = matches[2]?.replace(/'/g, "") || "#FFD700";
+
+      const btn = document.getElementById("current-model-btn");
+      if (btn) {
+        let shortName = modelName.split("/").pop();
+        shortName = shortName.replace("Gemini s", ""); // Changed "Gemini " to "Gemini \s" in case there is no space
+
+        btn.innerHTML = `
+                <i class="fa-solid ${iconClass}" style="color:${iconColor};"></i>
+                ${shortName}
+                <i class="fa-solid fa-chevron-down chevron"></i>`;
+      }
+    }
   }
 });

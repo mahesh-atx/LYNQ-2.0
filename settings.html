@@ -28,10 +28,12 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="./settings/settings.css" />
   </head>
-  <body>
+  <!-- MODIFIED: Added dark-mode class -->
+  <body class="dark-mode">
     <div id="app-container">
       <!-- SIDEBAR -->
-      <aside id="sidebar">
+      <!-- MODIFIED: Added collapsed class -->
+      <aside id="sidebar" class="collapsed">
         <div style="flex-shrink: 0">
           <div class="sidebar-header">
             <span style="display: flex; align-items: center; gap: 10px"
@@ -59,12 +61,6 @@
             ><i class="fa-solid fa-house"></i> Home</a
           >
           
-          <a
-            href="plugins.html"
-            class="nav-item"
-            id="nav-plugins"
-            ><i class="fa-solid fa-plug"></i> Plugins</a
-          >
           <a
             href="projects.html"
             class="nav-item"
@@ -113,11 +109,28 @@
           <a href="settings.html" class="nav-item active" id="nav-settings"
             ><i class="fa-solid fa-gear"></i> Settings</a
           >
+          <!-- MODIFIED: Separated Login/Signup Links (Visible by default) -->
+          <a
+            href="login.html?action=login"
+            class="nav-item"
+            id="nav-login-link"
+            style="margin-top: 5px;"
+          >
+            Log In
+          </a>
+          <a
+            href="login.html?action=signup"
+            class="nav-item"
+            id="nav-signup-link"
+          >
+            Sign Up
+          </a>
+          <!-- MODIFIED: Profile link hidden by default -->
           <a
             href="profile.html"
             class="nav-item"
-            id="nav-profile"
-            style="margin-top: 5px"
+            id="nav-profile-wrapper"
+            style="margin-top: 5px; display: none;"
           >
             <div
               class="avatar user"
@@ -141,12 +154,24 @@
           <button class="action-btn" onclick="toggleSidebar()">
             <i class="fa-solid fa-bars"></i>
           </button>
+          <!-- MODIFIED: Added Logo and Title -->
+          <div class="top-logo-title">
+            <i class="fa-solid fa-bolt"></i> LYNQ AI
+          </div>
           <div style="flex: 1"></div>
           <div class="top-actions">
             <button class="upgrade-btn" onclick="togglePricing()">
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
-            <button class="top-profile-btn" onclick="location.href='profile.html'">
+            <!-- MODIFIED: Separated Login/Signup Buttons (Visible by default) -->
+            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-btn" style="margin-right: 8px;">
+              <span>Log In</span>
+            </button>
+            <button class="top-profile-btn" onclick="location.href='login.html?action=signup'" id="signup-btn" style="margin-right: 8px; background: var(--bg-accent); color: var(--text-accent);">
+              <span>Sign Up</span>
+            </button>
+            <!-- MODIFIED: Profile Button hidden by default -->
+            <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">
               <div class="avatar user">MD</div>
               <span>Mahesh</span>
             </button>

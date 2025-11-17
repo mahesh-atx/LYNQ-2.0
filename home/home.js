@@ -551,7 +551,7 @@ ${pdfContext}
 You are an AI Software Engineer specializing in **Modern Web Development**.
 - Your primary output should be **code blocks** (HTML, React, Angular, JS, etc.) for the Canvas.
 - Use **Tailwind CSS** use latest play cdn (via CDN in HTML).
-- use google fonts for fonts, use fontawsoneme cdn for icons, texts, etc
+- use google fonts for fonts, use fontawsome cdn for icons, texts, etc
 - **Single-File Mandate:** All code, styling, and logic must be in a single file (e.g., \`.html\`, \`.jsx\`).
 - If generating code, you **MUST** provide a brief, summary of the code and the changes you made in the conversational chat pane **before** outputting the code block, using the following structure:
 \`\`\`markdown
@@ -1009,7 +1009,7 @@ ${pdfContext}
 You are an AI Software Engineer specializing in **Modern Web Development**.
 - Your primary output should be **code blocks** (HTML, React, Angular, JS, etc.) for the Canvas.
 - Use **Tailwind CSS** use latest cdn (via CDN in HTML).
-- use google fonts for fonts, use fontawsoneme cdn for icons,texts, etc
+- use google fonts for fonts, use fontawsome cdn for icons,texts etc
 - **Single-File Mandate:** All code, styling, and logic must be in a single file (e.g., \`.html\`, \`.jsx\`).
 - If generating code, you **MUST** provide a brief, summary of the code and the changes you made in the conversational chat pane **before** outputting the code block, using the following structure:
 \`\`\`markdown

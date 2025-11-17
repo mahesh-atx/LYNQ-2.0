@@ -932,4 +932,69 @@ body.dark-mode .bubble tr:nth-child(even) {
   font-size: 2rem;
   opacity: 0.5;
 }
-/* --- END NEW PREVIEW --- */
+/* --- END NEW PREVIEW --- *//* --- AUTH POPUP (like ChatGPT) --- */
+.auth-popup {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(5px);
+  z-index: 3000;
+}
+
+.auth-hidden {
+  display: none;
+}
+
+.auth-popup-content {
+  background: var(--bg-tertiary);
+  padding: 32px 28px;
+  border-radius: 24px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.auth-popup-content h2 {
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.auth-popup-content p {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: none;
+}
+
+.auth-primary {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+}
+
+.auth-secondary {
+  background: transparent;
+  color: var(--text-heading);
+  border: 1px solid var(--border-primary);
+}
+
+.auth-skip {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}

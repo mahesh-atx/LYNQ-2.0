@@ -78,24 +78,50 @@ body {
 
 /* --- SIDEBAR --- */
 #sidebar {
+  /* Default Desktop State (Collapsed) */
   width: var(--sidebar-width);
+  min-width: 0; /* Ensures it can collapse properly */
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border-primary);
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ensure full height */
+  height: 100%;
   padding: 20px;
-  transition: transform 0.3s ease;
+  /* MODIFIED: Changed transitions for smoother and more reliable hiding */
+  transition: transform 0.3s ease, min-width 0.3s ease, padding 0.3s ease, border 0.3s ease; 
   z-index: 100;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
+/* MODIFIED: Collapsed state for desktop. Pushes it off-screen and removes visible space. */
 #sidebar.collapsed {
-  transform: translateX(-100%);
-  position: absolute;
-  height: 100%;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  border-right: none;
+  /* Use transform to visually move it without changing layout flow much */
+  transform: translateX(calc(0px - var(--sidebar-width))); 
+}
+
+/* NEW: Active/Open state (When collapsed is toggled off) */
+#sidebar:not(.collapsed) {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    padding: 20px;
+    border-right: 1px solid var(--border-primary);
+    transform: translateX(0);
+}
+
+/* NEW: Active state for when sidebar is opened on mobile/overlay mode (higher priority than 'collapsed') */
+/* This rule is generally only active on mobile devices due to the media query setup */
+#sidebar.active {
+    transform: translateX(0) !important;
+    width: 80% !important; /* Mobile width */
+    min-width: 80% !important;
+    padding: 20px !important;
+    border-right: 1px solid var(--border-primary) !important;
 }
 
 .sidebar-header {
@@ -248,8 +274,8 @@ body {
   transition: 0.1s;
 }
 .context-item:hover {
-  background: var(--bg-primary);
-  color: var(--text-heading);
+  background: var(--bg-danger);
+  color: var(--text-danger);
 }
 .context-item.delete:hover {
   background: var(--bg-danger);
@@ -280,6 +306,24 @@ body {
   align-items: center;
   gap: 12px;
 }
+
+/* NEW: Logo and Title next to the menu button */
+.top-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 15px; /* Space from the toggle button */
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-heading);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.top-logo-title i {
+  color: #ffd700; /* Gold bolt color */
+  font-size: 1.4rem;
+}
+
 
 .upgrade-btn {
   background: var(--bg-gold);
@@ -715,17 +759,19 @@ body.dark-mode .pro-badge {
 /* --- SHARED MEDIA QUERIES --- */
 @media (max-width: 768px) {
   :root {
-    --sidebar-width: 0px;
+    --sidebar-width: 280px; /* Keep defined for mobile sidebar width */
   }
   #sidebar {
-    position: absolute;
+    /* Mobile Override */
+    transform: translateX(-100%); /* Hidden by default on mobile */
+    position: fixed;
     width: 80%;
-    height: 100%;
-    transform: translateX(-100%);
+    min-width: 80%;
+    margin-left: 0; /* Reset desktop styles */
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
   }
   #sidebar.active {
-    transform: translateX(0);
+    transform: translateX(0); /* Shows sidebar on mobile */
   }
   .mobile-only {
     display: block;
