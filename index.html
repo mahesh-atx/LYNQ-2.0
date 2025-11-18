@@ -24,7 +24,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
-    <!-- Added PDF.js library for text extraction -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
       // Required by PDF.js
@@ -110,10 +109,8 @@
       }
     </style>
   </head>
-  <!-- MODIFIED: Added dark-mode class to set it as default theme -->
   <body class="dark-mode">
     <div id="app-container">
-      <!-- MODIFIED: Added collapsed class to hide the sidebar by default on desktop -->
       <aside id="sidebar" class="collapsed">
         <div style="flex-shrink: 0">
           <div class="sidebar-header">
@@ -189,7 +186,6 @@
           <a href="settings.html" class="nav-item" id="nav-settings"
             ><i class="fa-solid fa-gear"></i> Settings</a
           >
-          <!-- UPDATED: Login / Logout Link (Visible when logged out, shows "Login / Sign Up") -->
           <a
             href="login.html"
             class="nav-item"
@@ -198,7 +194,6 @@
           >
             <i class="fa-solid fa-right-to-bracket"></i> Login / Sign Up
           </a>
-          <!-- UPDATED: Profile Link - Initially hidden, visible only when logged in -->
           <a
             href="profile.html"
             class="nav-item"
@@ -217,11 +212,9 @@
 
       <main id="main-content">
         <div class="top-bar">
-          <!-- The icon button that opens the sidebar remains visible -->
           <button class="action-btn" onclick="toggleSidebar()">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <!-- NEW: Logo and Title added here -->
           <div class="top-logo-title">
             <i class="fa-solid fa-bolt"></i> LYNQ AI
           </div>
@@ -231,14 +224,12 @@
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
 
-            <!-- UPDATED: Login/Signup Button - Visible only when logged out -->
-             <button class="top-profile-btn mobile-signup-btn" onclick="location.href='login.html?action=signup'" style="margin-right: 8px; display: none;">
+            <button class="top-profile-btn mobile-signup-btn" onclick="location.href='login.html?action=signup'" style="margin-right: 8px; display: none;">
     <span>Sign Up</span>
   </button>
             <button class="top-profile-btn " onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px; ">
               <i class="fa-solid fa-right-to-bracket"></i> <span>Sign Up</span>
             </button>
-            <!-- UPDATED: Profile Button - Initially hidden, visible only when logged in -->
             <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">
               <div class="avatar user">MD</div>
               <span>Mahesh</span>
@@ -249,8 +240,6 @@
         <div id="home-view" class="view-section active">
           
           <div id="chat-wrapper">
-            <!-- PDF Attachment bar removed from here -->
-
             <div id="chat-container">
               <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-text">
@@ -259,36 +248,7 @@
                     How can I help you create today?
                   </p>
                 </div>
-                <div class="suggestion-grid mobile-only">
-                  <div
-                    class="suggestion-card"
-                    onclick="sendSuggestion('Review my portfolio code for SEO best practices.')"
-                  >
-                    <i class="fa-solid fa-code fa-lg"></i>
-                    <p>Review my portfolio code</p>
-                  </div>
-                  <div
-                    class="suggestion-card"
-                    onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')"
-                  >
-                    <i class="fa-solid fa-palette fa-lg"></i>
-                    <p>Generate UI color palette</p>
-                  </div>
-                  <div
-                    class="suggestion-card"
-                    onclick="sendSuggestion('Write a Python script to automate file organization.')"
-                  >
-                    <i class="fa-brands fa-python fa-lg"></i>
-                    <p>Python automation script</p>
-                  </div>
-                  <div
-                    class="suggestion-card"
-                    onclick="sendSuggestion('Explain the key differences between SQL and NoSQL.')"
-                  >
-                    <i class="fa-solid fa-database fa-lg"></i>
-                    <p>Explain SQL vs NoSQL</p>
-                  </div>
-                </div>
+                
                 <div class="suggestion-pills-mobile" id="suggestion-pills-mobile">
     <button class="pill-card" onclick="sendSuggestion('Review my portfolio code for SEO best practices.')">
         <i class="fa-solid fa-code"></i> Code Review
@@ -308,7 +268,6 @@
             </div>
 
            <div class="input-area-wrapper fixed-mobile-input">
-              <!-- Hidden file input for PDF uploads -->
               <input
                 type="file"
                 id="file-upload"
@@ -316,7 +275,6 @@
                 style="display: none"
               />
               <div class="input-container">
-                <!-- NEW: Container for file pills above the textarea -->
                 <div id="attachment-preview-container"></div>
                 
                 <textarea
@@ -326,15 +284,12 @@
                 ></textarea>
                 <div class="input-toolbar">
                   <div class="toolbar-left">
-                    <!-- This button now triggers file upload -->
                     <button class="tool-btn-round" id="attach-file-btn" title="Attach PDF File">
                       <i class="fa-solid fa-plus"></i>
                     </button>
-                    <!-- Tools Dropdown -->
                     <div class="tool-dropdown-wrapper">
                       <button class="tool-btn-round" id="tools-toggle-btn" title="Toggle Tools">
-                        <i class="fa-solid fa-tools"></i> <!-- New Icon -->
-                      </button>
+                        <i class="fa-solid fa-tools"></i> </button>
                       <div class="tool-dropdown-menu" id="tools-dropdown">
                         <button class="tool-dropdown-item" id="canvas-toggle-btn">
                           <i class="fa-solid fa-file-invoice"></i>
@@ -343,17 +298,8 @@
                             <span class="tool-desc">Open the code canvas</span>
                           </div>
                         </button>
-                        <!-- PDF Chat is now a toggle, but we won't use it. Logic is automatic. -->
-                        <button class="tool-dropdown-item" id="pdf-chat-btn" style="display: none;">
-                          <i class="fa-solid fa-file-pdf"></i>
-                          <div>
-                            <span>PDF Chat</span>
-                            <span class="tool-desc">Toggle chat with attached PDF</span>
-                          </div>
-                        </button>
-                      </div>
+                        </div>
                     </div>
-                    <!-- End: Tools Dropdown -->
                     <div class="model-selector-wrapper">
                       <button
                         class="model-btn"
@@ -562,8 +508,7 @@
         </div>
       </div>
     </div>
-    <!-- Auth Popup Modal -->
-<div id="auth-popup" class="auth-popup auth-hidden">
+    <div id="auth-popup" class="auth-popup auth-hidden">
   <div class="auth-popup-content">
     <h2>Thanks for trying LYNQ AI</h2>
     <p>Log in or sign up to get smarter responses, upload files, and more.</p>

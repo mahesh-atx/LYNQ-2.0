@@ -2,6 +2,8 @@
   home.js
   This file contains logic ONLY for the Home/Chat page (index.html).
   It relies on global state and functions defined in script.js.
+  
+  --- REFACTOR: Centralized system prompt construction and canvas reset logic. ---
 */
 
 // --- HOME/CHAT PAGE DOM ELEMENTS (Page Specific) ---
@@ -24,7 +26,7 @@ let canvasPreviewIframe;
 let canvasPreviewPlaceholder;
 let toolsToggleBtn;
 let toolsDropdown;
-let pdfChatToggleBtn;
+// REMOVED: pdfChatToggleBtn (unused)
 let attachFileBtn;
 let fileUploadInput;
 let attachmentPreviewContainer;
@@ -32,6 +34,7 @@ let attachmentPreviewContainer;
 // --- HOME/CHAT PAGE STATE ---
 let isCanvasModeActive = false; // State for canvas mode toggle
 let currentAttachment = null; // Holds { name: "...", text: "...", type: "pdf" }
+const TOKEN_LIMIT = 4000; // Define context limit once
 
 /**
  * Initializes voice recognition functionality.
@@ -85,7 +88,8 @@ function initVoiceInput() {
 
     recognition.onerror = (event) => {
       console.error("Speech recognition error", event.error);
-      if (typeof showToast === "function") showToast("Voice error: " + event.error);
+      if (typeof showToast === "function")
+        showToast("Voice error: " + event.error);
       micBtn.style.color = "";
       micBtn.style.borderColor = "";
     };
@@ -172,7 +176,6 @@ function generatePreview() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview</title>
-    <!-- Load Tailwind for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; box-sizing: border-box; }
@@ -205,7 +208,8 @@ ${baseHtmlEnd}`;
         <p>This appears to be standalone logic that requires a surrounding HTML structure or framework to run. Displaying it below:</p>
         <pre style="background:#fff; padding: 10px; border: 1px solid #ccc; border-radius: 4px; overflow-x: auto;"><code>${code
           .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")}</code></pre>
+          .replace(/>/g, "&gt;")
+          .trim()}</code></pre>
     </div>
 ${baseHtmlEnd}`;
     } else {
@@ -372,6 +376,18 @@ function sendSuggestion(text) {
 }
 
 /**
+ * CLEANS UP: Centralized function to reset the canvas UI state.
+ */
+function resetCanvasUI() {
+  if (canvasPlaceholder) canvasPlaceholder.style.display = "flex";
+  if (canvasCodeBlock) canvasCodeBlock.textContent = "";
+  if (canvasPreviewIframe) canvasPreviewIframe.srcdoc = "";
+  if (canvasPreviewPlaceholder) canvasPreviewPlaceholder.style.display = "flex";
+  switchCanvasTab("code");
+  toggleCanvasMode(false);
+}
+
+/**
  * Resets the current chat view and state to a new chat.
  */
 function resetChat() {
@@ -388,16 +404,10 @@ function resetChat() {
   if (attachmentPreviewContainer) attachmentPreviewContainer.innerHTML = "";
 
   // Canvas reset
-  if (canvasPlaceholder) canvasPlaceholder.style.display = "flex";
-  if (canvasCodeBlock) canvasCodeBlock.textContent = "";
-  if (canvasPreviewIframe) canvasPreviewIframe.srcdoc = "";
-  if (canvasPreviewPlaceholder) canvasPreviewPlaceholder.style.display = "flex";
-  switchCanvasTab("code");
-  toggleCanvasMode(false);
+  resetCanvasUI(); // Use centralized function
 
   // Global function calls
   if (typeof renderRecentChats === "function") renderRecentChats();
-  // We no longer call saveState, saving is tied to saveChat/handleSend.
 
   // Update URL to remove chatId param
   if (window.history && window.history.pushState) {
@@ -411,25 +421,26 @@ function resetChat() {
  */
 async function loadChat(chatId) {
   // Check if we already loaded this chat
-  if (activeChatId == chatId && mainChatHistory.length > 0) {
-    // Already loaded, just ensure welcome screen is hidden
-    if (welcomeScreen) welcomeScreen.style.display = "none";
-    if (typeof closeSidebar === "function") closeSidebar();
-    return;
-  }
+  // if (activeChatId == chatId && mainChatHistory.length > 0) {
+  //   // Already loaded, just ensure welcome screen is hidden
+  //   if (welcomeScreen) welcomeScreen.style.display = "none";
+  //   if (typeof closeSidebar === "function") closeSidebar();
+  //   return;
+  // }
 
   if (typeof recentChats === "undefined") return;
   const chat = recentChats.find((c) => c.id == chatId);
-  
+
   if (!chat) {
-    if (typeof showToast === "function") showToast("Error: Chat history not found.");
+    if (typeof showToast === "function")
+      showToast("Error: Chat history not found.");
     resetChat();
     return;
   }
 
   if (welcomeScreen) welcomeScreen.style.display = "none";
   if (messagesWrapper) messagesWrapper.innerHTML = "";
-  
+
   // 1. Fetch the full chat history from the server
   try {
     const response = await fetch(`${CHAT_API_BASE}/${chatId}`);
@@ -452,21 +463,67 @@ async function loadChat(chatId) {
     currentAttachment = null;
     if (attachmentPreviewContainer) attachmentPreviewContainer.innerHTML = "";
 
-    if (canvasPlaceholder) canvasPlaceholder.style.display = "flex";
-    if (canvasCodeBlock) canvasCodeBlock.textContent = "";
-    if (canvasPreviewIframe) canvasPreviewIframe.srcdoc = "";
-    if (canvasPreviewPlaceholder) canvasPreviewPlaceholder.style.display = "flex";
-    switchCanvasTab("code");
-    toggleCanvasMode(false);
+    resetCanvasUI(); // Use centralized function
 
     // 4. Update sidebar visual state (which happens in renderRecentChats)
     if (typeof renderRecentChats === "function") renderRecentChats();
-
   } catch (error) {
     console.error("Error loading chat:", error);
-    if (typeof showToast === "function") showToast(`Failed to load chat history: ${error.message}`);
+    if (typeof showToast === "function")
+      showToast(`Failed to load chat history: ${error.message}`);
     resetChat(); // Reset to new chat state on failure
   }
+}
+
+/**
+ * CLEANS UP: Centralized logic for building the system prompt with context.
+ * This is used by both handleSend and regenerateResponseAfterEdit.
+ */
+async function buildContextualSystemMessage(attachment, isCanvasActive) {
+  let contextAddon = "";
+
+  if (attachment && attachment.text) {
+    let pdfContext = attachment.text;
+
+    if (pdfContext.length > TOKEN_LIMIT * 4) {
+      pdfContext = pdfContext.substring(0, TOKEN_LIMIT * 4);
+      if (typeof showToast === "function")
+        showToast(
+          "Note: The PDF is very large and was truncated to fit the AI's context limit."
+        );
+    }
+
+    contextAddon = `
+--- CONTEXT: ATTACHED PDF DOCUMENT ---
+The user has provided the following text extracted from a PDF document. Base your answer primarily on this text if the question is related to its content.
+
+PDF CONTENT:
+${pdfContext}
+--- END PDF CONTEXT ---
+`;
+  } else if (isCanvasActive) {
+    contextAddon = `
+--- CONTEXT: CANVAS CODE EDITING MODE ---
+You are an AI Software Engineer specializing in **Modern Web Development**.
+- Your primary output should be **code blocks** (HTML, React, Angular, JS, etc.) for the Canvas.
+- Use **Tailwind CSS** use latest play cdn (via CDN in HTML).
+- use google fonts for fonts, use fontawsoeme cdn for icons, texts, etc
+- **Single-File Mandate:** All code, styling, and logic must be in a single file (e.g., \`.html\`, \`.jsx\`).
+- If generating code, you **MUST** provide a brief, summary of the code and the changes you made in the conversational chat pane **before** outputting the code block, using the following structure:
+\`\`\`markdown
+### 💡 [Brief Title of the Code/Changes]
+- **Goal:** [One sentence explaining the feature or bug fixed.]
+- **Files Updated:** [List all files generated or edited (e.g., \`index.html\`).]
+- **Key Changes/Features:**
+    - [Detailed bullet point 1]
+    - [Detailed bullet point 2]
+\`\`\`
+- Output only the updated canvas code, and nothing else, after the summary.
+--- END CANVAS CONTEXT ---
+`;
+  }
+
+  return getSystemMessage(contextAddon);
 }
 
 /**
@@ -560,9 +617,7 @@ async function handleSend() {
   const signal = currentController.signal;
 
   // --- DYNAMIC SYSTEM PROMPT CONSTRUCTION (Contextual instructions added) ---
-  let contextAddon = "";
   let contextAttachment = newlyAttachedFile;
-  const TOKEN_LIMIT = 4000;
 
   // 1. Determine PDF context (new or from history)
   if (
@@ -574,50 +629,11 @@ async function handleSend() {
     contextAttachment = mainChatHistory[0].attachment;
   }
 
-  // 2. Build PDF/Canvas specific instructions
-  if (contextAttachment && contextAttachment.text) {
-    let pdfContext = contextAttachment.text;
-
-    if (pdfContext.length > TOKEN_LIMIT * 4) {
-      pdfContext = pdfContext.substring(0, TOKEN_LIMIT * 4);
-      if (typeof showToast === "function")
-        showToast(
-          "Note: The PDF is very large and was truncated to fit the AI's context limit."
-        );
-    }
-
-    contextAddon = `
---- CONTEXT: ATTACHED PDF DOCUMENT ---
-The user has provided the following text extracted from a PDF document. Base your answer primarily on this text if the question is related to its content.
-
-PDF CONTENT:
-${pdfContext}
---- END PDF CONTEXT ---
-`;
-  } else if (isCanvasModeActive) {
-    contextAddon = `
---- CONTEXT: CANVAS CODE EDITING MODE ---
-You are an AI Software Engineer specializing in **Modern Web Development**.
-- Your primary output should be **code blocks** (HTML, React, Angular, JS, etc.) for the Canvas.
-- Use **Tailwind CSS** use latest play cdn (via CDN in HTML).
-- use google fonts for fonts, use fontawsoeme cdn for icons, texts, etc
-- **Single-File Mandate:** All code, styling, and logic must be in a single file (e.g., \`.html\`, \`.jsx\`).
-- If generating code, you **MUST** provide a brief, summary of the code and the changes you made in the conversational chat pane **before** outputting the code block, using the following structure:
-\`\`\`markdown
-### 💡 [Brief Title of the Code/Changes]
-- **Goal:** [One sentence explaining the feature or bug fixed.]
-- **Files Updated:** [List all files generated or edited (e.g., \`index.html\`).]
-- **Key Changes/Features:**
-    - [Detailed bullet point 1]
-    - [Detailed bullet point 2]
-\`\`\`
-- Output only the updated canvas code, and nothing else, after the summary.
---- END CANVAS CONTEXT ---
-`;
-  }
-
-  // 3. Combine with the base system prompt (Global function call)
-  const finalSystemMessage = await getSystemMessage(contextAddon);
+  // 2. Build the final system message using the centralized function
+  const finalSystemMessage = await buildContextualSystemMessage(
+    contextAttachment,
+    isCanvasModeActive
+  );
 
   try {
     const response = await getApiResponse(
@@ -650,9 +666,9 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
 
     if (thinkingBubble) thinkingBubble.remove();
     if (isResponding) {
-        await streamResponse(response);
+      await streamResponse(response);
     }
-    
+
     // --- Save to DB after receiving AI response ---
     if (currentChat) {
       await saveChat({
@@ -663,7 +679,6 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
       });
     }
     // --- End Save to DB ---
-
   } catch (error) {
     if (typeof showApiError === "function")
       showApiError(
@@ -971,26 +986,32 @@ async function toggleEdit(msgWrapper, originalText, originalAttachment) {
 
     if (newText !== "" || originalAttachment) {
       const msgIndex = mainChatHistory.findIndex(
+        // Find the index of the message we are editing, using the original text for reference
         (m) => m.role === "user" && m.content === originalText
       );
 
+      // If found, slice history to keep only messages before the edited one
       if (msgIndex > -1) {
         mainChatHistory = mainChatHistory.slice(0, msgIndex);
       } else {
+        // Fallback: If not found, reset history (shouldn't happen)
         mainChatHistory = [];
       }
 
+      // Remove all subsequent messages (AI replies to the edited message)
       let currentMsgEl = msgWrapper.parentElement;
       while (currentMsgEl.nextElementSibling) {
         currentMsgEl.nextElementSibling.remove();
       }
 
+      // Add the updated user message back to history
       mainChatHistory.push({
         role: "user",
         content: newText,
         attachment: originalAttachment,
       });
 
+      // Update the master list
       const currentChat = recentChats.find((c) => c.id === activeChatId);
       if (currentChat) {
         currentChat.history = mainChatHistory;
@@ -1036,59 +1057,17 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
 
   const signal = currentController.signal;
 
+  // History for API excludes the last user message, which is the current prompt
   const historyForApi = mainChatHistory.slice(0, -1).map((msg) => ({
     role: msg.role,
     content: msg.content,
   }));
 
   // --- DYNAMIC SYSTEM PROMPT CONSTRUCTION ---
-  let contextAddon = "";
-  let contextAttachment = attachment;
-  const TOKEN_LIMIT = 4000;
-
-  if (contextAttachment && contextAttachment.text) {
-    let pdfContext = contextAttachment.text;
-
-    if (pdfContext.length > TOKEN_LIMIT * 4) {
-      pdfContext = pdfContext.substring(0, TOKEN_LIMIT * 4);
-      if (typeof showToast === "function")
-        showToast(
-          "Note: The PDF is very large and was truncated to fit the AI's context limit."
-        );
-    }
-
-    contextAddon = `
---- CONTEXT: ATTACHED PDF DOCUMENT ---
-The user has provided the following text extracted from a PDF document. Base your answer primarily on this text if the question is related to its content.
-
-PDF CONTENT:
-${pdfContext}
---- END PDF CONTEXT ---
-`;
-  } else if (isCanvasModeActive) {
-    contextAddon = `
---- CONTEXT: CANVAS CODE EDITING MODE ---
-You are an AI Software Engineer specializing in **Modern Web Development**.
-- Your primary output should be **code blocks** (HTML, React, Angular, JS, etc.) for the Canvas.
-- Use **Tailwind CSS** use latest cdn (via CDN in HTML).
-- use google fonts for fonts, use fontawsome cdn for icons,texts etc
-- **Single-File Mandate:** All code, styling, and logic must be in a single file (e.g., \`.html\`, \`.jsx\`).
-- If generating code, you **MUST** provide a brief, summary of the code and the changes you made in the conversational chat pane **before** outputting the code block, using the following structure:
-\`\`\`markdown
-### 💡 [Brief Title of the Code/Changes]
-- **Goal:** [One sentence explaining the feature or bug fixed.]
-- **Files Updated:** [List all files generated or edited (e.g., \`index.html\`).]
-- **Key Changes/Features:**
-    - [Detailed bullet point 1]
-    - [Detailed bullet point 2]
-\`\`\`
-- Output only the updated canvas code, and nothing else, after the summary.
---- END CANVAS CONTEXT ---
-`;
-  }
-
-  const finalSystemMessage = await getSystemMessage(contextAddon);
-  // --- END DYNAMIC SYSTEM PROMPT CONSTRUCTION ---
+  const finalSystemMessage = await buildContextualSystemMessage(
+    attachment,
+    isCanvasModeActive
+  );
 
   try {
     const response = await getApiResponse(
@@ -1110,6 +1089,7 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
       return;
     }
 
+    // Add new AI response to history
     mainChatHistory.push({
       role: "assistant",
       content: response,
@@ -1121,8 +1101,8 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
     }
 
     thinking.remove();
-    streamResponse(response);
-    
+    await streamResponse(response); // Await the stream to ensure save happens last
+
     // --- Save to DB after receiving AI response ---
     if (currentChat) {
       await saveChat({
@@ -1133,7 +1113,6 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
       });
     }
     // --- End Save to DB ---
-
   } catch (error) {
     if (typeof showApiError === "function")
       showApiError(error.message || "An unknown API error occurred.", thinking);
@@ -1258,6 +1237,7 @@ function regenerateMessage(msgDiv) {
   const userMsg = msgDiv.previousElementSibling;
   if (!userMsg) return;
 
+  // 1. Remove the current AI response and any subsequent messages
   while (userMsg.nextElementSibling) {
     userMsg.nextElementSibling.remove();
   }
@@ -1266,6 +1246,7 @@ function regenerateMessage(msgDiv) {
   if (!userMsgContentEl) return;
   const userPromptText = userMsgContentEl.innerText.trim();
 
+  // 2. Find the index and attachment of the last user message
   let attachment = null;
   const userMsgIndex = mainChatHistory.findIndex(
     (m) => m.role === "user" && m.content === userPromptText
@@ -1274,13 +1255,16 @@ function regenerateMessage(msgDiv) {
     attachment = mainChatHistory[userMsgIndex].attachment;
   }
 
+  // 3. Trim the history array to the user message
   if (userMsgIndex > -1) {
     mainChatHistory = mainChatHistory.slice(0, userMsgIndex);
   } else {
+    // If we can't find the message in history (error state), stop.
     mainChatHistory = [];
     return;
   }
 
+  // 4. Re-add the user prompt (since it was just removed in step 3)
   mainChatHistory.push({
     role: "user",
     content: userPromptText,
@@ -1292,6 +1276,7 @@ function regenerateMessage(msgDiv) {
     currentChat.history = mainChatHistory;
   }
 
+  // 5. Trigger regeneration
   regenerateResponseAfterEdit(userPromptText, attachment);
 }
 
@@ -1320,7 +1305,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   toolsToggleBtn = document.getElementById("tools-toggle-btn");
   toolsDropdown = document.getElementById("tools-dropdown");
-  pdfChatToggleBtn = document.getElementById("pdf-chat-btn");
+  // pdfChatToggleBtn = document.getElementById("pdf-chat-btn"); // REMOVED
 
   attachFileBtn = document.getElementById("attach-file-btn");
   fileUploadInput = document.getElementById("file-upload");

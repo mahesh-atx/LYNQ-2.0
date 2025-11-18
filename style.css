@@ -106,6 +106,7 @@ body {
 }
 
 /* NEW: Active/Open state (When collapsed is toggled off) */
+/* The default non-collapsed style is handled here */
 #sidebar:not(.collapsed) {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
@@ -243,8 +244,8 @@ body {
 
 .chat-context-menu {
   position: absolute;
-  left: 85%;
-  top: 50%;
+  left: 30%;
+  top: 100%;
   transform: translateY(-10%);
   width: 160px;
   background: var(--bg-tertiary);
@@ -792,6 +793,11 @@ body.dark-mode .pro-badge {
     top: 80%;
     transform: none;
   }
+
+  .message.user .bubble{
+    margin-top: 2em;
+  }
+
 }
 
 @media (max-width: 480px) {

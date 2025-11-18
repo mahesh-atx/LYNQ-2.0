@@ -46,14 +46,22 @@ mongoose
     process.exit(1);
   });
 
-const MessageSchema = new mongoose.Schema({
-  role: { type: String, required: true },
-  content: { type: String, required: true },
-  attachment: {
+// --- FIX: Explicitly define the AttachmentSchema ---
+// This prevents casting errors on nested objects.
+const AttachmentSchema = new mongoose.Schema(
+  {
     name: String,
     text: String,
     type: String, // e.g., 'pdf'
   },
+  { _id: false }
+); // Disable _id for this subdocument
+
+const MessageSchema = new mongoose.Schema({
+  role: { type: String, required: true },
+  content: { type: String, required: true },
+  // Use the explicit AttachmentSchema here
+  attachment: { type: AttachmentSchema, required: false },
 });
 
 const ChatSchema = new mongoose.Schema({

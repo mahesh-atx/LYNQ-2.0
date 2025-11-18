@@ -4,11 +4,11 @@
   UI functions specific to index.html (chat/canvas) are now in home.js.
   
   --- UPDATED: LocalStorage replaced with MongoDB API calls ---
+  --- CLEANUP: Removed unused codeHistory and simplified DOMContentLoaded ---
 */
 
 // --- GLOBAL STATE & API CONFIG ---
 let mainChatHistory = [];
-let codeHistory = [];
 
 // recentChats will be populated asynchronously
 let recentChats = [];
@@ -48,7 +48,6 @@ let touchEndX = 0;
 const SWIPE_THRESHOLD = 50; // Minimum distance for a recognized swipe
 
 // --- NEW: API FUNCTIONS FOR CHAT PERSISTENCE ---
-// --- SIMPLE LOGIN HANDLER (FAKE LOGIN FOR NOW) ---
 // --- SIMPLE LOGIN HANDLER (FAKE LOGIN FOR NOW) ---
 function handleLogin() {
   localStorage.setItem("lynq_user_logged_in", "true");
@@ -228,8 +227,6 @@ async function getSystemMessage(taskSpecificContext) {
   return `${finalPrompt}\n\n${taskSpecificContext}`;
 }
 
-// --- REMOVED: saveState function (replaced by saveChat) ---
-
 // --- NEW: Function to save sidebar state to localStorage ---
 function saveSidebarState(isCollapsed) {
   localStorage.setItem(
@@ -293,8 +290,6 @@ async function getApiResponse(
   history = [],
   signal = null
 ) {
-  // closeSidebar(); // REMOVED: We no longer automatically close the sidebar on message send.
-
   try {
     const response = await fetch(API_URL, {
       method: "POST",
@@ -642,16 +637,28 @@ async function chatAction(action, chatId) {
   }
 }
 
-function selectModel(element, modelName, iconClass, iconColor) {
-  currentSelectedModel = modelName;
-
+/**
+ * Helper function to update the model selector button text.
+ * @param {string} modelName The full model name.
+ * @param {string} iconClass The font-awesome class.
+ * @param {string} iconColor The color hex or name.
+ */
+function updateModelButton(modelName, iconClass, iconColor) {
   const btn = document.getElementById("current-model-btn");
   if (!btn) return;
 
   let shortName = modelName.split("/").pop();
-  shortName = shortName.replace("Gemini s", ""); // Changed "Gemini " to "Gemini \s" in case there is no space
+  // Changed "Gemini s" to "Gemini " to fix the regex in the original code,
+  // though the models listed don't include "Gemini s"
+  shortName = shortName.replace("Gemini ", "");
 
   btn.innerHTML = `<i class="fa-solid ${iconClass}" style="color:${iconColor};"></i> ${shortName} <i class="fa-solid fa-chevron-down chevron"></i>`;
+}
+
+function selectModel(element, modelName, iconClass, iconColor) {
+  currentSelectedModel = modelName;
+  updateModelButton(modelName, iconClass, iconColor); // Centralized function
+
   document
     .querySelectorAll(".check-icon")
     .forEach((icon) => (icon.style.display = "none"));
@@ -704,6 +711,28 @@ function handleTouchEnd(event) {
   touchEndX = 0;
 }
 
+/**
+ * Finds the currently selected model and updates the button text.
+ */
+function initializeModelButton() {
+  const currentModelElement = document.querySelector(".model-option.selected");
+  if (currentModelElement) {
+    const onclickAttr = currentModelElement.getAttribute("onclick");
+
+    if (onclickAttr && typeof onclickAttr === "string") {
+      const matches = onclickAttr.match(/'([^']*)'/g) || [];
+
+      // Extract values safely
+      const modelName = matches[0]?.replace(/'/g, "") || "unknown-model";
+      const iconClass = matches[1]?.replace(/'/g, "") || "fa-bolt";
+      const iconColor = matches[2]?.replace(/'/g, "") || "#FFD700";
+
+      currentSelectedModel = modelName; // Ensure the global state is set
+      updateModelButton(modelName, iconClass, iconColor);
+    }
+  }
+}
+
 // --- GLOBAL EVENT LISTENERS ---
 
 window.onclick = function (event) {
@@ -740,6 +769,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load state will now handle setting dark-mode as default and restoring sidebar state
   loadState();
 
+  // Initialize the model button display
+  initializeModelButton(); // Use the new centralized function
+
   // --- NEW: Attach global swipe listeners ---
   // Attaching to document or window handles swipe events regardless of what element the touch starts on.
   document.addEventListener("touchstart", handleTouchStart, { passive: true });
@@ -765,31 +797,5 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       showAuthPopup();
     }, 500);
-  }
-
-  // Set default model on load for the button text
-  const currentModelElement = document.querySelector(".model-option.selected");
-  if (currentModelElement) {
-    const onclickAttr = currentModelElement.getAttribute("onclick");
-
-    if (onclickAttr && typeof onclickAttr === "string") {
-      const matches = onclickAttr.match(/'([^']*)'/g) || [];
-
-      // Extract values safely
-      const modelName = matches[0]?.replace(/'/g, "") || "unknown-model";
-      const iconClass = matches[1]?.replace(/'/g, "") || "fa-bolt";
-      const iconColor = matches[2]?.replace(/'/g, "") || "#FFD700";
-
-      const btn = document.getElementById("current-model-btn");
-      if (btn) {
-        let shortName = modelName.split("/").pop();
-        shortName = shortName.replace("Gemini s", ""); // Changed "Gemini " to "Gemini \s" in case there is no space
-
-        btn.innerHTML = `
-                <i class="fa-solid ${iconClass}" style="color:${iconColor};"></i>
-                ${shortName}
-                <i class="fa-solid fa-chevron-down chevron"></i>`;
-      }
-    }
   }
 });

@@ -22,14 +22,10 @@
   transition: flex-basis 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* --- REMOVED: PDF ATTACHMENT BAR --- */
-/* #pdf-attachment-bar styles removed */
-
-
 /* --- CHAT MESSAGES & ACTIONS --- */
 #chat-container {
   flex: 1;
-  padding: 20px var(--primary-padding);
+  /* padding: 20px var(--primary-padding); */
   display: flex;
   flex-direction: column;
   gap: 25px;
@@ -55,8 +51,6 @@
   background-color: var(--text-secondary);
 }
 
-/* REMOVED: #home-view #chat-container rule was here */
-
 .welcome-screen {
   display: flex;
   flex-direction: column;
@@ -78,37 +72,7 @@
   color: var(--text-heading);
 }
 
-.suggestion-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  max-width: 650px;
-  width: 100%;
-}
-.suggestion-card {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-capsule);
-  padding: 20px;
-  border-radius: 20px;
-  cursor: pointer;
-  text-align: left;
-  transition: 0.3s;
-}
-.suggestion-card:hover {
-  border-color: var(--border-secondary);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-soft);
-}
-.suggestion-card i {
-  margin-bottom: 12px;
-  display: block;
-  color: var(--text-heading);
-}
-.suggestion-card p {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
+/* REMOVED: suggestion-grid and suggestion-card styles (using unified pills) */
 
 .message {
   display: flex;
@@ -141,6 +105,7 @@
   background: var(--text-heading);
   color: var(--bg-secondary);
 }
+
 
 .msg-content-wrapper {
   display: flex;
@@ -185,7 +150,6 @@
   color: #abb2bf;
   padding: 15px;
   border-radius: 12px;
-  /* overflow-x: auto; */ /* <-- This was removed */
   margin: 12px 0;
   /* NEW: Added text wrapping to remove horizontal scrollbar */
   white-space: pre-wrap;
@@ -212,7 +176,7 @@
   align-items: center;
 }
 .bubble.error::before {
-  content: '⚡️'; /* Lightning bolt icon */
+  content: "⚡️"; /* Lightning bolt icon */
   margin-right: 10px;
   font-size: 1.2rem;
   opacity: 0.8;
@@ -316,7 +280,6 @@ body.dark-mode .btn-cancel {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 8px;
   padding: 4px 8px;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
@@ -353,7 +316,7 @@ body.dark-mode .btn-cancel {
 
 /* Improved Input Toolbar Icons */
 .input-area-wrapper {
-  /* padding: 20px var(--primary-padding); */
+  padding: 20px;
   width: 82%;
   max-width: 800px;
   margin: 0 auto;
@@ -384,8 +347,6 @@ textarea#chat-input {
   color: var(--text-primary);
   font-size: 1rem;
   min-height: 24px;
-  /* max-height: 200px; --- This was removed to allow infinite growth */
-  /* max-height: 200px; */ /* <-- This was removed */
   line-height: 1.5;
   overflow: hidden; /* This hides the scrollbar */
 }
@@ -444,17 +405,6 @@ textarea#chat-input {
 .tool-dropdown-item#canvas-toggle-btn.active i {
   color: var(--text-heading);
 }
-
-/* --- NEW: Active state for "PDF Chat" item --- */
-.tool-dropdown-item#pdf-chat-btn.active {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-secondary);
-}
-.tool-dropdown-item#pdf-chat-btn.active span,
-.tool-dropdown-item#pdf-chat-btn.active i {
-  color: var(--text-heading);
-}
-
 
 /* END: TOOLS/CANVAS TOGGLE STYLES */
 
@@ -548,7 +498,6 @@ textarea#chat-input {
 }
 /* --- END: TOOLS DROPDOWN STYLES --- */
 
-
 /* --- NEW: ATTACHMENT PREVIEW STYLES --- */
 #attachment-preview-container {
   display: flex;
@@ -628,9 +577,7 @@ textarea#chat-input {
   opacity: 0.9;
 }
 
-
 /* --- END: ATTACHMENT PREVIEW STYLES --- */
-
 
 /* --- MARKDOWN CONTENT STYLING (Fixes Typography & Tables) --- */
 
@@ -708,13 +655,7 @@ textarea#chat-input {
   background-color: rgba(0, 0, 0, 0.01);
 }
 
-/* Dark Mode Table Adjustments */
-body.dark-mode .bubble th {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-body.dark-mode .bubble tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.02);
-}
+/* Dark Mode Table Adjustments - REMOVED: Redundant dark mode table rules */
 
 /* 5. Inline Code & Bold Text */
 .bubble strong {
@@ -731,12 +672,33 @@ body.dark-mode .bubble tr:nth-child(even) {
   color: var(--text-heading);
 }
 
-/* --- Responsive --- */
-@media (max-width: 768px) {
-  .suggestion-grid {
-    grid-template-columns: 1fr;
+ .suggestion-pills-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 0 10px;
   }
 
+  .pill-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-capsule);
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+  }
+  .pill-card:hover {
+    background: var(--bg-primary);
+  }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
   /* MODIFIED: Canvas pane responsive (fullscreen overlay) */
   #canvas-pane {
     position: absolute;
@@ -769,7 +731,7 @@ body.dark-mode .bubble tr:nth-child(even) {
   flex-basis: 0; /* Start closed */
   height: calc(100% - 20px); /* Full height minus margin */
   margin: 10px 10px 10px 0; /* Margin on top/right/bottom */
-  
+
   /* NEW: Card appearance from image */
   background: #2e2e2e; /* Dark content background */
   border-radius: 12px; /* Rounded corners */
@@ -780,12 +742,12 @@ body.dark-mode .bubble tr:nth-child(even) {
   flex-direction: column;
   overflow: hidden; /* This is key for rounded corners */
   opacity: 0;
-  
+
   transition: flex-basis 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
     opacity 0.3s ease 0.1s, margin-right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
+
   /* Handle closed state margin */
-  margin-right: -10px; 
+  margin-right: -10px;
 }
 #canvas-pane.active {
   flex-basis: 60%; /* Open to this width */
@@ -793,7 +755,6 @@ body.dark-mode .bubble tr:nth-child(even) {
   opacity: 1;
   margin-right: 10px; /* Add right margin when open */
 }
-/* REMOVED: @keyframes slideIn */
 
 /* --- NEW: CANVAS HEADER (to match image) --- */
 .canvas-header {
@@ -936,26 +897,26 @@ body.dark-mode .bubble tr:nth-child(even) {
 
 /* --- NEW: MOBILE-SPECIFIC STYLES (applies only on screens <= 768px) --- */
 @media (max-width: 768px) {
-  
   /* 1. Fixed Input Area */
   /* Ensure chat container scrolls above the fixed input */
   #chat-container {
-    padding-bottom: 120px; 
+    padding-bottom: 200px;
   }
 
   /* Make the input area fixed at the bottom on mobile */
   .input-area-wrapper.fixed-mobile-input {
+    padding: 0 0;
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    max-width: none; 
-    background: var(--bg-primary); 
+    max-width: none;
+    background: var(--bg-primary);
     /* z-index: 10; */
-    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
     margin: 0;
   }
-  
+
   /* Input Container visual update */
   .input-container {
     border-top-left-radius: 16px;
@@ -968,84 +929,93 @@ body.dark-mode .bubble tr:nth-child(even) {
   /* 2. Mobile Suggestions (Pills) */
   /* Hide the old suggestion grid (since it was removed from HTML, this is defensive) */
   .suggestion-grid {
-      display: none !important;
+    display: none !important;
   }
-  
+
   /* Show and style the new suggestion pills */
   .suggestion-pills-mobile {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      padding: 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 0 10px;
   }
-  
+
   .pill-card {
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-capsule);
-      padding: 10px 15px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: 0.2s;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-capsule);
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
   }
   .pill-card:hover {
-      background: var(--bg-primary);
+    background: var(--bg-primary);
   }
-  
+
   /* 3. Top Bar (Sign Up Button) */
-  
+
   /* Hide all existing top-profile buttons and upgrade text on mobile */
   #login-signup-btn,
   .top-actions #top-profile-btn-user,
   .top-actions .upgrade-btn span {
-      display: none !important; 
+    display: none !important;
   }
 
   /* Show the new mobile-signup-btn */
   .top-actions .mobile-signup-btn {
-      display: flex !important;
-      font-weight: 600;
-      background: var(--bg-accent);
-      color: var(--text-accent);
-      padding: 8px 12px;
-      border-radius: 20px;
+    display: flex !important;
+    font-weight: 600;
+    background: var(--bg-accent);
+    color: var(--text-accent);
+    padding: 8px 12px;
+    border-radius: 20px;
   }
-  
+
   .top-actions .mobile-signup-btn .avatar {
-      display: none;
+    display: none;
+  }
+  .bubble{
+    width: 100%;
+  }
+  .msg-content-wrapper {
+    max-width: 100%;
+  }
+  .avatar{
+    display: none;
   }
 }
 
 /* --- CRUCIAL FIX: DESKTOP OVERRIDE (applies only on screens > 768px) --- */
 @media (min-width: 769px) {
-    /* Explicitly hide all mobile-only elements on desktop */
-    .suggestion-pills-mobile, 
-    .mobile-signup-btn {
-        display: none !important;
-    }
+  /* Explicitly hide all mobile-only elements on desktop */
 
-    /* Ensure desktop input wrapper is NOT fixed and uses auto margins */
-    .input-area-wrapper.fixed-mobile-input {
-        position: static;
-        width: 82%;
-        max-width: 800px;
-        margin: 0 auto;
-        box-shadow: none;
-        background: transparent;
-    }
-    
-    /* Ensure chat container reverts to desktop padding */
-    #chat-container {
-        padding-bottom: 20px; /* Restore original bottom padding */
-    }
+  .mobile-signup-btn {
+    display: none !important;
+  }
 
-    /* Ensure desktop profile/login buttons are shown correctly */
-    .top-actions #login-signup-btn {
-        display: flex !important;
-    }
+  /* Ensure desktop input wrapper is NOT fixed and uses auto margins */
+  .input-area-wrapper.fixed-mobile-input {
+    position: static;
+    width: 82%;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /* Ensure chat container reverts to desktop padding */
+  #chat-container {
+    padding-bottom: 20px; /* Restore original bottom padding */
+  }
+
+  /* Ensure desktop profile/login buttons are shown correctly */
+  .top-actions #login-signup-btn {
+    display: flex !important;
+  }
 }
