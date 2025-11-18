@@ -21,6 +21,10 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
     />
+    
+    <!-- NEW: Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
@@ -202,10 +206,21 @@
           >
             <div
               class="avatar user"
+              id="nav-profile-avatar"
             >
-              MD
+              U
             </div>
-            Mahesh Dongare
+            <span id="nav-profile-name">User</span>
+          </a>
+          <!-- NEW: Logout Button -->
+          <a
+            href="#"
+            class="nav-item"
+            id="nav-logout-link"
+            onclick="logoutUser()"
+            style="display: none; margin-top: 5px;"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
           </a>
         </div>
       </aside>
@@ -225,14 +240,14 @@
             </button>
 
             <button class="top-profile-btn mobile-signup-btn" onclick="location.href='login.html?action=signup'" style="margin-right: 8px; display: none;">
-    <span>Sign Up</span>
-  </button>
-            <button class="top-profile-btn " onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px; ">
+              <span>Sign Up</span>
+            </button>
+            <button class="top-profile-btn" onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px; ">
               <i class="fa-solid fa-right-to-bracket"></i> <span>Sign Up</span>
             </button>
             <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">
-              <div class="avatar user">MD</div>
-              <span>Mahesh</span>
+              <div class="avatar user" id="top-profile-avatar">U</div>
+              <span id="top-profile-name">User</span>
             </button>
           </div>
         </div>
@@ -243,26 +258,26 @@
             <div id="chat-container">
               <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-text">
-                  <h1>Hello, Mahesh</h1>
+                  <h1 id="welcome-name">Hello, Guest</h1>
                   <p style="color: var(--text-secondary)">
                     How can I help you create today?
                   </p>
                 </div>
                 
                 <div class="suggestion-pills-mobile" id="suggestion-pills-mobile">
-    <button class="pill-card" onclick="sendSuggestion('Review my portfolio code for SEO best practices.')">
-        <i class="fa-solid fa-code"></i> Code Review
-    </button>
-    <button class="pill-card" onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')">
-        <i class="fa-solid fa-palette"></i> Color Palette
-    </button>
-    <button class="pill-card" onclick="sendSuggestion('Write a Python script to automate file organization.')">
-        <i class="fa-brands fa-python"></i> Python Script
-    </button>
-    <button class="pill-card" onclick="sendSuggestion('Explain the key differences between SQL and NoSQL.')">
-        <i class="fa-solid fa-database"></i> SQL vs NoSQL
-    </button>
-</div>
+                  <button class="pill-card" onclick="sendSuggestion('Review my portfolio code for SEO best practices.')">
+                      <i class="fa-solid fa-code"></i> Code Review
+                  </button>
+                  <button class="pill-card" onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')">
+                      <i class="fa-solid fa-palette"></i> Color Palette
+                  </button>
+                  <button class="pill-card" onclick="sendSuggestion('Write a Python script to automate file organization.')">
+                      <i class="fa-brands fa-python"></i> Python Script
+                  </button>
+                  <button class="pill-card" onclick="sendSuggestion('Explain the key differences between SQL and NoSQL.')">
+                      <i class="fa-solid fa-database"></i> SQL vs NoSQL
+                  </button>
+                </div>
               </div>
               <div id="messages-wrapper"></div>
             </div>
@@ -508,27 +523,14 @@
         </div>
       </div>
     </div>
-    <div id="auth-popup" class="auth-popup auth-hidden">
-  <div class="auth-popup-content">
-    <h2>Thanks for trying LYNQ AI</h2>
-    <p>Log in or sign up to get smarter responses, upload files, and more.</p>
+    
+    <!-- REMOVED: Old auth-popup div -->
 
-    <button class="auth-btn auth-primary" onclick="redirectToLogin()">
-      Log in
-    </button>
-
-    <button class="auth-btn auth-secondary" onclick="redirectToSignup()">
-      Sign up for free
-    </button>
-
-    <a href="#" class="auth-skip" onclick="closeAuthPopup(event)">
-      Stay logged out
-    </a>
-  </div>
-</div>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 
+    <!-- NEW: Load auth.js *before* script.js -->
+    <script src="auth.js"></script>
     <script src="script.js"></script>
     <script src="./home/home.js"></script>
   </body>

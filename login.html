@@ -4,37 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login / Sign Up — LYNQ AI</title>
-
-    <!-- Icons -->
     <script
       src="https://kit.fontawesome.com/ae8ff12b97.js"
       crossorigin="anonymous"
     ></script>
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-
     <link rel="stylesheet" href="style.css" />
     <style>
-      /* Styles specific to the login page layout, inheriting colors from style.css */
       #login-view {
         flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        min-height: 100vh;
         background: var(--bg-primary);
         padding: 20px;
       }
-
       .login-container {
-        max-width: 400px;
+        max-width: 420px;
         width: 100%;
         background: var(--bg-tertiary);
         border: 1px solid var(--border-primary);
@@ -53,6 +46,49 @@
       }
       .login-header p {
         color: var(--text-secondary);
+      }
+      .provider-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      .provider-btn {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .provider-btn:hover {
+        background: var(--bg-primary);
+        border-color: var(--border-secondary);
+      }
+      .provider-btn i {
+        font-size: 1.2rem;
+      }
+      .divider {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border-primary);
       }
       .login-form {
         display: grid;
@@ -80,7 +116,7 @@
         border-color: var(--text-heading);
       }
       .login-btn {
-        margin-top: 20px;
+        margin-top: 10px;
         width: 100%;
         padding: 14px;
         background: var(--bg-accent);
@@ -110,110 +146,333 @@
       .toggle-link a:hover {
         color: var(--bg-accent);
       }
+      .phone-group {
+        display: none; /* Hidden by default */
+        gap: 10px;
+      }
+      .phone-group input {
+        flex: 1;
+      }
+      .phone-group button {
+        padding: 0 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        cursor: pointer;
+      }
+      #email-group {
+        display: grid;
+        gap: 15px;
+      }
+      #error-message {
+        color: var(--text-danger);
+        background: var(--bg-danger);
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        display: none; /* Hidden by default */
+        text-align: center;
+        margin-top: 10px;
+      }
+      /* This is required for Firebase Phone Auth */
+      #recaptcha-container {
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+      }
     </style>
   </head>
   <body>
-    <!-- The login page should not have the sidebar -->
     <div id="login-view">
       <div class="login-container">
         <div class="login-header">
-          <span style="display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-heading); margin-bottom: 10px;">
+          <span
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 10px;
+              color: var(--text-heading);
+              margin-bottom: 10px;
+            "
+          >
             <i class="fa-solid fa-bolt"></i> LYNQ AI
           </span>
-          <h1>Welcome Back</h1>
+          <h1 id="form-title">Welcome Back</h1>
           <p id="form-subtitle">Log in to continue your work.</p>
         </div>
 
-        <form class="login-form">
-          <div>
-            <label for="email">Email Address</label>
-            <input type="email" id="email" placeholder="you@example.com" required />
+        <div class="provider-buttons">
+          <button class="provider-btn" id="google-signin">
+            <i class="fa-brands fa-google"></i> Sign in with Google
+          </button>
+          <button class="provider-btn" id="github-signin">
+            <i class="fa-brands fa-github"></i> Sign in with GitHub
+          </button>
+          <button class="provider-btn" id="phone-signin-toggle">
+            <i class="fa-solid fa-phone"></i> Sign in with Phone
+          </button>
+        </div>
+
+        <div class="divider">OR</div>
+
+        <form class="login-form" id="login-form">
+          <div id="email-group">
+            <div id="confirm-name-div" style="display: none">
+              <label for="name">Full Name</label>
+              <input
+                type="text"
+                id="name"
+                placeholder="Mahesh Dongare"
+              />
+            </div>
+            <div>
+              <label for="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                placeholder="••••••••"
+                required
+              />
+            </div>
           </div>
-          <div>
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="••••••••" required />
+
+          <div class="phone-group" id="phone-group">
+            <input
+              type="tel"
+              id="phone-number"
+              placeholder="+1 555-555-1234"
+            />
+            <button type="button" id="send-code-btn">Send Code</button>
           </div>
+          
+          <div class="phone-group" id="code-group">
+             <input
+              type="text"
+              id="verification-code"
+              placeholder="Enter 6-digit code"
+            />
+          </div>
+
+          <!-- This is where the reCAPTCHA will render -->
+          <div id="recaptcha-container"></div>
+
+          <div id="error-message"></div>
+
           <button type="submit" class="login-btn" id="submit-btn">
             Log In
           </button>
         </form>
 
         <p class="toggle-link">
-          Don't have an account? 
-          <a href="#" id="toggle-form-link" onclick="toggleForm(event)">Sign Up</a>
+          Don't have an account?
+          <a href="#" id="toggle-form-link">Sign Up</a>
         </p>
       </div>
     </div>
+
+    <!-- 
+      You MUST get these from your Firebase project console.
+      https://firebase.google.com/docs/web/setup
+    -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     
-    <!-- Shared script for theme switching (minimal required global script) -->
-    <script src="script.js"></script>
+    <!-- Your new auth logic file -->
+    <script src="auth.js"></script>
 
     <script>
       let isLogin = true;
-      const form = document.querySelector('.login-form');
+      let authMode = 'email'; // 'email' or 'phone'
+      
+      const form = document.getElementById('login-form');
       const submitBtn = document.getElementById('submit-btn');
+      const formTitle = document.getElementById('form-title');
       const subtitle = document.getElementById('form-subtitle');
       const toggleLink = document.getElementById('toggle-form-link');
+      const nameDiv = document.getElementById('confirm-name-div');
+      
+      const emailGroup = document.getElementById('email-group');
+      const phoneGroup = document.getElementById('phone-group');
+      const codeGroup = document.getElementById('code-group');
+      const phoneToggleBtn = document.getElementById('phone-signin-toggle');
+      const sendCodeBtn = document.getElementById('send-code-btn');
+      
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const nameInput = document.getElementById('name');
+      const phoneInput = document.getElementById('phone-number');
+      const codeInput = document.getElementById('verification-code');
+      
+      const googleBtn = document.getElementById('google-signin');
+      const githubBtn = document.getElementById('github-signin');
+      const errorMessage = document.getElementById('error-message');
 
-      function toggleForm(event) {
-        event?.preventDefault(); // Make event optional for programmatic call
-        isLogin = !isLogin;
-        
-        // Update form inputs (e.g., add 'Confirm Password')
-        if (!isLogin && form.querySelector('#confirm-password') === null) {
-          const confirmPasswordDiv = document.createElement('div');
-          confirmPasswordDiv.innerHTML = `
-            <label for="confirm-password">Confirm Password</label>
-            <input type="password" id="confirm-password" placeholder="••••••••" required />
-          `;
-          confirmPasswordDiv.id = 'confirm-password-div';
-          // Insert after password
-          form.querySelector('#password').parentElement.insertAdjacentElement('afterend', confirmPasswordDiv);
-        } else if (isLogin && form.querySelector('#confirm-password-div')) {
-          form.querySelector('#confirm-password-div').remove();
-        }
+      // --- Firebase Config ---
+      // !! IMPORTANT !!
+      // You must replace this with your own Firebase project configuration
+      // Go to your Firebase project -> Project Settings -> General -> Your apps
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+      };
 
-        // Update button and text
-        submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
-        subtitle.innerText = isLogin ? 'Log in to continue your work.' : 'Create your new LYNQ AI account.';
-        toggleLink.innerText = isLogin ? 'Sign Up' : 'Log In';
-        document.querySelector('.toggle-link').innerHTML = isLogin 
-          ? `Don't have an account? <a href="#" id="toggle-form-link" onclick="toggleForm(event)">Sign Up</a>`
-          : `Already have an account? <a href="#" id="toggle-form-link" onclick="toggleForm(event)">Log In</a>`;
+      // --- Initialize Firebase and Auth Logic ---
+      // These functions come from auth.js
+      initializeFirebase(firebaseConfig);
+      setupRecaptcha('recaptcha-container');
+
+      function showError(message) {
+        errorMessage.innerText = message;
+        errorMessage.style.display = 'block';
+      }
+      
+      function hideError() {
+        errorMessage.innerText = '';
+        errorMessage.style.display = 'none';
       }
 
-      // NEW: Check URL parameters on load
+      function toggleFormMode(event) {
+        event?.preventDefault();
+        isLogin = !isLogin;
+        hideError();
+        
+        nameDiv.style.display = isLogin ? 'none' : 'block';
+        formTitle.innerText = isLogin ? 'Welcome Back' : 'Create Account';
+        subtitle.innerText = isLogin ? 'Log in to continue your work.' : 'Create your new LYNQ AI account.';
+        submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
+        toggleLink.innerHTML = isLogin 
+          ? `Don't have an account? <a href="#" id="toggle-form-link">Sign Up</a>`
+          : `Already have an account? <a href="#" id="toggle-form-link">Log In</a>`;
+        
+        // Re-attach the listener to the new link
+        document.getElementById('toggle-form-link').addEventListener('click', toggleFormMode);
+      }
+
+      function setAuthMode(mode) {
+        authMode = mode;
+        hideError();
+        if (mode === 'email') {
+          emailGroup.style.display = 'grid';
+          phoneGroup.style.display = 'none';
+          codeGroup.style.display = 'none';
+          phoneToggleBtn.innerText = 'Sign in with Phone';
+          submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
+        } else if (mode === 'phone') {
+          emailGroup.style.display = 'none';
+          phoneGroup.style.display = 'flex';
+          codeGroup.style.display = 'flex';
+          phoneToggleBtn.innerText = 'Sign in with Email';
+          submitBtn.innerText = 'Verify Code & Sign In';
+        }
+      }
+
+      // --- Event Listeners ---
+      document.getElementById('toggle-form-link').addEventListener('click', toggleFormMode);
+      
+      googleBtn.addEventListener('click', async () => {
+        hideError();
+        try {
+          await signInWithGoogle();
+          // auth.js listener will handle redirect
+        } catch (error) {
+          showError(error.message);
+        }
+      });
+      
+      githubBtn.addEventListener('click', async () => {
+        hideError();
+        try {
+          await signInWithGitHub();
+          // auth.js listener will handle redirect
+        } catch (error) {
+          showError(error.message);
+        }
+      });
+      
+      phoneToggleBtn.addEventListener('click', () => {
+        setAuthMode(authMode === 'email' ? 'phone' : 'email');
+      });
+      
+      sendCodeBtn.addEventListener('click', async () => {
+        hideError();
+        const phoneNumber = phoneInput.value;
+        if (!phoneNumber) {
+          showError('Please enter a phone number.');
+          return;
+        }
+        try {
+          sendCodeBtn.disabled = true;
+          sendCodeBtn.innerText = 'Sending...';
+          await signInWithPhone(phoneNumber);
+          showError('Verification code sent! Check your phone.'); // Use error box for status
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.innerText = 'Resend Code';
+        } catch (error) {
+          showError(error.message);
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.innerText = 'Send Code';
+        }
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Processing...';
+
+        try {
+          if (authMode === 'email') {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            const name = nameInput.value;
+            
+            if (isLogin) {
+              await logInWithEmail(email, password);
+            } else {
+              await signUpWithEmail(email, password, name);
+            }
+          } else if (authMode === 'phone') {
+            const code = codeInput.value;
+            if (!code) throw new Error('Please enter the verification code.');
+            await verifyPhoneCode(code);
+          }
+          // Success! auth.js listener will handle redirect
+        } catch (error) {
+          showError(error.message);
+        } finally {
+          submitBtn.disabled = false;
+          // Restore correct text
+          if (authMode === 'email') {
+             submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
+          } else {
+             submitBtn.innerText = 'Verify Code & Sign In';
+          }
+        }
+      });
+      
+      // Check for URL parameters
       document.addEventListener('DOMContentLoaded', () => {
           const urlParams = new URLSearchParams(window.location.search);
           if (urlParams.get('action') === 'signup') {
-              // Programmatically toggle to the signup form if param is present
-              isLogin = true; // Set to true first so toggleForm flips it to false
-              toggleForm(null); 
+              isLogin = true; 
+              toggleFormMode(null); 
           }
       });
-
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        if (isLogin) {
-            // Call the global login handler, which simulates login, shows toast, and updates UI
-            if (typeof handleLogin === 'function') {
-                handleLogin();
-            } else if (typeof showToast === 'function') {
-                showToast("Simulating login...");
-            }
-        } else {
-             if (typeof showToast === 'function') {
-                showToast("Simulating sign up...");
-            }
-        }
-        
-        // For successful login, redirect to home. This ensures the UI is fully updated.
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 500);
-      });
-      
     </script>
   </body>
 </html>

@@ -1,14 +1,29 @@
 /*
   script.js
   This file contains shared logic and state used across ALL pages.
-  UI functions specific to index.html (chat/canvas) are now in home.js.
   
-  --- UPDATED: LocalStorage replaced with MongoDB API calls ---
-  --- CLEANUP: Removed unused codeHistory and simplified DOMContentLoaded ---
+  --- UPDATED: Real Firebase Auth integration ---
+  - Removed all "fake" auth logic (handleLogin, showAuthPopup, etc.)
+  - Added Firebase init and auth state listener
+  - All API calls are now secured with a Firebase Auth token
 */
 
 // --- GLOBAL STATE & API CONFIG ---
 let mainChatHistory = [];
+
+// !! IMPORTANT !!
+// You must replace this with your own Firebase project configuration
+// This MUST match the config in login.html and auth.js
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+
+let currentUser = null; // Store the logged-in Firebase user object
 
 // recentChats will be populated asynchronously
 let recentChats = [];
@@ -39,48 +54,31 @@ let confirmDeleteModal;
 let confirmDeleteText;
 let confirmDeleteCancelBtn;
 let confirmDeleteConfirmBtn;
-let sidebar; // NEW: Global reference for sidebar
-let mobileOverlay; // NEW: Global reference for mobile overlay
+let sidebar;
+let mobileOverlay;
 
 // --- NEW: SWIPE AND CLICK OUTSIDE LOGIC GLOBALS ---
 let touchStartX = 0;
 let touchEndX = 0;
 const SWIPE_THRESHOLD = 50; // Minimum distance for a recognized swipe
 
-// --- NEW: API FUNCTIONS FOR CHAT PERSISTENCE ---
-// --- SIMPLE LOGIN HANDLER (FAKE LOGIN FOR NOW) ---
-function handleLogin() {
-  localStorage.setItem("lynq_user_logged_in", "true");
-  localStorage.removeItem("lynq_skip_auth");
+// --- REMOVED: Fake login/auth functions ---
+// handleLogin()
+// showAuthPopup()
+// closeAuthPopup()
+// redirectToLogin()
+// redirectToSignup()
 
-  if (typeof showToast === "function") {
-    showToast("Logged in successfully.");
+// --- NEW: Auth Helper ---
+/**
+ * Handles auth errors (401, 403) by logging the user out.
+ */
+function handleAuthError() {
+  console.error("Authentication error. Token may be invalid. Logging out.");
+  if (typeof logoutUser === "function") {
+    logoutUser(); // logoutUser() is defined in auth.js
   }
-}
-
-// --- AUTH POPUP HELPERS ---
-function showAuthPopup() {
-  const popup = document.getElementById("auth-popup");
-  if (popup) {
-    popup.classList.remove("auth-hidden");
-  }
-}
-
-function closeAuthPopup(event) {
-  if (event) event.preventDefault();
-  localStorage.setItem("lynq_skip_auth", "true");
-  const popup = document.getElementById("auth-popup");
-  if (popup) {
-    popup.classList.add("auth-hidden");
-  }
-}
-
-function redirectToLogin() {
-  window.location.href = "login.html?action=login"; // MODIFIED: Added explicit parameter
-}
-
-function redirectToSignup() {
-  window.location.href = "login.html?action=signup";
+  showToast("Session expired. Please log in again.");
 }
 
 /**
@@ -88,13 +86,29 @@ function redirectToSignup() {
  * @param {object} chatData The chat object to save ({id, title, history, pinned}).
  */
 async function saveChat(chatData) {
+  // --- NEW: Auth Check ---
+  if (!currentUser) return null;
+  const token = await getAuthToken(); // getAuthToken() is from auth.js
+  if (!token) {
+    handleAuthError();
+    return null;
+  }
+  // --- END NEW ---
+
   try {
     const response = await fetch(`${CHAT_API_BASE}/save`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Add token
+      },
       body: JSON.stringify(chatData),
     });
 
+    if (response.status === 401 || response.status === 403) {
+      handleAuthError();
+      return null;
+    }
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || "Failed to save chat.");
@@ -115,8 +129,29 @@ async function saveChat(chatData) {
  * Loads all recent chat summaries for the sidebar.
  */
 async function loadAllChats() {
+  // --- NEW: Auth Check ---
+  if (!currentUser) {
+    console.log("loadAllChats: No user. Skipping.");
+    return;
+  }
+  const token = await getAuthToken();
+  if (!token) {
+    handleAuthError();
+    return;
+  }
+  // --- END NEW ---
+
   try {
-    const response = await fetch(CHAT_API_BASE);
+    const response = await fetch(CHAT_API_BASE, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Add token
+      },
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      handleAuthError();
+      return;
+    }
     if (!response.ok) {
       throw new Error("Failed to fetch recent chats.");
     }
@@ -146,9 +181,7 @@ async function loadAllChats() {
     }
   } catch (error) {
     console.error("Error loading all chats:", error);
-    showToast(
-      `Failed to load chats: ${error.message}. Using temporary storage.`
-    );
+    showToast(`Failed to load chats: ${error.message}.`);
     // Fallback if API fails: keep recentChats array empty/local until save.
   }
 }
@@ -215,7 +248,7 @@ async function getSystemMessage(taskSpecificContext) {
   }
 
   // 2. Add custom instructions from settings
-  // Keeping localStorage for non-chat state like settings for simplicity, though in a real app these should also be dynamic.
+  // Keeping localStorage for non-chat state like settings for simplicity
   const customInstructions = localStorage.getItem("lynq_custom_instructions");
   let finalPrompt = systemPromptCache;
 
@@ -237,8 +270,9 @@ function saveSidebarState(isCollapsed) {
 
 /**
  * Loads non-chat state and initializes the active chat from the URL.
+ * @param {boolean} [loadChats=true] - Flag to control if chats should be loaded.
  */
-async function loadState() {
+async function loadState(loadChats = true) {
   // 1. Load non-chat state from localStorage (theme, model, etc.)
 
   // Theme check
@@ -280,8 +314,10 @@ async function loadState() {
   }
   // --- END NEW ---
 
-  // 2. Load the recent chats from the server
-  await loadAllChats();
+  // 2. Load the recent chats from the server (if user is logged in)
+  if (loadChats) {
+    await loadAllChats();
+  }
 }
 
 async function getApiResponse(
@@ -290,10 +326,26 @@ async function getApiResponse(
   history = [],
   signal = null
 ) {
+  // --- MODIFIED: Auth is now optional ---
+  let headers = { "Content-Type": "application/json" };
+
+  // Only add Auth header if a user is logged in
+  if (currentUser) {
+    const token = await getAuthToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    } else {
+      // This might happen if token refresh fails
+      console.warn("Could not get auth token for logged-in user.");
+      // We don't call handleAuthError() here, just proceed as guest
+    }
+  }
+  // --- END MODIFIED ---
+
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers, // Use the new conditional headers
       body: JSON.stringify({
         prompt: prompt,
         systemMessage: systemMessage,
@@ -303,6 +355,9 @@ async function getApiResponse(
       signal: signal,
     });
 
+    // We no longer check for 401/403 here, as guests won't send a token
+    // and will get a valid response.
+    // The server will still block invalid tokens if they ARE sent.
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || "The server responded with an error.");
@@ -520,7 +575,6 @@ function toggleContextMenu(event, menuId) {
 
 function showDeleteConfirm(chatId, chatTitle) {
   if (!confirmDeleteModal) {
-    // This is the fallback if the modal is not on the page
     if (confirm(`Are you sure you want to delete "${chatTitle}"?`)) {
       executeDelete(chatId);
     }
@@ -559,6 +613,15 @@ function showDeleteConfirm(chatId, chatTitle) {
 }
 
 async function executeDelete(chatId) {
+  // --- NEW: Auth Check ---
+  if (!currentUser) return;
+  const token = await getAuthToken();
+  if (!token) {
+    handleAuthError();
+    return;
+  }
+  // --- END NEW ---
+
   const chatIndex = recentChats.findIndex((chat) => chat.id == chatId);
   if (chatIndex === -1) return;
 
@@ -566,8 +629,15 @@ async function executeDelete(chatId) {
     // 1. Delete on server
     const response = await fetch(`${CHAT_API_BASE}/${chatId}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`, // Add token
+      },
     });
 
+    if (response.status === 401 || response.status === 403) {
+      handleAuthError();
+      return;
+    }
     if (!response.ok) {
       throw new Error("Server failed to delete chat.");
     }
@@ -595,6 +665,15 @@ async function executeDelete(chatId) {
 }
 
 async function chatAction(action, chatId) {
+  // --- NEW: Auth Check for rename/pin ---
+  if (!currentUser) return;
+  const token = await getAuthToken();
+  if (!token) {
+    handleAuthError();
+    return;
+  }
+  // --- END NEW ---
+
   const chatIndex = recentChats.findIndex((chat) => chat.id == chatId);
   if (chatIndex === -1) return;
 
@@ -617,9 +696,19 @@ async function chatAction(action, chatId) {
     .forEach((menu) => menu.classList.remove("show"));
 
   // Find the full chat object to save the updated metadata (title/pinned status)
-  // For simplicity, we assume metadata change doesn't change history, but we need the full object to save.
   try {
-    const chatHistoryResponse = await fetch(`${CHAT_API_BASE}/${chatId}`);
+    const chatHistoryResponse = await fetch(`${CHAT_API_BASE}/${chatId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Add token
+      },
+    });
+    if (
+      chatHistoryResponse.status === 401 ||
+      chatHistoryResponse.status === 403
+    ) {
+      handleAuthError();
+      return;
+    }
     if (!chatHistoryResponse.ok)
       throw new Error("Could not fetch chat history for update.");
     const fullChat = await chatHistoryResponse.json();
@@ -629,7 +718,7 @@ async function chatAction(action, chatId) {
     fullChat.pinned = chat.pinned;
 
     // Save the updated chat back to the server
-    await saveChat(fullChat);
+    await saveChat(fullChat); // saveChat already handles its own auth
     showToast(`Chat ${action}d successfully.`);
   } catch (error) {
     console.error(`Error performing chat action (${action}):`, error);
@@ -648,8 +737,6 @@ function updateModelButton(modelName, iconClass, iconColor) {
   if (!btn) return;
 
   let shortName = modelName.split("/").pop();
-  // Changed "Gemini s" to "Gemini " to fix the regex in the original code,
-  // though the models listed don't include "Gemini s"
   shortName = shortName.replace("Gemini ", "");
 
   btn.innerHTML = `<i class="fa-solid ${iconClass}" style="color:${iconColor};"></i> ${shortName} <i class="fa-solid fa-chevron-down chevron"></i>`;
@@ -733,6 +820,68 @@ function initializeModelButton() {
   }
 }
 
+/**
+ * --- NEW: Updates the global UI based on the user's auth state. ---
+ * @param {object|null} user - The Firebase user object, or null if logged out.
+ */
+function updateUIAfterAuth(user) {
+  const loginSignupBtn = document.getElementById("login-signup-btn");
+  const topProfileBtn = document.getElementById("top-profile-btn-user");
+  const topProfileAvatar = document.getElementById("top-profile-avatar");
+  const topProfileName = document.getElementById("top-profile-name");
+
+  const navLoginLink = document.getElementById("nav-login-link");
+  const navProfileWrapper = document.getElementById("nav-profile-wrapper");
+  const navProfileAvatar = document.getElementById("nav-profile-avatar");
+  const navProfileName = document.getElementById("nav-profile-name");
+
+  const navLogoutLink = document.getElementById("nav-logout-link");
+  const welcomeName = document.getElementById("welcome-name");
+
+  if (user) {
+    // --- User is Logged In ---
+    const displayName = user.displayName || user.email.split("@")[0];
+    const avatarInitial = (displayName[0] || "U").toUpperCase();
+
+    if (loginSignupBtn) loginSignupBtn.style.display = "none";
+    if (navLoginLink) navLoginLink.style.display = "none";
+
+    if (topProfileBtn) {
+      topProfileBtn.style.display = "flex";
+      if (topProfileName) topProfileName.innerText = displayName;
+      if (topProfileAvatar) topProfileAvatar.innerText = avatarInitial;
+    }
+    if (navProfileWrapper) {
+      navProfileWrapper.style.display = "flex";
+      if (navProfileName) navProfileName.innerText = displayName;
+      if (navProfileAvatar) navProfileAvatar.innerText = avatarInitial;
+    }
+    if (navLogoutLink) navLogoutLink.style.display = "flex";
+    if (welcomeName) welcomeName.innerText = `Hello, ${displayName}`;
+
+    // Load user-specific data
+    loadState(true); // Pass true to load chats
+  } else {
+    // --- User is Logged Out ---
+    if (loginSignupBtn) loginSignupBtn.style.display = "flex";
+    if (navLoginLink) navLoginLink.style.display = "flex";
+
+    if (topProfileBtn) topProfileBtn.style.display = "none";
+    if (navProfileWrapper) navProfileWrapper.style.display = "none";
+    if (navLogoutLink) navLogoutLink.style.display = "none";
+    if (welcomeName) welcomeName.innerText = "Hello, Guest";
+
+    // Clear user-specific data
+    recentChats = [];
+    renderRecentChats();
+    if (typeof resetChat === "function") {
+      resetChat();
+    }
+    // Load non-chat state (theme, etc.)
+    loadState(false); // Pass false to skip chat loading
+  }
+}
+
 // --- GLOBAL EVENT LISTENERS ---
 
 window.onclick = function (event) {
@@ -750,7 +899,6 @@ window.onclick = function (event) {
   if (event.target === document.getElementById("confirm-delete-modal")) {
     document.getElementById("confirm-delete-modal").classList.remove("active");
   }
-  // Note: toolsDropdown closure logic is now in home.js
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -766,14 +914,26 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmDeleteCancelBtn = document.getElementById("confirm-delete-cancel");
   confirmDeleteConfirmBtn = document.getElementById("confirm-delete-confirm");
 
-  // Load state will now handle setting dark-mode as default and restoring sidebar state
-  loadState();
+  // --- NEW: Initialize Firebase and Auth ---
+  // auth.js must be loaded before this script in index.html
+  if (typeof initializeFirebase === "function") {
+    initializeFirebase(firebaseConfig);
+  } else {
+    console.error("auth.js not loaded correctly. Firebase auth will fail.");
+  }
+
+  // Listen for the 'authStateReady' event from auth.js
+  // This event fires when auth.js knows if a user is logged in or out
+  document.addEventListener("authStateReady", (e) => {
+    currentUser = e.detail.user; // Set the global user
+    updateUIAfterAuth(currentUser); // Update UI based on auth state
+  });
+  // --- END NEW ---
 
   // Initialize the model button display
   initializeModelButton(); // Use the new centralized function
 
   // --- NEW: Attach global swipe listeners ---
-  // Attaching to document or window handles swipe events regardless of what element the touch starts on.
   document.addEventListener("touchstart", handleTouchStart, { passive: true });
   document.addEventListener("touchmove", handleTouchMove, { passive: false });
   document.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -783,19 +943,5 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileOverlay.addEventListener("click", closeSidebar);
   }
 
-  // --- SHOW AUTH POPUP FOR NEW / LOGGED-OUT USERS ---
-  const isLoggedIn = localStorage.getItem("lynq_user_logged_in");
-  const skipped = localStorage.getItem("lynq_skip_auth");
-
-  const onHomePage =
-    window.location.pathname.endsWith("index.html") ||
-    window.location.pathname === "/" ||
-    window.location.pathname === "";
-
-  if (onHomePage && !isLoggedIn && !skipped) {
-    // small delay so the UI loads first
-    setTimeout(() => {
-      showAuthPopup();
-    }, 500);
-  }
+  // --- REMOVED: Old fake auth popup logic ---
 });

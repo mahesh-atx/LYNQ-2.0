@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
-import "dotenv/config"; // Loads .env file into process.env
+import "dotenv/config";
 import path from "path";
 import { fileURLToPath } from "url";
-import mongoose from "mongoose"; // NEW: Import mongoose
+import mongoose from "mongoose";
+// --- NEW: Import Firebase Admin SDK ---
+import admin from "firebase-admin";
 
 // --- NEW: Setup for __dirname in ES Modules ---
 const __filename = fileURLToPath(import.meta.url);
@@ -18,18 +20,46 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 // --- Environment Variables ---
-const API_KEY = process.env.API_KEY;
-const MODEL_URL = process.env.MODEL_URL;
-const MONGODB_URI = process.env.MONGODB_URI; // NEW: Get MongoDB URI
+const MONGODB_URI = process.env.MONGODB_URI;
+// --- NEW: Firebase Admin SDK config ---
+// You must download this from your Firebase Project Settings > Service Accounts
+// Store it securely, or load from environment variables
+// For this example, we assume you've set the GOOGLE_APPLICATION_CREDENTIALS
+// environment variable to the path of your serviceAccountKey.json file.
+// OR, you can paste the object here:
+/*
+const serviceAccount = {
+  "type": "service_account",
+  "project_id": "YOUR_PROJECT_ID",
+  "private_key_id": "YOUR_PRIVATE_KEY_ID",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n",
+  "client_email": "YOUR_CLIENT_EMAIL",
+  "client_id": "YOUR_CLIENT_ID",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "YOUR_CLIENT_X509_CERT_URL"
+};
 
-if (!API_KEY) {
-  console.error("Error: API_KEY is not defined. Please check your .env file.");
-  process.exit(1);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+*/
+
+// Simpler method if GOOGLE_APPLICATION_CREDENTIALS env var is set
+try {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+  });
+  console.log("Firebase Admin SDK initialized.");
+} catch (error) {
+  console.error("Firebase Admin SDK initialization error:", error.message);
+  console.log(
+    "Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly."
+  );
+  // process.exit(1);
 }
-if (!process.env.MODEL) {
-  console.error("Error: MODEL is not defined. Please check your .env file.");
-  process.exit(1);
-}
+
 if (!MONGODB_URI) {
   console.error(
     "Error: MONGODB_URI is not defined. Please check your .env file."
@@ -37,7 +67,7 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
-// --- NEW: MongoDB Connection & Schema ---
+// --- MongoDB Connection & Schemas ---
 mongoose
   .connect(MONGODB_URI)
   .then(() => console.log("Successfully connected to MongoDB."))
@@ -46,35 +76,46 @@ mongoose
     process.exit(1);
   });
 
-// --- FIX: Explicitly define the AttachmentSchema ---
-// This prevents casting errors on nested objects.
+// --- NEW: User Schema ---
+// This links our Mongoose DB to Firebase Auth
+const UserSchema = new mongoose.Schema({
+  firebaseUid: { type: String, required: true, unique: true, index: true },
+  email: { type: String, required: true, unique: true },
+  displayName: { type: String },
+  photoURL: { type: String },
+  createdAt: { type: Date, default: Date.now },
+});
+const User = mongoose.model("User", UserSchema);
+
+// --- Existing Chat Schemas ---
 const AttachmentSchema = new mongoose.Schema(
   {
     name: String,
     text: String,
-    type: String, // e.g., 'pdf'
+    type: String,
   },
   { _id: false }
-); // Disable _id for this subdocument
+);
 
 const MessageSchema = new mongoose.Schema({
   role: { type: String, required: true },
   content: { type: String, required: true },
-  // Use the explicit AttachmentSchema here
   attachment: { type: AttachmentSchema, required: false },
 });
 
 const ChatSchema = new mongoose.Schema({
-  // Unique ID for the chat, used by the frontend
-  chatId: { type: Number, required: true, unique: true },
+  // --- NEW: Link to the User's *Firebase UID* ---
+  userId: { type: String, required: true, index: true },
+  chatId: { type: Number, required: true, index: true }, // Keep frontend ID
   title: { type: String, required: true },
   history: [MessageSchema],
   pinned: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
+// Create a compound index for efficient user-specific chat lookups
+ChatSchema.index({ userId: 1, chatId: 1 }, { unique: true });
 
-// Using a pre-save hook to update the updatedAt timestamp
 ChatSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
@@ -82,18 +123,95 @@ ChatSchema.pre("save", function (next) {
 
 const Chat = mongoose.model("Chat", ChatSchema);
 
-// --- NEW: Chat Data API Endpoints ---
+// --- NEW: Optional Authentication Middleware ---
+/**
+ * Tries to verify a Firebase Auth token.
+ * If valid, attaches user to `req.user`.
+ * If invalid or missing, sets `req.user = null` and continues.
+ */
+const optionalAuthToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const idToken = authHeader.split("Bearer ")[1];
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      req.user = decodedToken; // Add user info
+    } catch (error) {
+      // Token is invalid, expired, or something else. Treat as guest.
+      req.user = null;
+    }
+  } else {
+    // No token provided. Treat as guest.
+    req.user = null;
+  }
+  next(); // Continue to the endpoint
+};
 
-// GET: Load all recent chats (sidebar list)
-app.get("/api/chats", async (req, res) => {
+// --- NEW: Authentication Middleware ---
+/**
+ * Verifies the Firebase Auth token sent from the client.
+ * If valid, attaches the decoded user token to `req.user`.
+ */
+const verifyAuthToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Unauthorized: No token provided" });
+  }
+
+  const idToken = authHeader.split("Bearer ")[1];
   try {
-    // Only fetch necessary fields for the sidebar list, sorted by last updated
-    const chats = await Chat.find({})
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.user = decodedToken; // Add user info (uid, email, etc.) to the request
+    next();
+  } catch (error) {
+    console.error("Error verifying auth token:", error);
+    return res.status(403).json({ error: "Forbidden: Invalid token" });
+  }
+};
+
+// --- NEW: User API Endpoints ---
+
+/**
+ * POST /api/users/sync
+ * Called by the client (auth.js) after a successful login/signup.
+ * Creates or updates the user's profile in our Mongoose DB.
+ */
+app.post("/api/users/sync", verifyAuthToken, async (req, res) => {
+  try {
+    const { uid, email, name, picture } = req.user; // Get info from the *verified token*
+
+    const user = await User.findOneAndUpdate(
+      { firebaseUid: uid },
+      {
+        $set: {
+          email: email,
+          displayName: name,
+          photoURL: picture,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true } // Create if not exist
+    );
+
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error("Error syncing user:", err);
+    res.status(500).json({ error: "Failed to sync user data" });
+  }
+});
+
+// --- SECURED: Chat Data API Endpoints ---
+// All these routes now require a valid token and are user-specific.
+
+// GET: Load all recent chats for the *authenticated user*
+app.get("/api/chats", verifyAuthToken, async (req, res) => {
+  try {
+    const chats = await Chat.find({ userId: req.user.uid }) // Filter by user ID
       .select("chatId title pinned updatedAt")
       .sort({ updatedAt: -1 });
+
     res.json(
       chats.map((chat) => ({
-        id: chat.chatId, // Map MongoDB ID back to frontend 'id'
+        id: chat.chatId,
         title: chat.title,
         pinned: chat.pinned,
         updatedAt: chat.updatedAt,
@@ -105,14 +223,17 @@ app.get("/api/chats", async (req, res) => {
   }
 });
 
-// GET: Load a single chat (for loading history)
-app.get("/api/chats/:id", async (req, res) => {
+// GET: Load a single chat, ensuring it belongs to the *authenticated user*
+app.get("/api/chats/:id", verifyAuthToken, async (req, res) => {
   try {
     const chatId = req.params.id;
-    const chat = await Chat.findOne({ chatId: chatId });
+    const chat = await Chat.findOne({
+      chatId: chatId,
+      userId: req.user.uid, // Ensure user ownership
+    });
 
     if (!chat) {
-      return res.status(404).json({ error: "Chat not found" });
+      return res.status(404).json({ error: "Chat not found or access denied" });
     }
 
     res.json({
@@ -127,8 +248,8 @@ app.get("/api/chats/:id", async (req, res) => {
   }
 });
 
-// POST or PUT: Save/Update a chat
-app.post("/api/chats/save", async (req, res) => {
+// POST or PUT: Save/Update a chat for the *authenticated user*
+app.post("/api/chats/save", verifyAuthToken, async (req, res) => {
   const { id, title, history, pinned } = req.body;
 
   if (!id || !title || !Array.isArray(history)) {
@@ -137,19 +258,21 @@ app.post("/api/chats/save", async (req, res) => {
 
   try {
     const update = {
+      userId: req.user.uid, // Ensure userId is set
       title,
       history,
       pinned: pinned !== undefined ? pinned : false,
     };
 
     const options = {
-      new: true, // Return the updated document
-      upsert: true, // Create if not found (though new chats are created with `Date.now()`)
+      new: true,
+      upsert: true,
       setDefaultsOnInsert: true,
     };
 
+    // Find by compound key: chatId AND userId
     const savedChat = await Chat.findOneAndUpdate(
-      { chatId: id },
+      { chatId: id, userId: req.user.uid },
       update,
       options
     );
@@ -161,14 +284,17 @@ app.post("/api/chats/save", async (req, res) => {
   }
 });
 
-// DELETE: Delete a chat
-app.delete("/api/chats/:id", async (req, res) => {
+// DELETE: Delete a chat, ensuring it belongs to the *authenticated user*
+app.delete("/api/chats/:id", verifyAuthToken, async (req, res) => {
   try {
     const chatId = req.params.id;
-    const result = await Chat.deleteOne({ chatId: chatId });
+    const result = await Chat.deleteOne({
+      chatId: chatId,
+      userId: req.user.uid, // Ensure user ownership
+    });
 
     if (result.deletedCount === 0) {
-      return res.status(404).json({ error: "Chat not found" });
+      return res.status(404).json({ error: "Chat not found or access denied" });
     }
 
     res.json({ success: true, message: "Chat deleted" });
@@ -178,31 +304,25 @@ app.delete("/api/chats/:id", async (req, res) => {
   }
 });
 
-// --- Existing Groq API Endpoint ---
-// This path /api/generate now lives on the same server as your index.html
-app.post("/api/generate", async (req, res) => {
-  // 1. Destructure all parts from the client
-  // --- UPDATED ---: Added max_tokens here
+// --- Existing Groq API Endpoint (NOW PUBLIC, OPTIONALLY AUTHED) ---
+// Only authenticated users can access the AI
+app.post("/api/generate", optionalAuthToken, async (req, res) => {
+  // We apply optional auth. `req.user` will be null for guests
+  // or contain user data for logged-in users.
+  // This allows us to add rate-limiting for guests later if needed.
+
   const { prompt, systemMessage, history, model, max_tokens } = req.body;
 
-  // 2. Build the messages array for the API
   let messages = [];
-
-  // 3. Add the system message (if it exists)
   if (systemMessage) {
     messages.push({ role: "system", content: systemMessage });
   }
-
-  // 4. Add the past history (if it exists)
   if (history && Array.isArray(history)) {
     messages = messages.concat(history);
   }
-
-  // 5. Add the new user prompt
   if (prompt) {
     messages.push({ role: "user", content: prompt });
   } else {
-    // Don't run if there's no new prompt
     return res.status(400).json({ error: "No prompt provided" });
   }
 
@@ -213,24 +333,19 @@ app.post("/api/generate", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.API_KEY}`,
+          Authorization: `Bearer ${process.env.API_KEY}`, // Groq key
         },
-        // --- UPDATED ---: The body now includes max_tokens if it exists
         body: JSON.stringify({
-          model: model || process.env.MODEL, // Will use client's model, or fallback to .env
-          // 6. Pass the complete, ordered array
+          model: model || process.env.MODEL,
           messages: messages,
-          // 7. NEW: Add max_tokens if it was sent from the client
-          // Ensures it's an integer and only adds the key if max_tokens is present
           ...(max_tokens && { max_tokens: parseInt(max_tokens, 10) }),
         }),
       }
     );
 
     const data = await response.json();
-
     if (!response.ok) {
-      console.error("Grok API error:", data);
+      console.error("Groq API error:", data);
       return res.status(response.status).json({ error: data });
     }
 
@@ -238,7 +353,6 @@ app.post("/api/generate", async (req, res) => {
     if (!reply) {
       return res.status(500).json({ error: "No reply from model" });
     }
-
     res.json({ text: reply });
   } catch (err) {
     console.error("Server-side fetch error:", err);
@@ -251,5 +365,4 @@ app.listen(port, () => {
   console.log(
     `LYNQ AI app (frontend and backend) listening on http://localhost:${port}`
   );
-  console.log(`You can now open http://localhost:${port} in your browser.`);
 });

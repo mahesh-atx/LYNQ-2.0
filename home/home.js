@@ -3,7 +3,7 @@
   This file contains logic ONLY for the Home/Chat page (index.html).
   It relies on global state and functions defined in script.js.
   
-  --- REFACTOR: Centralized system prompt construction and canvas reset logic. ---
+  --- UPDATED: loadChat() is now secured with auth token. ---
 */
 
 // --- HOME/CHAT PAGE DOM ELEMENTS (Page Specific) ---
@@ -26,7 +26,6 @@ let canvasPreviewIframe;
 let canvasPreviewPlaceholder;
 let toolsToggleBtn;
 let toolsDropdown;
-// REMOVED: pdfChatToggleBtn (unused)
 let attachFileBtn;
 let fileUploadInput;
 let attachmentPreviewContainer;
@@ -420,13 +419,16 @@ function resetChat() {
  * Loads an existing chat's history into the view.
  */
 async function loadChat(chatId) {
-  // Check if we already loaded this chat
-  // if (activeChatId == chatId && mainChatHistory.length > 0) {
-  //   // Already loaded, just ensure welcome screen is hidden
-  //   if (welcomeScreen) welcomeScreen.style.display = "none";
-  //   if (typeof closeSidebar === "function") closeSidebar();
-  //   return;
-  // }
+  // --- NEW: Auth Check ---
+  // currentUser is global in script.js
+  if (!currentUser) return;
+  // getAuthToken and handleAuthError are global in script.js/auth.js
+  const token = await getAuthToken();
+  if (!token) {
+    handleAuthError();
+    return;
+  }
+  // --- END NEW ---
 
   if (typeof recentChats === "undefined") return;
   const chat = recentChats.find((c) => c.id == chatId);
@@ -443,7 +445,18 @@ async function loadChat(chatId) {
 
   // 1. Fetch the full chat history from the server
   try {
-    const response = await fetch(`${CHAT_API_BASE}/${chatId}`);
+    const response = await fetch(`${CHAT_API_BASE}/${chatId}`, {
+      // --- NEW: Add Auth Header ---
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      // --- END NEW ---
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      handleAuthError();
+      return;
+    }
     if (!response.ok) throw new Error("Failed to fetch full chat history.");
     const fullChat = await response.json();
 
@@ -523,6 +536,7 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
 `;
   }
 
+  // getSystemMessage is global in script.js
   return getSystemMessage(contextAddon);
 }
 
@@ -532,6 +546,16 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
 async function handleSend() {
   if (!chatInput) return;
   const text = chatInput.value.trim();
+
+  // --- MODIFIED: Auth Check ---
+  // We no longer block guests, just check if they are one
+  const isGuest = !currentUser;
+  if (!isGuest) {
+    console.log("Sending as logged-in user:", currentUser.uid);
+  } else {
+    console.log("Sending as guest.");
+  }
+  // --- END MODIFIED ---
 
   if (!text && !currentAttachment) return;
 
@@ -561,6 +585,8 @@ async function handleSend() {
       console.error("Global state (recentChats) not initialized.");
       return;
     }
+
+    // --- MODIFIED: Always add to the local session, guest or not ---
     recentChats.push(newChat);
     activeChatId = newChat.id;
     isNewChat = false;
@@ -572,6 +598,7 @@ async function handleSend() {
     history.pushState({ chatId: activeChatId }, newChat.title, newUrl);
 
     if (typeof renderRecentChats === "function") renderRecentChats();
+    // --- END MODIFIED ---
   }
 
   // Sanitize history for API: keep only role and content
@@ -595,7 +622,8 @@ async function handleSend() {
   addMessage(text, "user", false, newlyAttachedFile);
 
   // --- Save to DB before calling AI ---
-  if (currentChat) {
+  // --- MODIFIED: Only save if NOT guest ---
+  if (currentChat && !isGuest) {
     await saveChat({
       id: activeChatId,
       title: currentChat.title,
@@ -636,6 +664,7 @@ async function handleSend() {
   );
 
   try {
+    // getApiResponse is global in script.js
     const response = await getApiResponse(
       text,
       finalSystemMessage,
@@ -670,7 +699,8 @@ async function handleSend() {
     }
 
     // --- Save to DB after receiving AI response ---
-    if (currentChat) {
+    // --- MODIFIED: Only save if NOT guest ---
+    if (currentChat && !isGuest) {
       await saveChat({
         id: activeChatId,
         title: currentChat.title,
@@ -1046,6 +1076,9 @@ async function toggleEdit(msgWrapper, originalText, originalAttachment) {
  * Regenerates the AI response after a user message has been edited.
  */
 async function regenerateResponseAfterEdit(newPrompt, attachment) {
+  // --- NEW: Check for guest ---
+  const isGuest = !currentUser;
+
   isResponding = true;
   if (sendBtn) sendBtn.style.display = "none";
   if (stopBtn) stopBtn.style.display = "flex";
@@ -1070,6 +1103,7 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
   );
 
   try {
+    // getApiResponse is global in script.js
     const response = await getApiResponse(
       newPrompt,
       finalSystemMessage,
@@ -1104,7 +1138,8 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
     await streamResponse(response); // Await the stream to ensure save happens last
 
     // --- Save to DB after receiving AI response ---
-    if (currentChat) {
+    // --- MODIFIED: Only save if NOT guest ---
+    if (currentChat && !isGuest) {
       await saveChat({
         id: activeChatId,
         title: currentChat.title,
@@ -1305,7 +1340,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   toolsToggleBtn = document.getElementById("tools-toggle-btn");
   toolsDropdown = document.getElementById("tools-dropdown");
-  // pdfChatToggleBtn = document.getElementById("pdf-chat-btn"); // REMOVED
 
   attachFileBtn = document.getElementById("attach-file-btn");
   fileUploadInput = document.getElementById("file-upload");
