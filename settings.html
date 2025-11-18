@@ -26,7 +26,172 @@
     />
 
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="./settings/settings.css" />
+    <style>
+      /*
+  settings/settings.css
+  Styles for the Settings page
+*/
+
+/* --- VIEW SECTION (SCROLL FIX) --- */
+#settings-view {
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.settings-container {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 40px var(--primary-padding);
+}
+.settings-header {
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 20px;
+}
+.settings-header h1 {
+  font-size: 2.2rem;
+  color: var(--text-heading);
+}
+.settings-group {
+  margin-bottom: 40px;
+}
+.settings-group h3 {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.setting-item {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  transition: 0.2s;
+}
+.setting-item:hover {
+  border-color: var(--border-secondary);
+}
+.setting-item.vertical {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+}
+.setting-info h4 {
+  color: var(--text-heading);
+  margin-bottom: 5px;
+  font-size: 1rem;
+}
+.setting-info p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
+}
+.toggle-switch {
+  position: relative;
+  width: 50px;
+  height: 28px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-secondary);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: var(--bg-accent);
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+.custom-textarea {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 15px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  resize: vertical;
+  min-height: 80px; /* REDUCED from 100px */
+  margin-top: 10px;
+}
+.custom-textarea:focus {
+  border-color: var(--text-heading);
+}
+.select-box {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  outline: none;
+  cursor: pointer;
+}
+.input-field-styled {
+  padding: 10px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  outline: none;
+}
+.input-field-styled:focus {
+  border-color: var(--text-heading);
+}
+
+.btn-danger {
+  color: var(--text-danger);
+  background: var(--bg-danger);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-secondary {
+  color: var(--text-heading);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+    </style>
   </head>
   <!-- MODIFIED: Added dark-mode class -->
   <body class="dark-mode">
@@ -409,6 +574,112 @@
     <!-- Shared script for all pages -->
     <script src="script.js"></script>
     <!-- Page-specific script -->
-    <script src="./settings/settings.js"></script>
+<script>
+  /*
+  settings.js
+  This file contains logic ONLY for the Settings page (settings.html).
+*/
+console.log("Settings script loaded.");
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize settings state
+  console.log("Settings DOMContentLoaded");
+
+  // Set theme toggle state based on loaded theme
+  const themeToggle = document.getElementById("settings-theme-toggle");
+  if (themeToggle && document.body.classList.contains("dark-mode")) {
+    themeToggle.checked = true;
+  }
+
+  // Add listeners for this page's buttons
+  const clearBtn = document.querySelector(".btn-danger");
+  if (clearBtn) clearBtn.onclick = clearAllHistory;
+
+  const saveBtn = document.getElementById("save-instructions-btn");
+  if (saveBtn) saveBtn.onclick = saveCustomInstructions;
+
+  const exportBtn = document.getElementById("export-data-btn");
+  if (exportBtn) exportBtn.onclick = exportChatHistory;
+
+  // Load saved custom instructions
+  loadCustomInstructions();
+});
+
+function saveCustomInstructions() {
+  const textEl = document.getElementById("custom-instructions-textarea");
+  if (textEl) {
+    localStorage.setItem("lynq_custom_instructions", textEl.value);
+    showToast("Instructions saved!"); // global func
+  }
+}
+
+function loadCustomInstructions() {
+  const text = localStorage.getItem("lynq_custom_instructions");
+  const textEl = document.getElementById("custom-instructions-textarea");
+  if (text && textEl) {
+    textEl.value = text;
+  }
+}
+
+function exportChatHistory() {
+  // We need to find the *active* chat history to export
+  // This is a bit tricky. Let's export *all* chats.
+
+  if (recentChats.length === 0) {
+    // global var
+    showToast("Nothing to export."); // global func
+    return;
+  }
+
+  // Export all recent chats into one big file
+  let fullExport = "";
+  // NOTE: This assumes 'recentChats' is a global array containing chat objects with history.
+  // This requires the full chat history data structure to be available globally or loaded here.
+  // For the simulation, we proceed with the assumption that global state is correctly loaded.
+
+  recentChats.forEach((chat) => {
+    // global var
+    fullExport += `--- CHAT: ${chat.title} (ID: ${chat.id}) ---\n\n`;
+    fullExport += chat.history
+      .map(
+        (m) => `**${m.role === "user" ? "User" : "LYNQ AI"}:**\n\n${m.content}`
+      )
+      .join("\n\n---\n\n");
+    fullExport += "\n\n\n";
+  });
+
+  const blob = new Blob([fullExport], { type: "text/markdown" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `LYNQ-All-Chats-${new Date().toISOString().split("T")[0]}.md`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function clearAllHistory() {
+  // We use a custom modal for confirmation instead of confirm()
+  // For now, we clear state directly and rely on a redirect or refresh to confirm the action.
+
+  // In a real application, you'd use a confirmation modal:
+  // if (showConfirmModal("Are you sure you want to delete all chat history?")) { ... }
+
+  // Since we cannot use confirm() and don't have the modal structure:
+  // We'll proceed with the global state reset and rely on the UI displaying a Toast first.
+
+  localStorage.removeItem("lynq_app_state");
+  localStorage.removeItem("lynq_custom_instructions");
+  // Assuming a full server-side deletion would happen here if using MongoDB.
+
+  // Display a toast and reload the page
+  if (typeof showToast === "function") {
+    showToast("All local settings and history cleared. Reloading page...");
+  }
+  setTimeout(() => {
+    location.reload();
+  }, 1000);
+}
+
+</script>
   </body>
 </html>
