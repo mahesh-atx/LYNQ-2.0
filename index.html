@@ -230,9 +230,13 @@
             <button class="upgrade-btn" onclick="togglePricing()">
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
+
             <!-- UPDATED: Login/Signup Button - Visible only when logged out -->
-            <button class="top-profile-btn" onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px;">
-              <i class="fa-solid fa-right-to-bracket"></i> <span>Log In / Sign Up</span>
+             <button class="top-profile-btn mobile-signup-btn" onclick="location.href='login.html?action=signup'" style="margin-right: 8px; display: none;">
+    <span>Sign Up</span>
+  </button>
+            <button class="top-profile-btn " onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px; ">
+              <i class="fa-solid fa-right-to-bracket"></i> <span>Sign Up</span>
             </button>
             <!-- UPDATED: Profile Button - Initially hidden, visible only when logged in -->
             <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">
@@ -255,7 +259,7 @@
                     How can I help you create today?
                   </p>
                 </div>
-                <div class="suggestion-grid">
+                <div class="suggestion-grid mobile-only">
                   <div
                     class="suggestion-card"
                     onclick="sendSuggestion('Review my portfolio code for SEO best practices.')"
@@ -285,11 +289,25 @@
                     <p>Explain SQL vs NoSQL</p>
                   </div>
                 </div>
+                <div class="suggestion-pills-mobile" id="suggestion-pills-mobile">
+    <button class="pill-card" onclick="sendSuggestion('Review my portfolio code for SEO best practices.')">
+        <i class="fa-solid fa-code"></i> Code Review
+    </button>
+    <button class="pill-card" onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')">
+        <i class="fa-solid fa-palette"></i> Color Palette
+    </button>
+    <button class="pill-card" onclick="sendSuggestion('Write a Python script to automate file organization.')">
+        <i class="fa-brands fa-python"></i> Python Script
+    </button>
+    <button class="pill-card" onclick="sendSuggestion('Explain the key differences between SQL and NoSQL.')">
+        <i class="fa-solid fa-database"></i> SQL vs NoSQL
+    </button>
+</div>
               </div>
               <div id="messages-wrapper"></div>
             </div>
 
-            <div class="input-area-wrapper">
+           <div class="input-area-wrapper fixed-mobile-input">
               <!-- Hidden file input for PDF uploads -->
               <input
                 type="file"
@@ -418,17 +436,7 @@
                   </div>
                 </div>
               </div>
-              <div
-                style="
-                  text-align: center;
-                  margin-top: 10px;
-                  font-size: 0.75rem;
-                  color: var(--text-secondary);
-                  opacity: 0.7;
-                "
-              >
-                LYNQ AI can make mistakes. Check important info.
-              </div>
+              
             </div>
           </div>
           <div id="canvas-pane">

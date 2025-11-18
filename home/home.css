@@ -933,3 +933,119 @@ body.dark-mode .bubble tr:nth-child(even) {
   opacity: 0.5;
 }
 /* --- END NEW PREVIEW --- */
+
+/* --- NEW: MOBILE-SPECIFIC STYLES (applies only on screens <= 768px) --- */
+@media (max-width: 768px) {
+  
+  /* 1. Fixed Input Area */
+  /* Ensure chat container scrolls above the fixed input */
+  #chat-container {
+    padding-bottom: 120px; 
+  }
+
+  /* Make the input area fixed at the bottom on mobile */
+  .input-area-wrapper.fixed-mobile-input {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: none; 
+    background: var(--bg-primary); 
+    /* z-index: 10; */
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1); 
+    margin: 0;
+  }
+  
+  /* Input Container visual update */
+  .input-container {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 10px 14px 2em 14px;
+    border: none;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 2. Mobile Suggestions (Pills) */
+  /* Hide the old suggestion grid (since it was removed from HTML, this is defensive) */
+  .suggestion-grid {
+      display: none !important;
+  }
+  
+  /* Show and style the new suggestion pills */
+  .suggestion-pills-mobile {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 0 10px;
+  }
+  
+  .pill-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-capsule);
+      padding: 10px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: 0.2s;
+  }
+  .pill-card:hover {
+      background: var(--bg-primary);
+  }
+  
+  /* 3. Top Bar (Sign Up Button) */
+  
+  /* Hide all existing top-profile buttons and upgrade text on mobile */
+  #login-signup-btn,
+  .top-actions #top-profile-btn-user,
+  .top-actions .upgrade-btn span {
+      display: none !important; 
+  }
+
+  /* Show the new mobile-signup-btn */
+  .top-actions .mobile-signup-btn {
+      display: flex !important;
+      font-weight: 600;
+      background: var(--bg-accent);
+      color: var(--text-accent);
+      padding: 8px 12px;
+      border-radius: 20px;
+  }
+  
+  .top-actions .mobile-signup-btn .avatar {
+      display: none;
+  }
+}
+
+/* --- CRUCIAL FIX: DESKTOP OVERRIDE (applies only on screens > 768px) --- */
+@media (min-width: 769px) {
+    /* Explicitly hide all mobile-only elements on desktop */
+    .suggestion-pills-mobile, 
+    .mobile-signup-btn {
+        display: none !important;
+    }
+
+    /* Ensure desktop input wrapper is NOT fixed and uses auto margins */
+    .input-area-wrapper.fixed-mobile-input {
+        position: static;
+        width: 82%;
+        max-width: 800px;
+        margin: 0 auto;
+        box-shadow: none;
+        background: transparent;
+    }
+    
+    /* Ensure chat container reverts to desktop padding */
+    #chat-container {
+        padding-bottom: 20px; /* Restore original bottom padding */
+    }
+
+    /* Ensure desktop profile/login buttons are shown correctly */
+    .top-actions #login-signup-btn {
+        display: flex !important;
+    }
+}
