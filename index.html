@@ -22,7 +22,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
     />
     
-    <!-- NEW: Firebase SDKs -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
@@ -70,7 +70,6 @@
         color: var(--text-secondary);
         font-size: 0.9rem;
         line-height: 1.5;
-        /* Allow word breaking for long chat titles */
         word-break: break-word;
       }
       .confirm-modal-actions {
@@ -190,6 +189,7 @@
           <a href="settings.html" class="nav-item" id="nav-settings"
             ><i class="fa-solid fa-gear"></i> Settings</a
           >
+          <!-- Auth Links -->
           <a
             href="login.html"
             class="nav-item"
@@ -198,8 +198,11 @@
           >
             <i class="fa-solid fa-right-to-bracket"></i> Login / Sign Up
           </a>
+          
+          <!-- Profile Trigger (Popup) -->
           <a
-            href="profile.html"
+            href="#"
+            onclick="toggleProfilePopup()"
             class="nav-item"
             id="nav-profile-wrapper"
             style="margin-top: 5px; display: none;"
@@ -211,16 +214,6 @@
               U
             </div>
             <span id="nav-profile-name">User</span>
-          </a>
-          <!-- NEW: Logout Button -->
-          <a
-            href="#"
-            class="nav-item"
-            id="nav-logout-link"
-            onclick="logoutUser()"
-            style="display: none; margin-top: 5px;"
-          >
-            <i class="fa-solid fa-right-from-bracket"></i> Logout
           </a>
         </div>
       </aside>
@@ -239,13 +232,18 @@
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
 
+            <!-- Mobile Signup (Hidden if logged in) -->
             <button class="top-profile-btn mobile-signup-btn" onclick="location.href='login.html?action=signup'" style="margin-right: 8px; display: none;">
               <span>Sign Up</span>
             </button>
+
+            <!-- Desktop Signup (Hidden if logged in) -->
             <button class="top-profile-btn" onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px; ">
               <i class="fa-solid fa-right-to-bracket"></i> <span>Sign Up</span>
             </button>
-            <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">
+
+            <!-- Top Profile Button (Popup) -->
+            <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user" style="display: none;">
               <div class="avatar user" id="top-profile-avatar">U</div>
               <span id="top-profile-name">User</span>
             </button>
@@ -255,6 +253,20 @@
         <div id="home-view" class="view-section active">
           
           <div id="chat-wrapper">
+             <!-- Guest Banner -->
+             <div id="guest-banner" class="guest-notice-banner" style="display: none;">
+                <div class="guest-banner-content">
+                   <i class="fa-solid fa-circle-info"></i>
+                   <span>
+                     You are using LYNQ as a Guest. Chats are saved locally. 
+                     <a href="login.html" class="guest-link">Log in</a> to sync.
+                   </span>
+                </div>
+                <button class="close-banner-btn" onclick="document.getElementById('guest-banner').style.display='none'">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+             </div>
+
             <div id="chat-container">
               <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-text">
@@ -500,6 +512,28 @@
       </div>
     </div>
 
+    <!-- PROFILE POPUP MODAL -->
+    <div class="profile-popup-overlay" id="profile-popup">
+      <div class="profile-popup">
+        <button class="profile-popup-close" onclick="toggleProfilePopup()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <div class="profile-popup-avatar" id="popup-avatar">U</div>
+        <h2 class="profile-popup-name" id="popup-name">User</h2>
+        <p class="profile-popup-email" id="popup-email">user@example.com</p>
+        <p class="profile-popup-phone" id="popup-phone">No phone linked</p>
+        
+        <div class="profile-popup-badge">
+          <i class="fa-solid fa-crown"></i> PRO MEMBER
+        </div>
+
+        <button class="profile-popup-logout" onclick="logoutUser()">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+
     <div class="confirm-modal-overlay" id="confirm-delete-modal">
       <div class="confirm-modal">
         <h3>Delete Chat</h3>
@@ -524,12 +558,9 @@
       </div>
     </div>
     
-    <!-- REMOVED: Old auth-popup div -->
-
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 
-    <!-- NEW: Load auth.js *before* script.js -->
     <script src="auth.js"></script>
     <script src="script.js"></script>
     <script src="./home/home.js"></script>

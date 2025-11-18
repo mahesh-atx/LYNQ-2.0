@@ -21,44 +21,30 @@ app.use(express.static(path.join(__dirname)));
 
 // --- Environment Variables ---
 const MONGODB_URI = process.env.MONGODB_URI;
-// --- NEW: Firebase Admin SDK config ---
-// You must download this from your Firebase Project Settings > Service Accounts
-// Store it securely, or load from environment variables
-// For this example, we assume you've set the GOOGLE_APPLICATION_CREDENTIALS
-// environment variable to the path of your serviceAccountKey.json file.
-// OR, you can paste the object here:
-/*
-const serviceAccount = {
-  "type": "service_account",
-  "project_id": "YOUR_PROJECT_ID",
-  "private_key_id": "YOUR_PRIVATE_KEY_ID",
-  "private_key": "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n",
-  "client_email": "YOUR_CLIENT_EMAIL",
-  "client_id": "YOUR_CLIENT_ID",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "YOUR_CLIENT_X509_CERT_URL"
-};
+// --- Firebase Admin Initialization using FIREBASE_ADMIN_KEY from .env ---
+if (!process.env.FIREBASE_ADMIN_KEY) {
+  console.error("❌ FIREBASE_ADMIN_KEY is not defined in .env");
+  process.exit(1);
+}
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-*/
+let serviceAccount;
+try {
+  serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_KEY);
+} catch (error) {
+  console.error("❌ Failed to parse FIREBASE_ADMIN_KEY JSON:", error);
+  process.exit(1);
+}
 
-// Simpler method if GOOGLE_APPLICATION_CREDENTIALS env var is set
 try {
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
+    credential: admin.credential.cert(serviceAccount),
   });
-  console.log("Firebase Admin SDK initialized.");
+  console.log("🔥 Firebase Admin SDK initialized via FIREBASE_ADMIN_KEY");
 } catch (error) {
-  console.error("Firebase Admin SDK initialization error:", error.message);
-  console.log(
-    "Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly."
-  );
-  // process.exit(1);
+  console.error("❌ Firebase Admin SDK initialization error:", error);
+  process.exit(1);
 }
+
 
 if (!MONGODB_URI) {
   console.error(

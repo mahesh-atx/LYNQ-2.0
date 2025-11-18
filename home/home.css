@@ -22,6 +22,55 @@
   transition: flex-basis 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+/* --- NEW: GUEST NOTICE BANNER --- */
+.guest-notice-banner {
+  background: rgba(255, 215, 0, 0.1); /* Low opacity gold/yellow */
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  animation: slideDown 0.3s ease;
+}
+
+.guest-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guest-banner-content i {
+  color: #FFD700;
+}
+
+.guest-link {
+  color: var(--text-heading);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.close-banner-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px;
+  font-size: 1rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.close-banner-btn:hover {
+  opacity: 1;
+  color: var(--text-heading);
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* --- CHAT MESSAGES & ACTIONS --- */
 #chat-container {
   flex: 1;
@@ -969,7 +1018,7 @@ textarea#chat-input {
 
   /* Show the new mobile-signup-btn */
   .top-actions .mobile-signup-btn {
-    display: flex !important;
+    display: flex;
     font-weight: 600;
     background: var(--bg-accent);
     color: var(--text-accent);
@@ -1018,4 +1067,4 @@ textarea#chat-input {
   .top-actions #login-signup-btn {
     display: flex !important;
   }
-}
+} 

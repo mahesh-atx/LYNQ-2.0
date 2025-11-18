@@ -221,11 +221,7 @@
           <div id="email-group">
             <div id="confirm-name-div" style="display: none">
               <label for="name">Full Name</label>
-              <input
-                type="text"
-                id="name"
-                placeholder="Mahesh Dongare"
-              />
+              <input type="text" id="name" placeholder="Mahesh Dongare" />
             </div>
             <div>
               <label for="email">Email Address</label>
@@ -248,16 +244,12 @@
           </div>
 
           <div class="phone-group" id="phone-group">
-            <input
-              type="tel"
-              id="phone-number"
-              placeholder="+1 555-555-1234"
-            />
+            <input type="tel" id="phone-number" placeholder="+1 555-555-1234" />
             <button type="button" id="send-code-btn">Send Code</button>
           </div>
-          
+
           <div class="phone-group" id="code-group">
-             <input
+            <input
               type="text"
               id="verification-code"
               placeholder="Enter 6-digit code"
@@ -287,104 +279,111 @@
     -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    
+
     <!-- Your new auth logic file -->
     <script src="auth.js"></script>
 
     <script>
       let isLogin = true;
-      let authMode = 'email'; // 'email' or 'phone'
-      
-      const form = document.getElementById('login-form');
-      const submitBtn = document.getElementById('submit-btn');
-      const formTitle = document.getElementById('form-title');
-      const subtitle = document.getElementById('form-subtitle');
-      const toggleLink = document.getElementById('toggle-form-link');
-      const nameDiv = document.getElementById('confirm-name-div');
-      
-      const emailGroup = document.getElementById('email-group');
-      const phoneGroup = document.getElementById('phone-group');
-      const codeGroup = document.getElementById('code-group');
-      const phoneToggleBtn = document.getElementById('phone-signin-toggle');
-      const sendCodeBtn = document.getElementById('send-code-btn');
-      
-      const emailInput = document.getElementById('email');
-      const passwordInput = document.getElementById('password');
-      const nameInput = document.getElementById('name');
-      const phoneInput = document.getElementById('phone-number');
-      const codeInput = document.getElementById('verification-code');
-      
-      const googleBtn = document.getElementById('google-signin');
-      const githubBtn = document.getElementById('github-signin');
-      const errorMessage = document.getElementById('error-message');
+      let authMode = "email"; // 'email' or 'phone'
+
+      const form = document.getElementById("login-form");
+      const submitBtn = document.getElementById("submit-btn");
+      const formTitle = document.getElementById("form-title");
+      const subtitle = document.getElementById("form-subtitle");
+      const toggleLink = document.getElementById("toggle-form-link");
+      const nameDiv = document.getElementById("confirm-name-div");
+
+      const emailGroup = document.getElementById("email-group");
+      const phoneGroup = document.getElementById("phone-group");
+      const codeGroup = document.getElementById("code-group");
+      const phoneToggleBtn = document.getElementById("phone-signin-toggle");
+      const sendCodeBtn = document.getElementById("send-code-btn");
+
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const nameInput = document.getElementById("name");
+      const phoneInput = document.getElementById("phone-number");
+      const codeInput = document.getElementById("verification-code");
+
+      const googleBtn = document.getElementById("google-signin");
+      const githubBtn = document.getElementById("github-signin");
+      const errorMessage = document.getElementById("error-message");
 
       // --- Firebase Config ---
       // !! IMPORTANT !!
       // You must replace this with your own Firebase project configuration
       // Go to your Firebase project -> Project Settings -> General -> Your apps
       const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyCdWjeOCLGTbW95_7Omn-aijRVMww8hdqk",
+        authDomain: "lynq-ai-20666.firebaseapp.com",
+        projectId: "lynq-ai-20666",
+        storageBucket: "lynq-ai-20666.firebasestorage.app",
+        messagingSenderId: "278937715698",
+        appId: "1:278937715698:web:4c913d5651cab6637be16b",
+        measurementId: "G-TGT7C31BDF",
       };
 
       // --- Initialize Firebase and Auth Logic ---
       // These functions come from auth.js
       initializeFirebase(firebaseConfig);
-      setupRecaptcha('recaptcha-container');
+      setupRecaptcha("recaptcha-container");
 
       function showError(message) {
         errorMessage.innerText = message;
-        errorMessage.style.display = 'block';
+        errorMessage.style.display = "block";
       }
-      
+
       function hideError() {
-        errorMessage.innerText = '';
-        errorMessage.style.display = 'none';
+        errorMessage.innerText = "";
+        errorMessage.style.display = "none";
       }
 
       function toggleFormMode(event) {
         event?.preventDefault();
         isLogin = !isLogin;
         hideError();
-        
-        nameDiv.style.display = isLogin ? 'none' : 'block';
-        formTitle.innerText = isLogin ? 'Welcome Back' : 'Create Account';
-        subtitle.innerText = isLogin ? 'Log in to continue your work.' : 'Create your new LYNQ AI account.';
-        submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
-        toggleLink.innerHTML = isLogin 
+
+        nameDiv.style.display = isLogin ? "none" : "block";
+        formTitle.innerText = isLogin ? "Welcome Back" : "Create Account";
+        subtitle.innerText = isLogin
+          ? "Log in to continue your work."
+          : "Create your new LYNQ AI account.";
+        submitBtn.innerText = isLogin ? "Log In" : "Sign Up";
+        toggleLink.innerHTML = isLogin
           ? `Don't have an account? <a href="#" id="toggle-form-link">Sign Up</a>`
           : `Already have an account? <a href="#" id="toggle-form-link">Log In</a>`;
-        
+
         // Re-attach the listener to the new link
-        document.getElementById('toggle-form-link').addEventListener('click', toggleFormMode);
+        document
+          .getElementById("toggle-form-link")
+          .addEventListener("click", toggleFormMode);
       }
 
       function setAuthMode(mode) {
         authMode = mode;
         hideError();
-        if (mode === 'email') {
-          emailGroup.style.display = 'grid';
-          phoneGroup.style.display = 'none';
-          codeGroup.style.display = 'none';
-          phoneToggleBtn.innerText = 'Sign in with Phone';
-          submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
-        } else if (mode === 'phone') {
-          emailGroup.style.display = 'none';
-          phoneGroup.style.display = 'flex';
-          codeGroup.style.display = 'flex';
-          phoneToggleBtn.innerText = 'Sign in with Email';
-          submitBtn.innerText = 'Verify Code & Sign In';
+        if (mode === "email") {
+          emailGroup.style.display = "grid";
+          phoneGroup.style.display = "none";
+          codeGroup.style.display = "none";
+          phoneToggleBtn.innerText = "Sign in with Phone";
+          submitBtn.innerText = isLogin ? "Log In" : "Sign Up";
+        } else if (mode === "phone") {
+          emailGroup.style.display = "none";
+          phoneGroup.style.display = "flex";
+          codeGroup.style.display = "flex";
+          phoneToggleBtn.innerText = "Sign in with Email";
+          submitBtn.innerText = "Verify Code & Sign In";
         }
       }
 
       // --- Event Listeners ---
-      document.getElementById('toggle-form-link').addEventListener('click', toggleFormMode);
-      
-      googleBtn.addEventListener('click', async () => {
+      document
+        .getElementById("toggle-form-link")
+        .addEventListener("click", toggleFormMode);
+
+      googleBtn.addEventListener("click", async () => {
         hideError();
         try {
           await signInWithGoogle();
@@ -393,8 +392,8 @@
           showError(error.message);
         }
       });
-      
-      githubBtn.addEventListener('click', async () => {
+
+      githubBtn.addEventListener("click", async () => {
         hideError();
         try {
           await signInWithGitHub();
@@ -403,52 +402,52 @@
           showError(error.message);
         }
       });
-      
-      phoneToggleBtn.addEventListener('click', () => {
-        setAuthMode(authMode === 'email' ? 'phone' : 'email');
+
+      phoneToggleBtn.addEventListener("click", () => {
+        setAuthMode(authMode === "email" ? "phone" : "email");
       });
-      
-      sendCodeBtn.addEventListener('click', async () => {
+
+      sendCodeBtn.addEventListener("click", async () => {
         hideError();
         const phoneNumber = phoneInput.value;
         if (!phoneNumber) {
-          showError('Please enter a phone number.');
+          showError("Please enter a phone number.");
           return;
         }
         try {
           sendCodeBtn.disabled = true;
-          sendCodeBtn.innerText = 'Sending...';
+          sendCodeBtn.innerText = "Sending...";
           await signInWithPhone(phoneNumber);
-          showError('Verification code sent! Check your phone.'); // Use error box for status
+          showError("Verification code sent! Check your phone."); // Use error box for status
           sendCodeBtn.disabled = false;
-          sendCodeBtn.innerText = 'Resend Code';
+          sendCodeBtn.innerText = "Resend Code";
         } catch (error) {
           showError(error.message);
           sendCodeBtn.disabled = false;
-          sendCodeBtn.innerText = 'Send Code';
+          sendCodeBtn.innerText = "Send Code";
         }
       });
 
-      form.addEventListener('submit', async (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         hideError();
         submitBtn.disabled = true;
-        submitBtn.innerText = 'Processing...';
+        submitBtn.innerText = "Processing...";
 
         try {
-          if (authMode === 'email') {
+          if (authMode === "email") {
             const email = emailInput.value;
             const password = passwordInput.value;
             const name = nameInput.value;
-            
+
             if (isLogin) {
               await logInWithEmail(email, password);
             } else {
               await signUpWithEmail(email, password, name);
             }
-          } else if (authMode === 'phone') {
+          } else if (authMode === "phone") {
             const code = codeInput.value;
-            if (!code) throw new Error('Please enter the verification code.');
+            if (!code) throw new Error("Please enter the verification code.");
             await verifyPhoneCode(code);
           }
           // Success! auth.js listener will handle redirect
@@ -457,21 +456,21 @@
         } finally {
           submitBtn.disabled = false;
           // Restore correct text
-          if (authMode === 'email') {
-             submitBtn.innerText = isLogin ? 'Log In' : 'Sign Up';
+          if (authMode === "email") {
+            submitBtn.innerText = isLogin ? "Log In" : "Sign Up";
           } else {
-             submitBtn.innerText = 'Verify Code & Sign In';
+            submitBtn.innerText = "Verify Code & Sign In";
           }
         }
       });
-      
+
       // Check for URL parameters
-      document.addEventListener('DOMContentLoaded', () => {
-          const urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.get('action') === 'signup') {
-              isLogin = true; 
-              toggleFormMode(null); 
-          }
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("action") === "signup") {
+          isLogin = true;
+          toggleFormMode(null);
+        }
       });
     </script>
   </body>

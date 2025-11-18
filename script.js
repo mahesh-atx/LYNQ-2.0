@@ -2,10 +2,7 @@
   script.js
   This file contains shared logic and state used across ALL pages.
   
-  --- UPDATED: Real Firebase Auth integration ---
-  - Removed all "fake" auth logic (handleLogin, showAuthPopup, etc.)
-  - Added Firebase init and auth state listener
-  - All API calls are now secured with a Firebase Auth token
+  --- UPDATED: Real Firebase Auth integration & Profile Popup Logic ---
 */
 
 // --- GLOBAL STATE & API CONFIG ---
@@ -13,14 +10,14 @@ let mainChatHistory = [];
 
 // !! IMPORTANT !!
 // You must replace this with your own Firebase project configuration
-// This MUST match the config in login.html and auth.js
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCdWjeOCLGTbW95_7Omn-aijRVMww8hdqk",
+  authDomain: "lynq-ai-20666.firebaseapp.com",
+  projectId: "lynq-ai-20666",
+  storageBucket: "lynq-ai-20666.firebasestorage.app",
+  messagingSenderId: "278937715698",
+  appId: "1:278937715698:web:4c913d5651cab6637be16b",
+  measurementId: "G-TGT7C31BDF",
 };
 
 let currentUser = null; // Store the logged-in Firebase user object
@@ -31,17 +28,9 @@ let isNewChat = true;
 // activeChatId tracks the chatId (Number from Date.now())
 let activeChatId = null;
 
-// --- PLUGIN STATE ---
-let installedPlugins = [];
-
-// --- CODE SNAPSHOTS ---
-let codeSnapshots = [];
-let currentSnapshotIndex = -1;
-
 // --- API Configuration ---
 const API_URL = "/api/generate";
 const CHAT_API_BASE = "/api/chats"; // New base URL for chat CRUD
-let generatedRawCode = "";
 let isResponding = false;
 let currentController = null;
 let currentSelectedModel = "openai/gpt-oss-120b"; // Default model
@@ -62,33 +51,19 @@ let touchStartX = 0;
 let touchEndX = 0;
 const SWIPE_THRESHOLD = 50; // Minimum distance for a recognized swipe
 
-// --- REMOVED: Fake login/auth functions ---
-// handleLogin()
-// showAuthPopup()
-// closeAuthPopup()
-// redirectToLogin()
-// redirectToSignup()
-
 // --- NEW: Auth Helper ---
-/**
- * Handles auth errors (401, 403) by logging the user out.
- */
 function handleAuthError() {
   console.error("Authentication error. Token may be invalid. Logging out.");
   if (typeof logoutUser === "function") {
-    logoutUser(); // logoutUser() is defined in auth.js
+    logoutUser();
   }
   showToast("Session expired. Please log in again.");
 }
 
-/**
- * Saves or updates a chat to the MongoDB backend.
- * @param {object} chatData The chat object to save ({id, title, history, pinned}).
- */
 async function saveChat(chatData) {
   // --- NEW: Auth Check ---
   if (!currentUser) return null;
-  const token = await getAuthToken(); // getAuthToken() is from auth.js
+  const token = await getAuthToken();
   if (!token) {
     handleAuthError();
     return null;
@@ -100,7 +75,7 @@ async function saveChat(chatData) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Add token
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(chatData),
     });
@@ -125,9 +100,6 @@ async function saveChat(chatData) {
   }
 }
 
-/**
- * Loads all recent chat summaries for the sidebar.
- */
 async function loadAllChats() {
   // --- NEW: Auth Check ---
   if (!currentUser) {
@@ -158,35 +130,42 @@ async function loadAllChats() {
     recentChats = await response.json();
     renderRecentChats();
 
-    // If a chat was previously active, ensure it's loaded back if still exists
     if (activeChatId) {
       const activeChatExists = recentChats.some((c) => c.id == activeChatId);
       if (!activeChatExists) {
-        // The active chat was likely deleted or doesn't exist anymore
         activeChatId = null;
         isNewChat = true;
         if (typeof resetChat === "function") resetChat();
       }
     }
 
-    // Check if the home page is currently loaded and try to load the active chat
     if (
       (window.location.pathname.endsWith("index.html") ||
         window.location.pathname.endsWith("/")) &&
       typeof loadChat === "function" &&
-      activeChatId // activeChatId is now populated by loadState from URL on initial load
+      activeChatId
     ) {
-      // Load the full history for the active chat
       await loadChat(activeChatId);
     }
   } catch (error) {
     console.error("Error loading all chats:", error);
     showToast(`Failed to load chats: ${error.message}.`);
-    // Fallback if API fails: keep recentChats array empty/local until save.
   }
 }
 
 // --- SHARED FUNCTIONS ---
+
+function toggleProfilePopup(forceState) {
+  const modal = document.getElementById("profile-popup");
+  if (!modal) return;
+
+  if (forceState !== undefined) {
+    if (forceState) modal.classList.add("active");
+    else modal.classList.remove("active");
+  } else {
+    modal.classList.toggle("active");
+  }
+}
 
 function toggleChatSearch(show) {
   const label = document.getElementById("recent-chats-label");
@@ -228,16 +207,9 @@ function filterRecentChats() {
   });
 }
 
-/**
- * Loads the base system prompt from the external file and combines it
- * with user's custom instructions and context (PDF/Canvas).
- * NOTE: This function is called by home.js.
- */
 async function getSystemMessage(taskSpecificContext) {
-  // 1. Load base system prompt from file (cache it)
   if (!systemPromptCache) {
     try {
-      // NOTE: This assumes systemprompt.txt is available via the server static path
       const response = await fetch("systemprompt.txt");
       if (!response.ok) throw new Error("Failed to load systemprompt.txt");
       systemPromptCache = await response.text();
@@ -247,8 +219,6 @@ async function getSystemMessage(taskSpecificContext) {
     }
   }
 
-  // 2. Add custom instructions from settings
-  // Keeping localStorage for non-chat state like settings for simplicity
   const customInstructions = localStorage.getItem("lynq_custom_instructions");
   let finalPrompt = systemPromptCache;
 
@@ -256,11 +226,9 @@ async function getSystemMessage(taskSpecificContext) {
     finalPrompt = `${customInstructions}\n\n---\n\n${finalPrompt}`;
   }
 
-  // 3. Add context (PDF/Canvas) specific instructions
   return `${finalPrompt}\n\n${taskSpecificContext}`;
 }
 
-// --- NEW: Function to save sidebar state to localStorage ---
 function saveSidebarState(isCollapsed) {
   localStorage.setItem(
     "lynq-sidebar-collapsed",
@@ -268,13 +236,7 @@ function saveSidebarState(isCollapsed) {
   );
 }
 
-/**
- * Loads non-chat state and initializes the active chat from the URL.
- * @param {boolean} [loadChats=true] - Flag to control if chats should be loaded.
- */
 async function loadState(loadChats = true) {
-  // 1. Load non-chat state from localStorage (theme, model, etc.)
-
   // Theme check
   const savedTheme = localStorage.getItem("lynq-theme");
   if (savedTheme === "light") {
@@ -290,29 +252,24 @@ async function loadState(loadChats = true) {
   if (sidebar) {
     if (window.innerWidth > 768) {
       if (isSidebarCollapsed === "false") {
-        // If state is explicitly saved as open, remove 'collapsed' class
         sidebar.classList.remove("collapsed");
       } else if (isSidebarCollapsed === null) {
-        // If no state is saved (first run), ensure it's collapsed by default.
         sidebar.classList.add("collapsed");
         saveSidebarState(true);
       }
     } else {
-      // Always start collapsed on mobile, regardless of saved desktop state
       sidebar.classList.remove("active");
     }
   }
 
-  // --- NEW: Check URL for active chat ID on initial load ---
+  // Check URL for active chat ID on initial load
   const urlParams = new URLSearchParams(window.location.search);
   const urlChatId = urlParams.get("chatId");
 
   if (urlChatId) {
-    // Must convert to number since chat IDs are generated with Date.now()
     activeChatId = parseInt(urlChatId, 10);
     isNewChat = false;
   }
-  // --- END NEW ---
 
   // 2. Load the recent chats from the server (if user is logged in)
   if (loadChats) {
@@ -335,12 +292,9 @@ async function getApiResponse(
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     } else {
-      // This might happen if token refresh fails
       console.warn("Could not get auth token for logged-in user.");
-      // We don't call handleAuthError() here, just proceed as guest
     }
   }
-  // --- END MODIFIED ---
 
   try {
     const response = await fetch(API_URL, {
@@ -355,9 +309,6 @@ async function getApiResponse(
       signal: signal,
     });
 
-    // We no longer check for 401/403 here, as guests won't send a token
-    // and will get a valid response.
-    // The server will still block invalid tokens if they ARE sent.
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || "The server responded with an error.");
@@ -387,7 +338,6 @@ function showApiError(message, thinkingElement = null) {
       bubble.innerHTML = errorMsg;
     }
   } else {
-    // Fallback if we are not on the chat page
     console.error("API Error: ", message);
     showToast("API Error: " + message);
   }
@@ -418,9 +368,6 @@ function toggleTheme() {
   }
 }
 
-/**
- * Toggles the sidebar visibility, handling desktop collapsed state and mobile overlay.
- */
 function toggleSidebar() {
   if (!sidebar) return;
 
@@ -437,9 +384,6 @@ function toggleSidebar() {
   }
 }
 
-/**
- * Explicitly closes the sidebar, handling both mobile and desktop states.
- */
 function closeSidebar() {
   if (!sidebar) return;
 
@@ -481,33 +425,27 @@ function renderRecentChats() {
     if (chat.id == activeChatId) {
       navLink.classList.add("active");
     }
-    // MODIFIED: Change href to a fragment for better SPA behavior
     navLink.href = `#chat-${chat.id}`;
 
-    // MODIFIED: Fix the link handler to prevent refresh and dynamically load the chat
     navLink.onclick = async (e) => {
-      e.preventDefault(); // <-- CRITICAL FIX: Stop the page refresh!
+      e.preventDefault(); // CRITICAL FIX: Stop the page refresh!
 
       // Update global state immediately
       activeChatId = chat.id;
       isNewChat = false;
 
-      // Update UI: Remove 'active' class from all, add to this one
       document
         .querySelectorAll("#recent-chats-container .nav-item")
         .forEach((item) => item.classList.remove("active"));
       navLink.classList.add("active");
 
-      // Update URL to persist the state for refreshes
       const newUrl = window.location.pathname + `?chatId=${chat.id}`;
       history.pushState({ chatId: activeChatId }, chat.title, newUrl);
 
-      // Load the full history for the active chat
       if (typeof loadChat === "function") {
         await loadChat(activeChatId);
       }
 
-      // Close sidebar on mobile
       if (window.innerWidth <= 768) {
         closeSidebar();
       }
@@ -647,7 +585,6 @@ async function executeDelete(chatId) {
 
     // 3. Reset UI if active chat was deleted
     if (activeChatId == chatId) {
-      // resetChat is defined in home.js, check if it exists before calling
       if (typeof resetChat === "function") {
         resetChat();
       } else {
@@ -695,7 +632,6 @@ async function chatAction(action, chatId) {
     .querySelectorAll(".chat-context-menu")
     .forEach((menu) => menu.classList.remove("show"));
 
-  // Find the full chat object to save the updated metadata (title/pinned status)
   try {
     const chatHistoryResponse = await fetch(`${CHAT_API_BASE}/${chatId}`, {
       headers: {
@@ -713,12 +649,10 @@ async function chatAction(action, chatId) {
       throw new Error("Could not fetch chat history for update.");
     const fullChat = await chatHistoryResponse.json();
 
-    // Update the properties that changed
     fullChat.title = chat.title;
     fullChat.pinned = chat.pinned;
 
-    // Save the updated chat back to the server
-    await saveChat(fullChat); // saveChat already handles its own auth
+    await saveChat(fullChat);
     showToast(`Chat ${action}d successfully.`);
   } catch (error) {
     console.error(`Error performing chat action (${action}):`, error);
@@ -726,12 +660,6 @@ async function chatAction(action, chatId) {
   }
 }
 
-/**
- * Helper function to update the model selector button text.
- * @param {string} modelName The full model name.
- * @param {string} iconClass The font-awesome class.
- * @param {string} iconColor The color hex or name.
- */
 function updateModelButton(modelName, iconClass, iconColor) {
   const btn = document.getElementById("current-model-btn");
   if (!btn) return;
@@ -759,48 +687,35 @@ function selectModel(element, modelName, iconClass, iconColor) {
 
 // --- NEW: SWIPE DETECTION HANDLERS ---
 function handleTouchStart(event) {
-  // Only capture touch start to get initial X coordinate
   touchStartX = event.touches[0].clientX;
-  touchEndX = 0; // Reset end X for new gesture
+  touchEndX = 0;
 }
 
 function handleTouchMove(event) {
-  // Continuously capture touch end to calculate difference
   touchEndX = event.touches[0].clientX;
 }
 
 function handleTouchEnd(event) {
-  if (window.innerWidth > 768 || !sidebar || touchEndX === 0) return; // Only apply on mobile and if touch moved
+  if (window.innerWidth > 768 || !sidebar || touchEndX === 0) return;
 
   const isSidebarOpen = sidebar.classList.contains("active");
   const diffX = touchEndX - touchStartX;
-
-  // MODIFIED: Increased touchStartX boundary from 50px to 100px for easier opening swipe.
-  const OPEN_TRIGGER_AREA = 300; // Pixels from left edge to start swipe-to-open
+  const OPEN_TRIGGER_AREA = 300;
 
   if (Math.abs(diffX) > SWIPE_THRESHOLD) {
     if (diffX > 0 && touchStartX < OPEN_TRIGGER_AREA && !isSidebarOpen) {
-      // Swipe right near the edge to open
       toggleSidebar();
-      // Prevent scrolling on the main content right after opening
       event.preventDefault();
     } else if (diffX < 0 && isSidebarOpen) {
-      // Check if swipe started on the sidebar itself (approximate check)
-      // If the swipe starts roughly within the sidebar width (80% of screen), close it.
       if (touchStartX < window.innerWidth * 0.8) {
-        // Swipe left to close
         closeSidebar();
       }
     }
   }
-  // Reset touch coordinates is redundant here but good practice
   touchStartX = 0;
   touchEndX = 0;
 }
 
-/**
- * Finds the currently selected model and updates the button text.
- */
 function initializeModelButton() {
   const currentModelElement = document.querySelector(".model-option.selected");
   if (currentModelElement) {
@@ -809,12 +724,11 @@ function initializeModelButton() {
     if (onclickAttr && typeof onclickAttr === "string") {
       const matches = onclickAttr.match(/'([^']*)'/g) || [];
 
-      // Extract values safely
       const modelName = matches[0]?.replace(/'/g, "") || "unknown-model";
       const iconClass = matches[1]?.replace(/'/g, "") || "fa-bolt";
       const iconColor = matches[2]?.replace(/'/g, "") || "#FFD700";
 
-      currentSelectedModel = modelName; // Ensure the global state is set
+      currentSelectedModel = modelName;
       updateModelButton(modelName, iconClass, iconColor);
     }
   }
@@ -825,27 +739,40 @@ function initializeModelButton() {
  * @param {object|null} user - The Firebase user object, or null if logged out.
  */
 function updateUIAfterAuth(user) {
+  // Top Bar Elements
   const loginSignupBtn = document.getElementById("login-signup-btn");
   const topProfileBtn = document.getElementById("top-profile-btn-user");
   const topProfileAvatar = document.getElementById("top-profile-avatar");
   const topProfileName = document.getElementById("top-profile-name");
+  const mobileSignupBtn = document.querySelector(".mobile-signup-btn");
 
+  // Sidebar Elements
   const navLoginLink = document.getElementById("nav-login-link");
   const navProfileWrapper = document.getElementById("nav-profile-wrapper");
   const navProfileAvatar = document.getElementById("nav-profile-avatar");
   const navProfileName = document.getElementById("nav-profile-name");
 
-  const navLogoutLink = document.getElementById("nav-logout-link");
   const welcomeName = document.getElementById("welcome-name");
+  const guestBanner = document.getElementById("guest-banner");
+
+  // Profile Popup Elements (for population)
+  const popupName = document.getElementById("popup-name");
+  const popupEmail = document.getElementById("popup-email");
+  const popupPhone = document.getElementById("popup-phone");
+  const popupAvatar = document.getElementById("popup-avatar");
 
   if (user) {
     // --- User is Logged In ---
     const displayName = user.displayName || user.email.split("@")[0];
     const avatarInitial = (displayName[0] || "U").toUpperCase();
 
+    // Hide all "Sign Up" / "Log In" triggers
     if (loginSignupBtn) loginSignupBtn.style.display = "none";
     if (navLoginLink) navLoginLink.style.display = "none";
+    if (mobileSignupBtn) mobileSignupBtn.style.display = "none"; // Explicitly hide
+    if (guestBanner) guestBanner.style.display = "none";
 
+    // Show Profile Elements
     if (topProfileBtn) {
       topProfileBtn.style.display = "flex";
       if (topProfileName) topProfileName.innerText = displayName;
@@ -856,19 +783,32 @@ function updateUIAfterAuth(user) {
       if (navProfileName) navProfileName.innerText = displayName;
       if (navProfileAvatar) navProfileAvatar.innerText = avatarInitial;
     }
-    if (navLogoutLink) navLogoutLink.style.display = "flex";
     if (welcomeName) welcomeName.innerText = `Hello, ${displayName}`;
 
+    // Populate Popup Data
+    if (popupName) popupName.innerText = displayName;
+    if (popupEmail) popupEmail.innerText = user.email;
+    if (popupAvatar) popupAvatar.innerText = avatarInitial;
+    if (popupPhone) {
+      popupPhone.innerText = user.phoneNumber
+        ? user.phoneNumber
+        : "No phone linked";
+    }
+
     // Load user-specific data
-    loadState(true); // Pass true to load chats
+    loadState(true);
   } else {
-    // --- User is Logged Out ---
+    // --- User is Logged Out (Guest) ---
+    // Show Login/Signup triggers
     if (loginSignupBtn) loginSignupBtn.style.display = "flex";
     if (navLoginLink) navLoginLink.style.display = "flex";
+    // Reset mobile button style to let CSS media queries handle visibility (flex on mobile, none on desktop)
+    if (mobileSignupBtn) mobileSignupBtn.style.display = "";
+    if (guestBanner) guestBanner.style.display = "flex";
 
+    // Hide Profile Elements
     if (topProfileBtn) topProfileBtn.style.display = "none";
     if (navProfileWrapper) navProfileWrapper.style.display = "none";
-    if (navLogoutLink) navLogoutLink.style.display = "none";
     if (welcomeName) welcomeName.innerText = "Hello, Guest";
 
     // Clear user-specific data
@@ -878,11 +818,9 @@ function updateUIAfterAuth(user) {
       resetChat();
     }
     // Load non-chat state (theme, etc.)
-    loadState(false); // Pass false to skip chat loading
+    loadState(false);
   }
 }
-
-// --- GLOBAL EVENT LISTENERS ---
 
 window.onclick = function (event) {
   if (!event.target.closest(".model-selector-wrapper")) {
@@ -890,6 +828,9 @@ window.onclick = function (event) {
   }
   if (event.target === document.getElementById("pricing-modal")) {
     togglePricing();
+  }
+  if (event.target === document.getElementById("profile-popup")) {
+    toggleProfilePopup(false); // Close when clicking background
   }
   if (!event.target.closest(".chat-item-wrapper")) {
     document
@@ -905,8 +846,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Get shared elements
   body = document.body;
   toast = document.getElementById("toast");
-  sidebar = document.getElementById("sidebar"); // Initialize global sidebar reference
-  mobileOverlay = document.getElementById("mobile-overlay"); // Initialize global overlay reference
+  sidebar = document.getElementById("sidebar");
+  mobileOverlay = document.getElementById("mobile-overlay");
 
   // Get modal elements
   confirmDeleteModal = document.getElementById("confirm-delete-modal");
@@ -914,34 +855,24 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmDeleteCancelBtn = document.getElementById("confirm-delete-cancel");
   confirmDeleteConfirmBtn = document.getElementById("confirm-delete-confirm");
 
-  // --- NEW: Initialize Firebase and Auth ---
-  // auth.js must be loaded before this script in index.html
   if (typeof initializeFirebase === "function") {
     initializeFirebase(firebaseConfig);
   } else {
     console.error("auth.js not loaded correctly. Firebase auth will fail.");
   }
 
-  // Listen for the 'authStateReady' event from auth.js
-  // This event fires when auth.js knows if a user is logged in or out
   document.addEventListener("authStateReady", (e) => {
-    currentUser = e.detail.user; // Set the global user
-    updateUIAfterAuth(currentUser); // Update UI based on auth state
+    currentUser = e.detail.user;
+    updateUIAfterAuth(currentUser);
   });
-  // --- END NEW ---
 
-  // Initialize the model button display
-  initializeModelButton(); // Use the new centralized function
+  initializeModelButton();
 
-  // --- NEW: Attach global swipe listeners ---
   document.addEventListener("touchstart", handleTouchStart, { passive: true });
   document.addEventListener("touchmove", handleTouchMove, { passive: false });
   document.addEventListener("touchend", handleTouchEnd, { passive: true });
 
-  // --- NEW: Attach click listener to mobile overlay to close sidebar ---
   if (mobileOverlay) {
     mobileOverlay.addEventListener("click", closeSidebar);
   }
-
-  // --- REMOVED: Old fake auth popup logic ---
 });
