@@ -2,7 +2,7 @@
   script.js
   This file contains shared logic and state used across ALL pages.
   
-  --- UPDATED: Real Firebase Auth integration & Profile Popup Logic ---
+  --- UPDATED: Fixed Auth Flicker & Theme Logic ---
 */
 
 // --- GLOBAL STATE & API CONFIG ---
@@ -139,14 +139,8 @@ async function loadAllChats() {
       }
     }
 
-    if (
-      (window.location.pathname.endsWith("index.html") ||
-        window.location.pathname.endsWith("/")) &&
-      typeof loadChat === "function" &&
-      activeChatId
-    ) {
-      await loadChat(activeChatId);
-    }
+    // REMOVED: The logic to call loadChat(activeChatId) was here.
+    // It has been moved to loadState() to prevent UI resets during chatting.
   } catch (error) {
     console.error("Error loading all chats:", error);
     showToast(`Failed to load chats: ${error.message}.`);
@@ -239,25 +233,26 @@ function saveSidebarState(isCollapsed) {
 async function loadState(loadChats = true) {
   // Theme check
   const savedTheme = localStorage.getItem("lynq-theme");
+
+  // NOTE: Inline script handles body class. We just sync the toggle.
+  const settingsToggle = document.getElementById("settings-theme-toggle");
+
   if (savedTheme === "light") {
     document.body.classList.remove("dark-mode");
+    if (settingsToggle) settingsToggle.checked = false;
   } else {
     document.body.classList.add("dark-mode");
     localStorage.setItem("lynq-theme", "dark");
+    if (settingsToggle) settingsToggle.checked = true;
   }
 
-  // Sidebar state check (only applies to desktop)
-  const isSidebarCollapsed = localStorage.getItem("lynq-sidebar-collapsed");
-
+  // Sidebar state check - FORCE CLOSED DEFAULT
   if (sidebar) {
     if (window.innerWidth > 768) {
-      if (isSidebarCollapsed === "false") {
-        sidebar.classList.remove("collapsed");
-      } else if (isSidebarCollapsed === null) {
-        sidebar.classList.add("collapsed");
-        saveSidebarState(true);
-      }
+      // Force collapsed class on desktop load
+      sidebar.classList.add("collapsed");
     } else {
+      // Ensure inactive on mobile load
       sidebar.classList.remove("active");
     }
   }
@@ -274,6 +269,16 @@ async function loadState(loadChats = true) {
   // 2. Load the recent chats from the server (if user is logged in)
   if (loadChats) {
     await loadAllChats();
+
+    // MOVED HERE: Load the active chat content only on initial state load
+    if (
+      (window.location.pathname.endsWith("index.html") ||
+        window.location.pathname.endsWith("/")) &&
+      typeof loadChat === "function" &&
+      activeChatId
+    ) {
+      await loadChat(activeChatId);
+    }
   }
 }
 
@@ -766,13 +771,13 @@ function updateUIAfterAuth(user) {
     const displayName = user.displayName || user.email.split("@")[0];
     const avatarInitial = (displayName[0] || "U").toUpperCase();
 
-    // Hide all "Sign Up" / "Log In" triggers
+    // Ensure "Sign Up" / "Log In" triggers are HIDDEN
     if (loginSignupBtn) loginSignupBtn.style.display = "none";
     if (navLoginLink) navLoginLink.style.display = "none";
     if (mobileSignupBtn) mobileSignupBtn.style.display = "none"; // Explicitly hide
     if (guestBanner) guestBanner.style.display = "none";
 
-    // Show Profile Elements
+    // Explicitly SHOW Profile Elements (since they are hidden by default now)
     if (topProfileBtn) {
       topProfileBtn.style.display = "flex";
       if (topProfileName) topProfileName.innerText = displayName;
@@ -799,14 +804,16 @@ function updateUIAfterAuth(user) {
     loadState(true);
   } else {
     // --- User is Logged Out (Guest) ---
-    // Show Login/Signup triggers
+    // Explicitly SHOW Login/Signup triggers (since they are hidden by default now)
     if (loginSignupBtn) loginSignupBtn.style.display = "flex";
     if (navLoginLink) navLoginLink.style.display = "flex";
-    // Reset mobile button style to let CSS media queries handle visibility (flex on mobile, none on desktop)
+
+    // For mobile btn, rely on CSS media queries but ensure display is not 'none' due to default
     if (mobileSignupBtn) mobileSignupBtn.style.display = "";
+
     if (guestBanner) guestBanner.style.display = "flex";
 
-    // Hide Profile Elements
+    // Ensure Profile Elements are HIDDEN
     if (topProfileBtn) topProfileBtn.style.display = "none";
     if (navProfileWrapper) navProfileWrapper.style.display = "none";
     if (welcomeName) welcomeName.innerText = "Hello, Guest";
@@ -819,6 +826,13 @@ function updateUIAfterAuth(user) {
     }
     // Load non-chat state (theme, etc.)
     loadState(false);
+  }
+  const loader = document.getElementById("global-loader");
+  if (loader) {
+    loader.style.opacity = "0";
+    setTimeout(() => {
+      loader.style.display = "none";
+    }, 300); // Wait for fade out
   }
 }
 

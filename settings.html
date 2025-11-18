@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Settings — LYNQ AI</title>
 
-    <!-- Icons -->
     <script
       src="https://kit.fontawesome.com/ae8ff12b97.js"
       crossorigin="anonymous"
     ></script>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -19,7 +17,6 @@
       rel="stylesheet"
     />
 
-    <!-- Syntax Highlighting CSS -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
@@ -193,11 +190,18 @@ input:checked + .slider:before {
 }
     </style>
   </head>
-  <!-- MODIFIED: Added dark-mode class -->
+  
   <body class="dark-mode">
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem("lynq-theme");
+        if (savedTheme === "light") {
+          document.body.classList.remove("dark-mode");
+        }
+      })();
+    </script>
+
     <div id="app-container">
-      <!-- SIDEBAR -->
-      <!-- MODIFIED: Added collapsed class -->
       <aside id="sidebar" class="collapsed">
         <div style="flex-shrink: 0">
           <div class="sidebar-header">
@@ -212,7 +216,6 @@ input:checked + .slider:before {
 
         <nav class="nav-menu">
           <div class="nav-label">Menu</div>
-          <!-- Links updated -->
           <a
             href="index.html"
             class="nav-item"
@@ -270,16 +273,15 @@ input:checked + .slider:before {
         </nav>
 
         <div class="sidebar-footer">
-          <!-- Active class added here -->
           <a href="settings.html" class="nav-item active" id="nav-settings"
             ><i class="fa-solid fa-gear"></i> Settings</a
           >
-          <!-- MODIFIED: Separated Login/Signup Links (Visible by default) -->
+          
           <a
             href="login.html?action=login"
             class="nav-item"
             id="nav-login-link"
-            style="margin-top: 5px;"
+            style="margin-top: 5px; display: none;"
           >
             Log In
           </a>
@@ -287,18 +289,21 @@ input:checked + .slider:before {
             href="login.html?action=signup"
             class="nav-item"
             id="nav-signup-link"
+            style="display: none;"
           >
             Sign Up
           </a>
-          <!-- MODIFIED: Profile link hidden by default -->
+          
           <a
-            href="profile.html"
+            href="#"
+            onclick="toggleProfilePopup()"
             class="nav-item"
             id="nav-profile-wrapper"
             style="margin-top: 5px; display: none;"
           >
             <div
               class="avatar user"
+              id="nav-profile-avatar"
               style="
                 width: 24px;
                 height: 24px;
@@ -306,20 +311,18 @@ input:checked + .slider:before {
                 margin-right: 0;
               "
             >
-              MD
+              U
             </div>
-            Mahesh Dongare
+            <span id="nav-profile-name">User</span>
           </a>
         </div>
       </aside>
 
-      <!-- MAIN CONTENT -->
       <main id="main-content">
         <div class="top-bar">
           <button class="action-btn" onclick="toggleSidebar()">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <!-- MODIFIED: Added Logo and Title -->
           <div class="top-logo-title">
             <i class="fa-solid fa-bolt"></i> LYNQ AI
           </div>
@@ -328,27 +331,22 @@ input:checked + .slider:before {
             <button class="upgrade-btn" onclick="togglePricing()">
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
-            <!-- MODIFIED: Separated Login/Signup Buttons (Visible by default) -->
-            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-btn" style="margin-right: 8px;">
-              <span>Log In</span>
+            
+            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-signup-btn" style="margin-right: 8px; display: none;">
+              <i class="fa-solid fa-right-to-bracket"></i> <span>Log In</span>
             </button>
-            <button class="top-profile-btn" onclick="location.href='login.html?action=signup'" id="signup-btn" style="margin-right: 8px; background: var(--bg-accent); color: var(--text-accent);">
-              <span>Sign Up</span>
-            </button>
-            <!-- MODIFIED: Profile Button hidden by default -->
-            <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">
-              <div class="avatar user">MD</div>
-              <span>Mahesh</span>
+            
+            <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user" style="display: none;">
+              <div class="avatar user" id="top-profile-avatar">U</div>
+              <span id="top-profile-name">User</span>
             </button>
           </div>
         </div>
 
-        <!-- DETAILED SETTINGS VIEW -->
         <div id="settings-view" class="view-section active">
           <div class="settings-container">
             <div class="settings-header"><h1>Settings</h1></div>
 
-            <!-- Personalization (Theme & Customization) -->
             <div class="settings-group">
               <h3>
                 <i class="fa-solid fa-wand-magic-sparkles"></i> Personalization
@@ -390,7 +388,6 @@ input:checked + .slider:before {
               </div>
             </div>
 
-            <!-- Intelligence -->
             <div class="settings-group">
               <h3><i class="fa-solid fa-brain"></i> Intelligence</h3>
               <div class="setting-item vertical">
@@ -405,7 +402,6 @@ input:checked + .slider:before {
               </div>
             </div>
 
-            <!-- Voice Mode -->
             <div class="settings-group">
               <h3>
                 <i class="fa-solid fa-microphone-lines"></i> Voice & Speech
@@ -428,12 +424,10 @@ input:checked + .slider:before {
               </div>
             </div>
 
-            <!-- Feedback & Help -->
             <div class="settings-group">
               <h3>
                 <i class="fa-regular fa-life-ring"></i> Support & Feedback
               </h3>
-              <!-- Link to help.html -->
               <div
                 class="setting-item"
                 onclick="location.href='help.html'"
@@ -460,7 +454,6 @@ input:checked + .slider:before {
               </div>
             </div>
 
-            <!-- API Configuration -->
             <div class="settings-group">
               <h3><i class="fa-solid fa-key"></i> Developer Settings</h3>
               <div class="setting-item vertical">
@@ -484,7 +477,6 @@ input:checked + .slider:before {
               </div>
             </div>
 
-            <!-- Data Management -->
             <div class="settings-group">
               <h3><i class="fa-solid fa-database"></i> Data & Privacy</h3>
               <div class="setting-item">
@@ -509,14 +501,11 @@ input:checked + .slider:before {
       </main>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast">
       <i class="fa-solid fa-circle-check"></i> Link copied to clipboard!
     </div>
 
-    <!-- PRICING MODAL (Shared component) -->
     <div class="modal-overlay" id="pricing-modal">
-        <!-- ... (Modal content copied from index.html) ... -->
          <div class="pricing-modal">
         <button class="close-modal" onclick="togglePricing()">&times;</button>
         <div class="pricing-header">
@@ -571,10 +560,33 @@ input:checked + .slider:before {
       </div>
     </div>
 
-    <!-- Shared script for all pages -->
+    <div class="profile-popup-overlay" id="profile-popup">
+      <div class="profile-popup">
+        <button class="profile-popup-close" onclick="toggleProfilePopup()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <div class="profile-popup-avatar" id="popup-avatar">U</div>
+        <h2 class="profile-popup-name" id="popup-name">User</h2>
+        <p class="profile-popup-email" id="popup-email">user@example.com</p>
+        <p class="profile-popup-phone" id="popup-phone">No phone linked</p>
+        
+        <div class="profile-popup-badge">
+          <i class="fa-solid fa-crown"></i> PRO MEMBER
+        </div>
+
+        <button class="profile-popup-logout" onclick="logoutUser()">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="auth.js"></script>
     <script src="script.js"></script>
-    <!-- Page-specific script -->
-<script>
+    
+    <script>
   /*
   settings.js
   This file contains logic ONLY for the Settings page (settings.html).
@@ -586,9 +598,14 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Settings DOMContentLoaded");
 
   // Set theme toggle state based on loaded theme
+  // We check body class here because our inline script ran first
   const themeToggle = document.getElementById("settings-theme-toggle");
-  if (themeToggle && document.body.classList.contains("dark-mode")) {
-    themeToggle.checked = true;
+  if (themeToggle) {
+    if (document.body.classList.contains("dark-mode")) {
+      themeToggle.checked = true;
+    } else {
+      themeToggle.checked = false;
+    }
   }
 
   // Add listeners for this page's buttons
@@ -622,20 +639,13 @@ function loadCustomInstructions() {
 }
 
 function exportChatHistory() {
-  // We need to find the *active* chat history to export
-  // This is a bit tricky. Let's export *all* chats.
-
   if (recentChats.length === 0) {
     // global var
     showToast("Nothing to export."); // global func
     return;
   }
 
-  // Export all recent chats into one big file
   let fullExport = "";
-  // NOTE: This assumes 'recentChats' is a global array containing chat objects with history.
-  // This requires the full chat history data structure to be available globally or loaded here.
-  // For the simulation, we proceed with the assumption that global state is correctly loaded.
 
   recentChats.forEach((chat) => {
     // global var
@@ -658,26 +668,17 @@ function exportChatHistory() {
 }
 
 function clearAllHistory() {
-  // We use a custom modal for confirmation instead of confirm()
-  // For now, we clear state directly and rely on a redirect or refresh to confirm the action.
+  if (confirm("Are you sure you want to delete all chat history?")) {
+    localStorage.removeItem("lynq_app_state");
+    localStorage.removeItem("lynq_custom_instructions");
 
-  // In a real application, you'd use a confirmation modal:
-  // if (showConfirmModal("Are you sure you want to delete all chat history?")) { ... }
-
-  // Since we cannot use confirm() and don't have the modal structure:
-  // We'll proceed with the global state reset and rely on the UI displaying a Toast first.
-
-  localStorage.removeItem("lynq_app_state");
-  localStorage.removeItem("lynq_custom_instructions");
-  // Assuming a full server-side deletion would happen here if using MongoDB.
-
-  // Display a toast and reload the page
-  if (typeof showToast === "function") {
-    showToast("All local settings and history cleared. Reloading page...");
+    if (typeof showToast === "function") {
+      showToast("All local settings and history cleared. Reloading page...");
+    }
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
   }
-  setTimeout(() => {
-    location.reload();
-  }, 1000);
 }
 
 </script>

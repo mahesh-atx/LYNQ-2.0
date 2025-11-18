@@ -546,7 +546,8 @@ You are an AI Software Engineer specializing in **Modern Web Development**.
 async function handleSend() {
   if (!chatInput) return;
   const text = chatInput.value.trim();
-
+  // --- NEW: Close sidebar automatically ---
+  if (typeof closeSidebar === "function") closeSidebar();
   // --- MODIFIED: Auth Check ---
   // We no longer block guests, just check if they are one
   const isGuest = !currentUser;
@@ -602,10 +603,20 @@ async function handleSend() {
   }
 
   // Sanitize history for API: keep only role and content
-  const historyForApi = mainChatHistory.map((msg) => ({
+  // History is now defined with 'let' to allow trimming (slicing)
+  let historyForApi = mainChatHistory.map((msg) => ({
     role: msg.role,
     content: msg.content,
   }));
+
+  // === FIXED WINDOW LOGIC: Send only the last 4 messages (2 turns) ===
+  const MAX_MESSAGES = 2;
+  if (historyForApi.length > MAX_MESSAGES) {
+    // Use slice to keep only the last N messages
+    historyForApi = historyForApi.slice(historyForApi.length - MAX_MESSAGES);
+    console.warn(`Trimmed history to the last ${MAX_MESSAGES} messages.`);
+  }
+  // ===================================================================
 
   // Store user message and attachment locally
   mainChatHistory.push({
@@ -761,6 +772,7 @@ function showThinking() {
   if (messagesWrapper) messagesWrapper.appendChild(msgDiv);
 
   const chatContainer = document.getElementById("chat-container");
+  // FIX: Revert to scrolling to the bottom to see the new message
   if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 
   return msgDiv;
@@ -858,7 +870,19 @@ async function streamTextToBubble(textToStream, bubble) {
     bubble.innerHTML = displayHtml;
 
     const chatContainer = document.getElementById("chat-container");
-    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+    if (chatContainer) {
+      // Check if the user is currently near the bottom (within 50 pixels tolerance)
+      // This allows manual scrolling away from the bottom without being pulled back.
+      const isUserAtBottom =
+        chatContainer.scrollHeight -
+          chatContainer.scrollTop -
+          chatContainer.clientHeight <
+        50;
+
+      if (isUserAtBottom) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }
 
     await new Promise((r) =>
       setTimeout(r, Math.floor(Math.random() * 30) + 30)
@@ -1349,7 +1373,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Initialize Home/Chat Page Listeners ---
   if (chatInput) {
-    initVoiceInput();
+    setTimeout(initVoiceInput, 100);
 
     chatInput.addEventListener("input", function () {
       this.style.height = "auto";

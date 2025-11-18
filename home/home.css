@@ -3,6 +3,10 @@
   Styles for the Chat Interface
 */
 
+#messages-wrapper {
+  padding-inline: 2em;
+}
+
 /* --- VIEW SECTION (SCROLL FIX) --- */
 /* MODIFIED: Changed to row layout */
 #home-view {
@@ -42,7 +46,7 @@
 }
 
 .guest-banner-content i {
-  color: #FFD700;
+  color: #ffd700;
 }
 
 .guest-link {
@@ -67,8 +71,14 @@
 }
 
 @keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* --- CHAT MESSAGES & ACTIONS --- */
@@ -154,7 +164,6 @@
   background: var(--text-heading);
   color: var(--bg-secondary);
 }
-
 
 .msg-content-wrapper {
   display: flex;
@@ -721,33 +730,39 @@ textarea#chat-input {
   color: var(--text-heading);
 }
 
- .suggestion-pills-mobile {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    padding: 0 10px;
-  }
+.suggestion-pills-mobile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 0 10px;
+}
 
-  .pill-card {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-capsule);
-    padding: 10px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: 0.2s;
-  }
-  .pill-card:hover {
-    background: var(--bg-primary);
-  }
+.pill-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-capsule);
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+.pill-card:hover {
+  background: var(--bg-primary);
+}
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
+  .tool-dropdown-menu {
+    display: none !important;
+  }
+  #messages-wrapper {
+    padding: 0;
+  }
   /* MODIFIED: Canvas pane responsive (fullscreen overlay) */
   #canvas-pane {
     position: absolute;
@@ -1029,13 +1044,14 @@ textarea#chat-input {
   .top-actions .mobile-signup-btn .avatar {
     display: none;
   }
-  .bubble{
+  .bubble {
     width: 100%;
   }
   .msg-content-wrapper {
+    padding-right: 2em;
     max-width: 100%;
   }
-  .avatar{
+  .avatar {
     display: none;
   }
 }
@@ -1064,7 +1080,4 @@ textarea#chat-input {
   }
 
   /* Ensure desktop profile/login buttons are shown correctly */
-  .top-actions #login-signup-btn {
-    display: flex !important;
-  }
-} 
+}

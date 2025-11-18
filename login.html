@@ -16,9 +16,19 @@
     />
     <link rel="stylesheet" href="style.css" />
     <style>
+      body {
+        /* Prevent flash of wrong theme on body */
+        background-color: var(--bg-primary);
+        transition: background-color 0.3s ease;
+      }
+      /* Initial body state matching dark mode to reduce flicker if default is dark */
+      body.dark-mode {
+        background-color: #121212;
+      }
+      
       #login-view {
         flex: 1;
-        display: flex;
+        display: flex; /* Will be managed by JS */
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -26,6 +36,19 @@
         background: var(--bg-primary);
         padding: 20px;
       }
+      
+      /* Centered Loader */
+      #auth-loader {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-primary);
+        z-index: 9999;
+      }
+      
       .login-container {
         max-width: 420px;
         width: 100%;
@@ -35,6 +58,7 @@
         padding: 40px;
         text-align: center;
         box-shadow: var(--shadow-soft);
+        animation: fadeUp 0.4s ease;
       }
       .login-header {
         margin-bottom: 30px;
@@ -175,7 +199,6 @@
         text-align: center;
         margin-top: 10px;
       }
-      /* This is required for Firebase Phone Auth */
       #recaptcha-container {
         margin-top: 15px;
         display: flex;
@@ -183,8 +206,22 @@
       }
     </style>
   </head>
-  <body>
-    <div id="login-view">
+  <body class="dark-mode">
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem("lynq-theme");
+        if (savedTheme === "light") {
+          document.body.classList.remove("dark-mode");
+        }
+      })();
+    </script>
+
+    <div id="auth-loader">
+      <div class="loading-spinner"></div>
+      <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9rem;">checking authentication...</p>
+    </div>
+
+    <div id="login-view" style="display: none;">
       <div class="login-container">
         <div class="login-header">
           <span
@@ -256,7 +293,6 @@
             />
           </div>
 
-          <!-- This is where the reCAPTCHA will render -->
           <div id="recaptcha-container"></div>
 
           <div id="error-message"></div>
@@ -273,19 +309,17 @@
       </div>
     </div>
 
-    <!-- 
-      You MUST get these from your Firebase project console.
-      https://firebase.google.com/docs/web/setup
-    -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-    <!-- Your new auth logic file -->
     <script src="auth.js"></script>
 
     <script>
       let isLogin = true;
-      let authMode = "email"; // 'email' or 'phone'
+      let authMode = "email";
+
+      const authLoader = document.getElementById("auth-loader");
+      const loginView = document.getElementById("login-view");
 
       const form = document.getElementById("login-form");
       const submitBtn = document.getElementById("submit-btn");
@@ -310,10 +344,7 @@
       const githubBtn = document.getElementById("github-signin");
       const errorMessage = document.getElementById("error-message");
 
-      // --- Firebase Config ---
-      // !! IMPORTANT !!
-      // You must replace this with your own Firebase project configuration
-      // Go to your Firebase project -> Project Settings -> General -> Your apps
+      // Firebase Config
       const firebaseConfig = {
         apiKey: "AIzaSyCdWjeOCLGTbW95_7Omn-aijRVMww8hdqk",
         authDomain: "lynq-ai-20666.firebaseapp.com",
@@ -324,10 +355,26 @@
         measurementId: "G-TGT7C31BDF",
       };
 
-      // --- Initialize Firebase and Auth Logic ---
-      // These functions come from auth.js
       initializeFirebase(firebaseConfig);
       setupRecaptcha("recaptcha-container");
+
+      // --- AUTH STATE LISTENER FOR LOADING SCREEN ---
+      // auth.js provides a listener mechanism, but we can also hook into firebase directly here
+      // to ensure we don't show the login form if the user is already logged in.
+      
+      // Listen for the custom event dispatched by auth.js
+      document.addEventListener("authStateReady", (e) => {
+        const user = e.detail.user;
+        if (user) {
+           // User is logged in. auth.js will handle redirect.
+           // Keep showing loader or update text.
+           if(authLoader) authLoader.innerHTML = '<div class="loading-spinner"></div><p style="margin-top:15px;">Redirecting...</p>';
+        } else {
+           // User is NOT logged in. Show the form.
+           if(authLoader) authLoader.style.display = "none";
+           if(loginView) loginView.style.display = "flex";
+        }
+      });
 
       function showError(message) {
         errorMessage.innerText = message;
@@ -354,7 +401,6 @@
           ? `Don't have an account? <a href="#" id="toggle-form-link">Sign Up</a>`
           : `Already have an account? <a href="#" id="toggle-form-link">Log In</a>`;
 
-        // Re-attach the listener to the new link
         document
           .getElementById("toggle-form-link")
           .addEventListener("click", toggleFormMode);
@@ -378,7 +424,6 @@
         }
       }
 
-      // --- Event Listeners ---
       document
         .getElementById("toggle-form-link")
         .addEventListener("click", toggleFormMode);
@@ -387,7 +432,6 @@
         hideError();
         try {
           await signInWithGoogle();
-          // auth.js listener will handle redirect
         } catch (error) {
           showError(error.message);
         }
@@ -397,7 +441,6 @@
         hideError();
         try {
           await signInWithGitHub();
-          // auth.js listener will handle redirect
         } catch (error) {
           showError(error.message);
         }
@@ -418,7 +461,7 @@
           sendCodeBtn.disabled = true;
           sendCodeBtn.innerText = "Sending...";
           await signInWithPhone(phoneNumber);
-          showError("Verification code sent! Check your phone."); // Use error box for status
+          showError("Verification code sent! Check your phone.");
           sendCodeBtn.disabled = false;
           sendCodeBtn.innerText = "Resend Code";
         } catch (error) {
@@ -450,12 +493,9 @@
             if (!code) throw new Error("Please enter the verification code.");
             await verifyPhoneCode(code);
           }
-          // Success! auth.js listener will handle redirect
         } catch (error) {
           showError(error.message);
-        } finally {
           submitBtn.disabled = false;
-          // Restore correct text
           if (authMode === "email") {
             submitBtn.innerText = isLogin ? "Log In" : "Sign Up";
           } else {
@@ -464,7 +504,6 @@
         }
       });
 
-      // Check for URL parameters
       document.addEventListener("DOMContentLoaded", () => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("action") === "signup") {

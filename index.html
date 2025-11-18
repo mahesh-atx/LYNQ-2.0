@@ -22,7 +22,6 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
     />
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
@@ -113,6 +112,38 @@
     </style>
   </head>
   <body class="dark-mode">
+    <div id="global-loader" style="
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--bg-primary);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease;
+    ">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <i class="fa-solid fa-bolt"></i> LYNQ
+            </div>
+            <div class="seek-bar-wrapper">
+                <div class="seek-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem("lynq-theme");
+        // If saved theme is explicitly light, remove the class immediately
+        if (savedTheme === "light") {
+          document.body.classList.remove("dark-mode");
+        } 
+        // If it's dark (or null/default), the class 'dark-mode' on <body> stays.
+      })();
+    </script>
+
     <div id="app-container">
       <aside id="sidebar" class="collapsed">
         <div style="flex-shrink: 0">
@@ -189,17 +220,15 @@
           <a href="settings.html" class="nav-item" id="nav-settings"
             ><i class="fa-solid fa-gear"></i> Settings</a
           >
-          <!-- Auth Links -->
           <a
             href="login.html"
             class="nav-item"
             id="nav-login-link"
-            style="margin-top: 5px;"
+            style="margin-top: 5px; display: none;"
           >
             <i class="fa-solid fa-right-to-bracket"></i> Login / Sign Up
           </a>
           
-          <!-- Profile Trigger (Popup) -->
           <a
             href="#"
             onclick="toggleProfilePopup()"
@@ -232,17 +261,14 @@
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
 
-            <!-- Mobile Signup (Hidden if logged in) -->
             <button class="top-profile-btn mobile-signup-btn" onclick="location.href='login.html?action=signup'" style="margin-right: 8px; display: none;">
               <span>Sign Up</span>
             </button>
 
-            <!-- Desktop Signup (Hidden if logged in) -->
-            <button class="top-profile-btn" onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px; ">
+            <button class="top-profile-btn" onclick="location.href='login.html'" id="login-signup-btn" style="margin-right: 8px; display: none;">
               <i class="fa-solid fa-right-to-bracket"></i> <span>Sign Up</span>
             </button>
 
-            <!-- Top Profile Button (Popup) -->
             <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user" style="display: none;">
               <div class="avatar user" id="top-profile-avatar">U</div>
               <span id="top-profile-name">User</span>
@@ -253,7 +279,6 @@
         <div id="home-view" class="view-section active">
           
           <div id="chat-wrapper">
-             <!-- Guest Banner -->
              <div id="guest-banner" class="guest-notice-banner" style="display: none;">
                 <div class="guest-banner-content">
                    <i class="fa-solid fa-circle-info"></i>
@@ -270,7 +295,7 @@
             <div id="chat-container">
               <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-text">
-                  <h1 id="welcome-name">Hello, Guest</h1>
+                  <h1 id="welcome-name">Hello</h1>
                   <p style="color: var(--text-secondary)">
                     How can I help you create today?
                   </p>
@@ -339,14 +364,14 @@
                       <div class="model-dropdown" id="model-dropdown">
                         <div
                           class="model-option selected"
-                          onclick="selectModel(this, 'llama-3.1-8b-instant', 'fa-bolt', '#FFD700')"
+                          onclick="selectModel(this, 'meta-llama/llama-4-scout-17b-16e-instruct', 'fa-bolt', '#FFD700')"
                         >
                           <span
                             ><i
                               class="fa-solid fa-bolt"
                               style="color: #ffd700; margin-right: 8px"
                             ></i>
-                            llama-3.1-8b</span
+                            llama-4-scout</span
                           >
                           <span class="pro-badge">Pro</span>
                           <i class="fa-solid fa-check check-icon"></i>
@@ -512,7 +537,6 @@
       </div>
     </div>
 
-    <!-- PROFILE POPUP MODAL -->
     <div class="profile-popup-overlay" id="profile-popup">
       <div class="profile-popup">
         <button class="profile-popup-close" onclick="toggleProfilePopup()">

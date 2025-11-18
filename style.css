@@ -53,6 +53,12 @@ body.dark-mode {
   --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
 }
 
+/* --- IMPORTANT FIX: PRELOAD CLASS --- */
+/* Prevents transitions firing on page load */
+.preload * {
+  transition: none !important;
+}
+
 * {
   padding: 0;
   margin: 0;
@@ -66,7 +72,8 @@ body {
   width: 100%;
   overflow: hidden;
   background-color: var(--bg-primary);
-  transition: all 0.3s ease;
+  /* REMOVED: transition: all 0.3s ease; (Caused theme flicker) */
+  color: var(--text-primary);
 }
 
 /* --- LAYOUT --- */
@@ -87,7 +94,7 @@ body {
   flex-direction: column;
   height: 100%;
   padding: 20px;
-  /* MODIFIED: Changed transitions for smoother and more reliable hiding */
+  /* Keeping specific transitions for sidebar movement */
   transition: transform 0.3s ease, min-width 0.3s ease, padding 0.3s ease, border 0.3s ease; 
   z-index: 100;
   backdrop-filter: var(--glass-blur);
@@ -95,18 +102,16 @@ body {
   overflow-x: hidden;
 }
 
-/* MODIFIED: Collapsed state for desktop. Pushes it off-screen and removes visible space. */
+/* Desktop Collapsed */
 #sidebar.collapsed {
   width: 0;
   min-width: 0;
   padding: 0;
   border-right: none;
-  /* Use transform to visually move it without changing layout flow much */
   transform: translateX(calc(0px - var(--sidebar-width))); 
 }
 
-/* NEW: Active/Open state (When collapsed is toggled off) */
-/* The default non-collapsed style is handled here */
+/* Desktop Open */
 #sidebar:not(.collapsed) {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
@@ -115,8 +120,7 @@ body {
     transform: translateX(0);
 }
 
-/* NEW: Active state for when sidebar is opened on mobile/overlay mode (higher priority than 'collapsed') */
-/* This rule is generally only active on mobile devices due to the media query setup */
+/* Mobile Active */
 #sidebar.active {
     transform: translateX(0) !important;
     width: 80% !important; /* Mobile width */
@@ -139,16 +143,15 @@ body {
 .nav-menu {
   flex: 1;
   overflow-y: auto;
-  overflow-x: visible; /* Allow menus to pop out slightly if needed, though we position fixed mostly */
+  overflow-x: visible; 
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding-top: 10px;
-  min-height: 0; /* Crucial for nested flex scroll */
+  min-height: 0; 
   margin-bottom: 10px;
 }
 
-/* Custom Scrollbar for Sidebar */
 .nav-menu::-webkit-scrollbar {
   width: 4px;
 }
@@ -170,7 +173,6 @@ body {
   flex-shrink: 0;
 }
 
-/* New Search Trigger Icon Style */
 .search-trigger {
   cursor: pointer;
   font-size: 0.8rem;
@@ -215,7 +217,6 @@ body {
   text-align: center;
 }
 
-/* Sidebar Chat Item Wrapper */
 .chat-item-wrapper {
   position: relative;
   flex-shrink: 0;
@@ -278,10 +279,6 @@ body {
   background: var(--bg-danger);
   color: var(--text-danger);
 }
-.context-item.delete:hover {
-  background: var(--bg-danger);
-  color: var(--text-danger);
-}
 
 .sidebar-footer {
   padding-top: 15px;
@@ -294,13 +291,13 @@ body {
 
 /* --- TOP BAR --- */
 .top-bar {
-  height: 60px; /* Reduced from 70px */
+  height: 60px; 
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 30px;
   z-index: 10;
-  background: var(--bg-primary); /* Matched to screen background */
+  background: var(--bg-primary); 
 }
 .top-actions {
   display: flex;
@@ -308,12 +305,11 @@ body {
   gap: 12px;
 }
 
-/* NEW: Logo and Title next to the menu button */
 .top-logo-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: 15px; /* Space from the toggle button */
+  margin-left: 15px; 
   font-size: 1.2rem;
   font-weight: 500;
   color: var(--text-heading);
@@ -321,14 +317,13 @@ body {
   flex-shrink: 0;
 }
 .top-logo-title i {
-  color: #ffd700; /* Gold bolt color */
+  color: #ffd700; 
   font-size: 1.4rem;
 }
 
-/* --- MODIFIED: Hamburger Button Style --- */
 .action-btn {
-  background: transparent; /* Removed background */
-  border: none; /* Removed border */
+  background: transparent; 
+  border: none; 
   color: var(--text-secondary);
   font-size: 1.2rem;
   cursor: pointer;
@@ -341,7 +336,7 @@ body {
 }
 .action-btn:hover {
   color: var(--text-heading);
-  background: rgba(0,0,0,0.05); /* Subtle hover effect */
+  background: rgba(0,0,0,0.05); 
 }
 
 .upgrade-btn {
@@ -366,7 +361,6 @@ body {
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
-/* --- NEW --- Top Profile Button */
 .top-profile-btn {
   display: flex;
   align-items: center;
@@ -389,9 +383,8 @@ body {
   width: 28px;
   height: 28px;
   font-size: 0.8rem;
-  margin-top: 0; /* Override default */
+  margin-top: 0; 
 }
-/* --- END NEW --- */
 
 /* --- MAIN CONTENT --- */
 #main-content {
@@ -408,7 +401,7 @@ body {
   display: none;
   flex: 1;
   flex-direction: column;
-  overflow: hidden; /* No scroll on view-section */
+  overflow: hidden; 
   height: 100%;
 }
 .view-section.active {
@@ -416,7 +409,7 @@ body {
   animation: fadeIn 0.4s ease;
 }
 
-/* --- SHARED PAGE STYLES (Explore, Plugins, Projects) --- */
+/* --- SHARED PAGE STYLES --- */
 .hero-header {
   padding: 50px var(--primary-padding) 30px;
   text-align: center;
@@ -510,24 +503,12 @@ body {
   animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
 @keyframes fadein {
-  from {
-    bottom: 0;
-    opacity: 0;
-  }
-  to {
-    bottom: 30px;
-    opacity: 1;
-  }
+  from { bottom: 0; opacity: 0; }
+  to { bottom: 30px; opacity: 1; }
 }
 @keyframes fadeout {
-  from {
-    bottom: 30px;
-    opacity: 1;
-  }
-  to {
-    bottom: 0;
-    opacity: 0;
-  }
+  from { bottom: 30px; opacity: 1; }
+  to { bottom: 0; opacity: 0; }
 }
 
 /* --- PRICING MODAL --- */
@@ -768,8 +749,7 @@ body {
   opacity: 0.9;
 }
 
-/* --- MODEL SELECTOR (Used on Home, but part of input) --- */
-/* It's complex, so I'll keep it with the input component */
+/* --- MODEL SELECTOR --- */
 .model-selector-wrapper {
   position: relative;
 }
@@ -845,62 +825,59 @@ body.dark-mode .pro-badge {
   color: #000;
 }
 
+/* --- LOADING SPINNER (Shared) --- */
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: #ffd700;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* --- MISC & ANIMATIONS --- */
 .mobile-only {
   display: none;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- SHARED MEDIA QUERIES --- */
 @media (max-width: 768px) {
   :root {
-    --sidebar-width: 280px; /* Keep defined for mobile sidebar width */
+    --sidebar-width: 280px; 
   }
   #sidebar {
-    /* Mobile Override */
-    transform: translateX(-100%); /* Hidden by default on mobile */
+    transform: translateX(-100%); 
     position: fixed;
     width: 80%;
     min-width: 80%;
-    margin-left: 0; /* Reset desktop styles */
+    margin-left: 0; 
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
   }
   #sidebar.active {
-    transform: translateX(0); /* Shows sidebar on mobile */
+    transform: translateX(0); 
   }
   .mobile-only {
     display: block;
   }
   
-  /* Shared layout responsive */
   .grid-layout,
   .pricing-grid {
     grid-template-columns: 1fr;
@@ -919,41 +896,95 @@ body.dark-mode .pro-badge {
   .message.user .bubble{
     margin-top: 2em;
   }
-
 }
 
 @media (max-width: 480px) {
-  /* Hide text on the Upgrade button for very small phones */
   .upgrade-btn span {
     display: none;
   }
   .upgrade-btn {
-    padding: 8px 12px; /* Reduce padding when text is hidden */
+    padding: 8px 12px; 
   }
 
-  /* Hide the profile name */
   .top-profile-btn span {
     display: none;
   }
-  /* Re-adjust profile button padding */
   .top-profile-btn {
       padding: 5px; 
-      border-radius: 50%; /* Make it circular */
+      border-radius: 50%; 
   }
   .top-profile-btn .avatar {
       margin-right: 0;
   }
 
   .top-bar {
-      padding: 0 10px; /* Reduce horizontal padding */
+      padding: 0 10px; 
   }
   
-  /* Login/Signup Buttons */
-  #login-btn span, 
-  #signup-btn span {
+  #login-signup-btn span {
       display: none;
   }
-  #login-btn, #signup-btn {
-      padding: 8px; /* Circular button */
+  #login-signup-btn {
+      padding: 8px; 
   }
+}
+
+/* --- WELCOME LOADER STYLES --- */
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loader-logo {
+  font-size: 3.5rem; /* Large text */
+  font-weight: 600;
+  color: var(--text-heading);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  opacity: 0; /* Hidden initially for animation */
+  transform: scale(0.8);
+  animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.loader-logo i {
+  color: #ffd700; /* Gold Bolt */
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4));
+}
+
+.seek-bar-wrapper {
+  width: 180px;
+  height: 4px;
+  background-color: var(--border-primary);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  animation: fadeIn 0.5s ease 0.3s forwards; /* Delay appearance slightly */
+}
+
+.seek-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background: var(--bg-gold);
+  border-radius: 10px;
+  animation: seek 1.5s infinite ease-in-out;
+}
+
+@keyframes popIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes seek {
+  0% { left: -40%; }
+  50% { left: 100%; }
+  100% { left: -40%; }
 }
