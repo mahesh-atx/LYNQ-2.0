@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 // --- NEW: Import Firebase Admin SDK ---
 import admin from "firebase-admin";
+import https from "https";
 
 // --- NEW: Setup for __dirname in ES Modules ---
 const __filename = fileURLToPath(import.meta.url);
@@ -504,6 +505,40 @@ app.delete("/api/chats", verifyAuthToken, async (req, res) => {
     res.status(500).json({ error: "Failed to delete history" });
   }
 });
+
+// --- NEW: Internal Self-Ping Logic for Render Free Plan ---
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL; // Render provides this automatically
+const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 minutes (less than the 15-minute timeout)
+
+if (RENDER_URL) {
+  // Use built-in 'https' module for the GET request
+  setInterval(() => {
+    try {
+      https
+        .get(RENDER_URL, (res) => {
+          if (res.statusCode === 200) {
+            console.log(
+              `[Self-Ping] Successful. Status: ${res.statusCode}. Server remains awake.`
+            );
+          } else {
+            console.log(
+              `[Self-Ping] Received status: ${res.statusCode}. Server remains awake.`
+            );
+          }
+        })
+        .on("error", (err) => {
+          // It's normal for the ping to sometimes fail/timeout if the service is busy.
+          console.error("[Self-Ping] Error:", err.message);
+        });
+    } catch (error) {
+      console.error("[Self-Ping] Error initiating ping:", error);
+    }
+  }, PING_INTERVAL_MS);
+
+  console.log(`✅ Self-Ping job scheduled to run every 14 minutes on ${RENDER_URL}`);
+} else {
+    console.log("⚠️ Self-Ping skipped: RENDER_EXTERNAL_URL not found.");
+}
 
 // Start the server
 app.listen(port, () => {
