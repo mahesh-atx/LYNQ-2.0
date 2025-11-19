@@ -300,56 +300,69 @@ app.delete("/api/chats/:id", verifyAuthToken, async (req, res) => {
 // server.js
 
 // --- UPDATED: Universal India-First Search ---
+// server.js
+
+// --- UPDATED: Rich Media Direct Search ---
+// --- UPDATED: Rich Media Direct Search Formatter ---
 async function performWebSearch(query) {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
   const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
 
-  if (!apiKey || !cx) {
-    console.warn("Google Search Keys missing.");
-    return null;
-  }
+  if (!apiKey || !cx) return null;
 
   try {
-    // 1. Request A: Web Search (India Priority via &gl=in)
-    // We DO NOT use 'cr=countryIN' so it can still find global info if needed.
-    const webUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=4&gl=in`;
-    
-    // 2. Request B: Image Search (India Priority via &gl=in)
-    const imgUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=4&searchType=image&gl=in`;
+    // Fetch 6 results to get a good mix of text/images/videos
+    // &gl=in prioritizes India
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=6&gl=in`;
 
-    // Run parallel requests
-    const [webRes, imgRes] = await Promise.all([
-      fetch(webUrl),
-      fetch(imgUrl)
-    ]);
+    const response = await fetch(url);
+    const data = await response.json();
 
-    const webData = await webRes.json();
-    const imgData = await imgRes.json();
+    if (!data.items || data.items.length === 0) return null;
 
-    // Format results
-    let contextString = "\n\n--- REAL-TIME SEARCH RESULTS (India Priority) ---\n";
+    // --- BUILD THE DIRECT MARKDOWN RESPONSE ---
+    let markdownOutput = "### 🌐 Real-Time Web Results\n\n";
 
-    // A. Text Results (General Info)
-    if (webData.items && webData.items.length > 0) {
-      webData.items.forEach((item, index) => {
-        contextString += `Source [${index + 1}]: ${item.title}\nURL: ${item.link}\nSummary: ${item.snippet}\n\n`;
-      });
-    }
+    data.items.forEach((item) => {
+      const title = item.title || "No Title";
+      const link = item.link;
+      const snippet = item.snippet || "";
+      
+      // 1. DETECT IMAGES (Extract from Pagemap)
+      let imageUrl = "";
+      if (item.pagemap) {
+        if (item.pagemap.cse_image?.length > 0) {
+          imageUrl = item.pagemap.cse_image[0].src;
+        } else if (item.pagemap.metatags?.[0]?.['og:image']) {
+          imageUrl = item.pagemap.metatags[0]['og:image'];
+        }
+      }
 
-    // B. Image Results (Generic - Works for Products, News, Diagrams, etc.)
-    contextString += "--- RELEVANT IMAGES (Embed these using ![Alt](url)) ---\n";
-    
-    if (imgData.items && imgData.items.length > 0) {
-      imgData.items.forEach((item, index) => {
-        // Google Image Search returns direct image links
-        contextString += `Image [${index + 1}]: ${item.link}\n`;
-      });
-    } else {
-      contextString += "No images found.\n";
-    }
+      // 2. DETECT VIDEO (YouTube)
+      const isVideo = link.includes("youtube.com") || link.includes("youtu.be");
 
-    contextString += "--- END SEARCH RESULTS ---\n\n";
-    return contextString;
+      // --- FORMATTING THE CARD ---
+      
+      // A. The Title (Clickable Link)
+      markdownOutput += `### [${title}](${link})\n`;
+
+      // B. The Media
+      if (isVideo) {
+        // Output raw link; Frontend (home.js) will convert to Player
+        markdownOutput += `**▶ Watch Video:** ${link}\n\n`; 
+      } else if (imageUrl) {
+        // Standard Markdown Image
+        markdownOutput += `![Image](${imageUrl})\n`;
+      }
+
+      // C. The Text Snippet
+      markdownOutput += `> ${snippet}\n\n`;
+      
+      // D. Separator
+      markdownOutput += `---\n`; 
+    });
+
+    return markdownOutput;
 
   } catch (error) {
     console.error("Web search error:", error);
@@ -361,44 +374,75 @@ async function performWebSearch(query) {
 // Only authenticated users can access the AI
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
   const { prompt, systemMessage, history, model, max_tokens, webSearch } =
-    req.body; // Added webSearch flag
+    req.body;
 
-  let messages = [];
+  // --- 1. KEYWORD DETECTION ---
+  // Words that imply the user wants an AI-generated Guide, Plan, or Explanation.
+  const complexKeywords = [
+    "roadmap",
+    "tutorial",
+    "code",
+    "generate",
+    "write",
+    "essay",
+    "script",
+    "plan",
+    "difference",
+    "explain",
+    "how to",
+    "list",
+    "summary",
+    "guide",
+    "best practice",
+  ];
+
+  const isDeepResearchNeeded = complexKeywords.some((keyword) =>
+    prompt.toLowerCase().includes(keyword)
+  );
+
   let finalSystemMessage = systemMessage || "You are a helpful AI.";
 
-  // --- STEP 1: THE CHAIN (Web Search) ---
-  // --- STEP 1: THE CHAIN (Web Search) ---
-  // --- STEP 1: THE CHAIN (Web Search) ---
+  // --- 2. WEB SEARCH LOGIC ---
   if (webSearch) {
-    console.log("Performing Web Search for:", prompt);
-    const searchContext = await performWebSearch(prompt);
+    console.log(
+      `🔎 Web Search ON. Query: "${prompt}" | Deep Mode: ${isDeepResearchNeeded}`
+    );
 
-    if (searchContext) {
-      finalSystemMessage += `\n\nINSTRUCTIONS: You have access to the following real-time search results. 
-    Use them to answer the user query.
+    // Fetch the formatted Markdown results
+    const searchResults = await performWebSearch(prompt);
 
-    REQUIRED OUTPUT RULES:
-    1. ALWAYS include helpful images and links from search results (even if user didn't ask).
-    2. IMAGE RULES:
-       - If any result contains an image URL, embed it using Markdown:
-         ![Image](URL)
-       - Include multiple images if relevant.
-    3. VIDEO RULES:
-       - If results contain a YouTube URL (youtube.com or youtu.be), include it as:
-         **▶ Watch Video:** [Title](URL)
-       - Include multiple useful videos if relevant.
-    4. WEB LINKS:
-       - Provide clickable reference links to top useful pages:
-         - **Source:** [Title](URL)
-    5. Provide short descriptions for images & videos (why they're useful).
-    6. Cite written info as [Source 1], [Source 2], etc.
+    if (searchResults) {
+      // SCENARIO A: Direct Mode (Simple Query)
+      // If user just searches "iPhone 16 price" or "Sony TV images",
+      // we return the Google results DIRECTLY. Faster & cheaper.
+      if (!isDeepResearchNeeded) {
+        console.log(
+          "🚀 Fast Path: Returning Search Results directly (Skipping AI)."
+        );
+        return res.json({ text: searchResults });
+      }
 
-    ${searchContext}`;
+      // SCENARIO B: Deep Mode (Complex Query)
+      // User wants a "Roadmap". We feed the search results to the AI
+      // so it can synthesize a new answer.
+      console.log("🧠 Deep Path: Synthesizing results with AI.");
+      finalSystemMessage += `\n\nINSTRUCTIONS: You have access to the following real-time search results.
+      Use these results to answer the user's complex request.
+      
+      IMPORTANT:
+      1. Cite the sources provided in the text.
+      2. If the search results include images/videos, EMBED them in your answer using the markdown provided.
+      
+      ${searchResults}`;
+    } else {
+      console.log("❌ Search returned no data. Falling back to standard AI.");
     }
   }
 
-  // --- STEP 2: Construct Messages ---
-  messages.push({ role: "system", content: finalSystemMessage });
+  // --- 3. STANDARD AI GENERATION ---
+  // (Runs for Deep Mode OR if Web Search is OFF)
+
+  let messages = [{ role: "system", content: finalSystemMessage }];
 
   if (history && Array.isArray(history)) {
     messages = messages.concat(history);
@@ -410,7 +454,6 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     return res.status(400).json({ error: "No prompt provided" });
   }
 
-  // --- STEP 3: Call AI (Groq) ---
   try {
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",

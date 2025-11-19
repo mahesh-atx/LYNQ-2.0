@@ -1075,3 +1075,30 @@ body.dark-mode .pro-badge {
   50% { left: 100%; }
   100% { left: -40%; }
 }
+
+/* --- FIX: FORCE AVATAR VISIBILITY ON MOBILE --- */
+@media (max-width: 768px) {
+  /* 1. Force the inner avatar circle to display (override generic mobile hide) */
+  .top-actions #top-profile-btn-user .avatar {
+    display: flex !important;
+    margin: 0 !important;
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+
+  /* 2. BUT DO NOT FORCE the button itself to display */
+  /* Removed: display: flex !important; from here */
+  .top-actions #top-profile-btn-user {
+    padding: 0 !important;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.placeholder{
+      margin-block: 12px;
+}

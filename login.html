@@ -16,96 +16,130 @@
     />
     <link rel="stylesheet" href="style.css" />
     <style>
+      /* --- RESET & BASE --- */
       body {
-        /* Prevent flash of wrong theme on body */
         background-color: var(--bg-primary);
         transition: background-color 0.3s ease;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
       }
-      /* Initial body state matching dark mode to reduce flicker if default is dark */
       body.dark-mode {
         background-color: #121212;
       }
-      
-      #login-view {
-        flex: 1;
-        display: flex; /* Will be managed by JS */
-        flex-direction: column;
+
+      /* --- MAIN WRAPPER (THE BACKDROP) --- */
+      .auth-wrapper {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        /* CENTER THE CARD */
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
-        background: var(--bg-primary);
-        padding: 20px;
+        background-color: var(--bg-primary);
+        padding: 20px; 
       }
-      
-      /* Centered Loader */
-      #auth-loader {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
+
+      /* --- FLOATING AUTH CARD --- */
+      .auth-card {
+        display: flex;
+        width: 100%;
+        max-width: 1000px; /* Slightly narrower for compactness */
+        height: 80vh;      /* Slightly shorter */
+        max-height: 700px;
+        background: var(--bg-tertiary);
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--border-primary);
+        position: relative;
+      }
+
+      /* --- LEFT SIDE: FORM --- */
+      .auth-left {
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: var(--bg-primary);
-        z-index: 9999;
+        padding: 30px; /* Reduced padding */
+        position: relative;
+        /* overflow-y: auto;  Kept as fallback, but layout is compacted to avoid it */
       }
-      
+
       .login-container {
-        max-width: 420px;
         width: 100%;
-        background: var(--bg-tertiary);
-        border: 1px solid var(--border-primary);
-        border-radius: 30px;
-        padding: 40px;
+        max-width: 380px;
+        background: transparent;
+        padding: 0;
         text-align: center;
-        box-shadow: var(--shadow-soft);
-        animation: fadeUp 0.4s ease;
+        animation: fadeIn 0.5s ease;
       }
+
       .login-header {
-        margin-bottom: 30px;
+        margin-bottom: 20px; /* Reduced margin */
       }
-      .login-header h1 {
-        font-size: 2.5rem;
+      .login-header .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         color: var(--text-heading);
         margin-bottom: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      .login-header .logo i {
+        color: #ffd700;
+        font-size: 1.3rem;
+      }
+      .login-header h1 {
+        font-size: 1.8rem; /* Smaller font */
+        color: var(--text-heading);
+        margin-bottom: 5px;
+        font-weight: 600;
       }
       .login-header p {
         color: var(--text-secondary);
+        font-size: 0.9rem;
       }
+
+      /* --- FORM ELEMENTS --- */
       .provider-buttons {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 15px;
-        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px; /* Reduced margin */
       }
       .provider-btn {
-        padding: 12px;
-        border-radius: 12px;
+        flex: 1;
+        padding: 10px; /* Smaller padding */
+        border-radius: 10px;
         border: 1px solid var(--border-primary);
-        background: var(--bg-tertiary);
+        background: var(--bg-primary);
         color: var(--text-primary);
         font-weight: 500;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         cursor: pointer;
         transition: 0.2s;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 6px;
       }
       .provider-btn:hover {
-        background: var(--bg-primary);
-        border-color: var(--border-secondary);
+        background: var(--bg-secondary);
+        border-color: var(--text-heading);
       }
-      .provider-btn i {
-        font-size: 1.2rem;
-      }
+
       .divider {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: var(--text-secondary);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
         margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
       }
       .divider::before,
       .divider::after {
@@ -114,95 +148,204 @@
         height: 1px;
         background: var(--border-primary);
       }
+
       .login-form {
         display: grid;
-        gap: 15px;
+        gap: 12px; /* Reduced gap between inputs */
         text-align: left;
       }
       .login-form label {
-        color: var(--text-heading);
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 5px;
-        display: block;
+        display: none;
       }
       .login-form input {
         width: 100%;
-        padding: 12px;
-        border-radius: 12px;
+        padding: 12px; /* Smaller input padding */
+        /* text-indent removed */
+        margin-bottom: 12px; /* ADDED: Block (vertical) margin */
+        border-radius: 10px;
         border: 1px solid var(--border-primary);
         background: var(--bg-primary);
         color: var(--text-primary);
         outline: none;
-        transition: border-color 0.2s;
+        font-size: 0.95rem;
+        transition: all 0.2s;
       }
       .login-form input:focus {
         border-color: var(--text-heading);
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
       }
       .login-btn {
-        margin-top: 10px;
+        margin-top: 5px;
         width: 100%;
-        padding: 14px;
-        background: var(--bg-accent);
-        color: var(--text-accent);
-        border-radius: 15px;
+        padding: 12px; /* Smaller button padding */
+        background: #000;
+        color: #fff;
+        border-radius: 10px;
         border: none;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.95rem;
         cursor: pointer;
         transition: opacity 0.2s, transform 0.2s;
+      }
+      body.dark-mode .login-btn {
+        background: #fff;
+        color: #000;
       }
       .login-btn:hover {
         opacity: 0.9;
         transform: translateY(-1px);
       }
+
       .toggle-link {
-        margin-top: 25px;
-        font-size: 0.9rem;
+        margin-top: 20px; /* Reduced margin */
+        font-size: 0.85rem;
         color: var(--text-secondary);
       }
       .toggle-link a {
         color: var(--text-heading);
         font-weight: 600;
-        text-decoration: none;
-        transition: color 0.2s;
+        text-decoration: underline;
+        cursor: pointer;
       }
-      .toggle-link a:hover {
-        color: var(--bg-accent);
-      }
-      .phone-group {
-        display: none; /* Hidden by default */
-        gap: 10px;
-      }
-      .phone-group input {
+
+      /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
+      .auth-right {
         flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
+        align-items: center;
+        padding: 40px;
+        text-align: center;
+        background: linear-gradient(135deg, #1e3a8a 0%, #064e3b 100%);
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
       }
+
+      .overlay-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        max-width: 600px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .overlay-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        line-height: 1.1;
+      }
+      .overlay-sub {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-bottom: 30px;
+        max-width: 400px;
+      }
+
+      .steps-container {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .step-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 15px;
+        flex: 1;
+        min-width: 100px;
+        max-width: 150px;
+        transition: 0.3s;
+        text-align: left;
+      }
+      
+      .step-card.active {
+        background: white;
+        color: #000;
+      }
+
+      .step-number {
+        background: rgba(0,0,0,0.2);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+      .step-card.active .step-number {
+        background: #000;
+        color: #fff;
+      }
+      
+      .step-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+
+      /* --- UTILS --- */
+      .phone-group { display: none; gap: 8px; }
+      .phone-group input { flex: 1; }
       .phone-group button {
-        padding: 0 20px;
-        border-radius: 12px;
+        padding: 0 15px;
+        border-radius: 10px;
         border: 1px solid var(--border-primary);
         background: var(--bg-primary);
         color: var(--text-primary);
         cursor: pointer;
       }
-      #email-group {
-        display: grid;
-        gap: 15px;
-      }
       #error-message {
-        color: var(--text-danger);
-        background: var(--bg-danger);
-        padding: 10px;
+        color: #d32f2f;
+        background: #ffebee;
+        padding: 8px;
         border-radius: 8px;
-        font-size: 0.9rem;
-        display: none; /* Hidden by default */
-        text-align: center;
+        font-size: 0.85rem;
+        display: none;
         margin-top: 10px;
+        text-align: center;
       }
-      #recaptcha-container {
-        margin-top: 15px;
-        display: flex;
-        justify-content: center;
+      #auth-loader {
+        position: fixed; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: var(--bg-primary); z-index: 9999;
+      }
+
+      /* --- RESPONSIVE --- */
+      @media (max-width: 900px) {
+        .auth-card {
+          height: auto;
+          min-height: auto; /* Let content dictate height on mobile */
+          max-width: 450px;
+          flex-direction: column;
+        }
+        .auth-right {
+          display: none; /* Hide image on tablet/mobile */
+        }
+        .auth-left {
+          padding: 30px 20px;
+        }
+        .login-header h1 {
+          font-size: 1.6rem;
+        }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
     </style>
   </head>
@@ -217,96 +360,123 @@
     </script>
 
     <div id="auth-loader">
-      <div class="loading-spinner"></div>
-      <p style="margin-top: 15px; color: var(--text-secondary); font-size: 0.9rem;">checking authentication...</p>
+      <div class="loading-spinner" style="border: 3px solid rgba(128,128,128,0.2); border-top-color: var(--text-heading); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;"></div>
+      <style>@keyframes spin {to{transform: rotate(360deg);}}</style>
     </div>
 
-    <div id="login-view" style="display: none;">
-      <div class="login-container">
-        <div class="login-header">
-          <span
-            style="
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 10px;
-              color: var(--text-heading);
-              margin-bottom: 10px;
-            "
-          >
-            <i class="fa-solid fa-bolt"></i> LYNQ AI
-          </span>
-          <h1 id="form-title">Welcome Back</h1>
-          <p id="form-subtitle">Log in to continue your work.</p>
+    <!-- MAIN WRAPPER -->
+    <div class="auth-wrapper" id="login-view" style="display: none;">
+      
+      <!-- FLOATING CARD CONTAINER -->
+      <div class="auth-card">
+        
+        <!-- LEFT PANEL: Login Form -->
+        <div class="auth-left">
+          <div class="login-container">
+            <div class="login-header">
+              <div class="logo">
+                <i class="fa-solid fa-bolt"></i>
+              </div>
+              <h1 id="form-title">Welcome back!</h1>
+              <p id="form-subtitle">Your work, your team, your flow — all in one place.</p>
+            </div>
+
+            <div class="provider-buttons">
+              <button class="provider-btn" id="google-signin">
+                <i class="fa-brands fa-google"></i> Google
+              </button>
+              <button class="provider-btn" id="github-signin">
+                <i class="fa-brands fa-github"></i> GitHub
+              </button>
+              <button class="provider-btn" id="phone-signin-toggle">
+                <i class="fa-solid fa-phone"></i> Phone
+              </button>
+            </div>
+
+            <div class="divider">Or</div>
+
+            <form class="login-form" id="login-form">
+              <div id="email-group">
+                <div id="confirm-name-div" style="display: none">
+                  <input type="text" id="name" placeholder="Full Name" />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <div>
+                  <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="phone-group" id="phone-group">
+                <input type="tel" id="phone-number" placeholder="+1 555-555-1234" />
+                <button type="button" id="send-code-btn">Send</button>
+              </div>
+
+              <div class="phone-group" id="code-group">
+                <input
+                  type="text"
+                  id="verification-code"
+                  placeholder="Enter 6-digit code"
+                />
+              </div>
+
+              <div id="recaptcha-container"></div>
+              <div id="error-message"></div>
+
+              <button type="submit" class="login-btn" id="submit-btn">
+                Sign in with email
+              </button>
+            </form>
+
+            <p class="toggle-link">
+              Don't have an account?
+              <a href="#" id="toggle-form-link">Sign Up</a>
+            </p>
+            
+            <div style="margin-top: 20px; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.6;">
+              <a href="#" style="color: inherit; text-decoration: none; margin-right: 10px;">Help</a>
+              <a href="#" style="color: inherit; text-decoration: none; margin-right: 10px;">Terms</a>
+              <a href="#" style="color: inherit; text-decoration: none;">Privacy</a>
+            </div>
+          </div>
         </div>
 
-        <div class="provider-buttons">
-          <button class="provider-btn" id="google-signin">
-            <i class="fa-brands fa-google"></i> Sign in with Google
-          </button>
-          <button class="provider-btn" id="github-signin">
-            <i class="fa-brands fa-github"></i> Sign in with GitHub
-          </button>
-          <button class="provider-btn" id="phone-signin-toggle">
-            <i class="fa-solid fa-phone"></i> Sign in with Phone
-          </button>
+        <!-- RIGHT PANEL: Image & Overlay -->
+        <div class="auth-right">
+          <div class="overlay-content">
+            <h2 class="overlay-title">Get Started<br>with Us</h2>
+            <p class="overlay-sub">Complete these easy steps to register your account.</p>
+            
+            <div class="steps-container">
+              <div class="step-card active">
+                <div class="step-number">1</div>
+                <div class="step-text">Sign up your account</div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-text">Set up your workspace</div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-text">Set up your profile</div>
+              </div>
+            </div>
+          </div>
         </div>
+        
+      </div> <!-- End .auth-card -->
 
-        <div class="divider">OR</div>
-
-        <form class="login-form" id="login-form">
-          <div id="email-group">
-            <div id="confirm-name-div" style="display: none">
-              <label for="name">Full Name</label>
-              <input type="text" id="name" placeholder="Mahesh Dongare" />
-            </div>
-            <div>
-              <label for="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-            <div>
-              <label for="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="phone-group" id="phone-group">
-            <input type="tel" id="phone-number" placeholder="+1 555-555-1234" />
-            <button type="button" id="send-code-btn">Send Code</button>
-          </div>
-
-          <div class="phone-group" id="code-group">
-            <input
-              type="text"
-              id="verification-code"
-              placeholder="Enter 6-digit code"
-            />
-          </div>
-
-          <div id="recaptcha-container"></div>
-
-          <div id="error-message"></div>
-
-          <button type="submit" class="login-btn" id="submit-btn">
-            Log In
-          </button>
-        </form>
-
-        <p class="toggle-link">
-          Don't have an account?
-          <a href="#" id="toggle-form-link">Sign Up</a>
-        </p>
-      </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -358,19 +528,11 @@
       initializeFirebase(firebaseConfig);
       setupRecaptcha("recaptcha-container");
 
-      // --- AUTH STATE LISTENER FOR LOADING SCREEN ---
-      // auth.js provides a listener mechanism, but we can also hook into firebase directly here
-      // to ensure we don't show the login form if the user is already logged in.
-      
-      // Listen for the custom event dispatched by auth.js
       document.addEventListener("authStateReady", (e) => {
         const user = e.detail.user;
         if (user) {
-           // User is logged in. auth.js will handle redirect.
-           // Keep showing loader or update text.
-           if(authLoader) authLoader.innerHTML = '<div class="loading-spinner"></div><p style="margin-top:15px;">Redirecting...</p>';
+           if(authLoader) authLoader.innerHTML = '<p style="margin-top:15px;">Redirecting...</p>';
         } else {
-           // User is NOT logged in. Show the form.
            if(authLoader) authLoader.style.display = "none";
            if(loginView) loginView.style.display = "flex";
         }
@@ -392,11 +554,11 @@
         hideError();
 
         nameDiv.style.display = isLogin ? "none" : "block";
-        formTitle.innerText = isLogin ? "Welcome Back" : "Create Account";
+        formTitle.innerText = isLogin ? "Welcome back!" : "Create Account";
         subtitle.innerText = isLogin
-          ? "Log in to continue your work."
-          : "Create your new LYNQ AI account.";
-        submitBtn.innerText = isLogin ? "Log In" : "Sign Up";
+          ? "Your work, your team, your flow — all in one place."
+          : "Join us and get started with LYNQ AI today.";
+        submitBtn.innerText = isLogin ? "Sign in with email" : "Create Account";
         toggleLink.innerHTML = isLogin
           ? `Don't have an account? <a href="#" id="toggle-form-link">Sign Up</a>`
           : `Already have an account? <a href="#" id="toggle-form-link">Log In</a>`;
@@ -413,37 +575,25 @@
           emailGroup.style.display = "grid";
           phoneGroup.style.display = "none";
           codeGroup.style.display = "none";
-          phoneToggleBtn.innerText = "Sign in with Phone";
-          submitBtn.innerText = isLogin ? "Log In" : "Sign Up";
+          submitBtn.innerText = isLogin ? "Sign in with email" : "Create Account";
         } else if (mode === "phone") {
           emailGroup.style.display = "none";
           phoneGroup.style.display = "flex";
           codeGroup.style.display = "flex";
-          phoneToggleBtn.innerText = "Sign in with Email";
           submitBtn.innerText = "Verify Code & Sign In";
         }
       }
 
-      document
-        .getElementById("toggle-form-link")
-        .addEventListener("click", toggleFormMode);
+      document.getElementById("toggle-form-link").addEventListener("click", toggleFormMode);
 
       googleBtn.addEventListener("click", async () => {
         hideError();
-        try {
-          await signInWithGoogle();
-        } catch (error) {
-          showError(error.message);
-        }
+        try { await signInWithGoogle(); } catch (error) { showError(error.message); }
       });
 
       githubBtn.addEventListener("click", async () => {
         hideError();
-        try {
-          await signInWithGitHub();
-        } catch (error) {
-          showError(error.message);
-        }
+        try { await signInWithGitHub(); } catch (error) { showError(error.message); }
       });
 
       phoneToggleBtn.addEventListener("click", () => {
@@ -459,15 +609,15 @@
         }
         try {
           sendCodeBtn.disabled = true;
-          sendCodeBtn.innerText = "Sending...";
+          sendCodeBtn.innerText = "...";
           await signInWithPhone(phoneNumber);
-          showError("Verification code sent! Check your phone.");
+          showError("Verification code sent!");
           sendCodeBtn.disabled = false;
-          sendCodeBtn.innerText = "Resend Code";
+          sendCodeBtn.innerText = "Sent";
         } catch (error) {
           showError(error.message);
           sendCodeBtn.disabled = false;
-          sendCodeBtn.innerText = "Send Code";
+          sendCodeBtn.innerText = "Send";
         }
       });
 
@@ -497,7 +647,7 @@
           showError(error.message);
           submitBtn.disabled = false;
           if (authMode === "email") {
-            submitBtn.innerText = isLogin ? "Log In" : "Sign Up";
+            submitBtn.innerText = isLogin ? "Sign in with email" : "Create Account";
           } else {
             submitBtn.innerText = "Verify Code & Sign In";
           }
