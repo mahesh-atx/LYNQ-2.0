@@ -390,28 +390,39 @@ function resetCanvasUI() {
  * Resets the current chat view and state to a new chat.
  */
 function resetChat() {
-  if (welcomeScreen) welcomeScreen.style.display = "flex";
+  // 1. Show Welcome Screen & Clear Messages
+  if (welcomeScreen) {
+    welcomeScreen.style.display = "flex";
+    // Add a subtle fade-in animation for the welcome screen
+    welcomeScreen.style.animation = "fadeIn 0.4s ease forwards";
+  }
   if (messagesWrapper) messagesWrapper.innerHTML = "";
 
-  // These globals are defined in script.js
+  // 2. Reset Global State (defined in script.js)
   mainChatHistory = [];
   isNewChat = true;
   activeChatId = null;
 
-  // Local state reset
+  // 3. Reset Attachments & Canvas
   currentAttachment = null;
   if (attachmentPreviewContainer) attachmentPreviewContainer.innerHTML = "";
+  resetCanvasUI();
 
-  // Canvas reset
-  resetCanvasUI(); // Use centralized function
-
-  // Global function calls
+  // 4. Refresh Sidebar UI (Active state removal)
   if (typeof renderRecentChats === "function") renderRecentChats();
 
-  // Update URL to remove chatId param
+  // 5. Update URL (Clean URL)
   if (window.history && window.history.pushState) {
     const newUrl = window.location.pathname;
     history.pushState({}, document.title, newUrl);
+  }
+
+  // --- NEW: Close sidebar with a smooth delay on mobile ---
+  if (window.innerWidth <= 768 && typeof closeSidebar === "function") {
+    // Wait 150ms so the user sees the button press, then slide out
+    setTimeout(() => {
+      closeSidebar();
+    }, 200);
   }
 }
 

@@ -150,14 +150,32 @@ async function loadAllChats() {
 // --- SHARED FUNCTIONS ---
 
 function toggleProfilePopup(forceState) {
-  const modal = document.getElementById("profile-popup");
-  if (!modal) return;
+  const modalWrapper = document.getElementById("profile-popup"); // This is the overlay
+  if (!modalWrapper) return;
 
+  // 1. Detect Sidebar Click
+  const activeEl = document.activeElement;
+  const isSidebar =
+    activeEl &&
+    (activeEl.id === "nav-profile-wrapper" ||
+      activeEl.closest("#nav-profile-wrapper"));
+
+  // 2. Apply Position Class
+  // Only apply logic if we are about to OPEN it (currently inactive)
+  if (!modalWrapper.classList.contains("active")) {
+    if (isSidebar) {
+      modalWrapper.classList.add("sidebar-mode");
+    } else {
+      modalWrapper.classList.remove("sidebar-mode");
+    }
+  }
+
+  // 3. Toggle Visibility
   if (forceState !== undefined) {
-    if (forceState) modal.classList.add("active");
-    else modal.classList.remove("active");
+    if (forceState) modalWrapper.classList.add("active");
+    else modalWrapper.classList.remove("active");
   } else {
-    modal.classList.toggle("active");
+    modalWrapper.classList.toggle("active");
   }
 }
 

@@ -101,7 +101,7 @@ body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   overflow-x: hidden;
-  z-index: 99999999990;
+  z-index: 999;
 }
 
 /* Desktop Collapsed */
@@ -648,97 +648,153 @@ body {
 }
 
 /* --- NEW: PROFILE MODAL STYLES --- */
+/* --- NEW: PROFILE DROPDOWN CARD STYLES --- */
 .profile-popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  /* Make background transparent so it feels like a dropdown, not a modal */
+  background: transparent; 
   z-index: 2000;
   display: none;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.2s ease;
+  
+  /* Align the card to the Top-Right */
+  align-items: flex-start;
+  justify-content: flex-end;
 }
+
+/* --- Sidebar Position (Bottom-Left) --- */
+.profile-popup-overlay.sidebar-mode {
+  align-items: flex-end;   /* Align to Bottom */
+  justify-content: flex-start; /* Align to Left */
+}
+
+.profile-popup-overlay.sidebar-mode .profile-popup {
+  /* Position it just above the sidebar footer */
+  margin-top: 0;
+  margin-bottom: 80px; 
+  margin-left: 20px; 
+  margin-right: 0;
+  
+  /* Animate from the bottom up */
+  transform-origin: bottom left;
+  animation: popupScaleUp 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes popupScaleUp {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Mobile Override: Reset to center or safe position on phone */
+@media (max-width: 768px) {
+  .profile-popup-overlay.sidebar-mode {
+    align-items: center;
+    justify-content: center;
+  }
+  .profile-popup-overlay.sidebar-mode .profile-popup {
+    margin: 0; /* Remove desktop margins */
+  }
+}
+
+.profile-popup-overlay{
+  z-index: 99999;
+}
+
 .profile-popup-overlay.active {
   display: flex;
 }
+
 .profile-popup {
   background: var(--bg-tertiary);
-  width: 90%;
-  max-width: 400px;
-  border-radius: 24px;
-  padding: 30px;
+  
+  /* Compact Dropdown Dimensions */
+  width: 300px;
+  margin-top: 70px;  /* Position below the Top Bar */
+  margin-right: 20px; /* Spacing from right edge */
+  
+  border-radius: 16px;
+  padding: 20px;
   border: 1px solid var(--border-primary);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Stronger shadow for depth */
+  
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   position: relative;
+  
+  /* Animation from Top-Right */
+  transform-origin: top right;
+  animation: popupScaleIn 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
+
+@keyframes popupScaleIn {
+  from { opacity: 0; transform: scale(0.9) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Hide the 'X' button since clicking outside closes it (cleaner UI) */
 .profile-popup-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 5px;
+  display: none;
 }
-.profile-popup-close:hover {
-  color: var(--text-heading);
-}
+
+/* --- Compact Inner Elements --- */
 .profile-popup-avatar {
-  width: 80px;
-  height: 80px;
+  width: 60px;  /* Smaller avatar */
+  height: 60px;
   border-radius: 50%;
   background: var(--text-heading);
   color: var(--bg-primary);
-  font-size: 2rem;
+  font-size: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
+
 .profile-popup-name {
-  font-size: 1.5rem;
+  font-size: 1.2rem; /* Smaller text */
   font-weight: 600;
   color: var(--text-heading);
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
+
 .profile-popup-email {
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 5px;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
 }
+
 .profile-popup-phone {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   margin-bottom: 15px;
+  opacity: 0.7;
 }
+
 .profile-popup-badge {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 4px 10px;
   background: var(--bg-gold);
   color: #2a2a2a;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
   font-weight: 700;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
+
 .profile-popup-logout {
   width: 100%;
-  padding: 12px;
-  background: var(--bg-danger);
+  padding: 10px;
+  background: rgba(211, 47, 47, 0.1); /* Subtle red bg */
   color: var(--text-danger);
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
@@ -746,9 +802,18 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-size: 0.9rem;
 }
 .profile-popup-logout:hover {
-  opacity: 0.9;
+  background: var(--bg-danger);
+}
+
+/* --- Mobile Handling --- */
+@media (max-width: 768px) {
+  .profile-popup {
+    margin-right: 10px; /* Tighter spacing on phones */
+    width: 280px;
+  }
 }
 
 /* --- MODEL SELECTOR --- */
@@ -872,6 +937,7 @@ body.dark-mode .pro-badge {
     min-width: 80%;
     margin-left: 0; 
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
   }
   #sidebar.active {
     transform: translateX(0); 
@@ -940,15 +1006,33 @@ body.dark-mode .pro-badge {
 }
 
 .loader-logo {
-  font-size: 3.5rem; /* Large text */
+  font-size: 3.5rem;
   font-weight: 600;
   color: var(--text-heading);
   display: flex;
   align-items: center;
   gap: 15px;
-  opacity: 0; /* Hidden initially for animation */
-  transform: scale(0.8);
-  animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  
+  /* Start State: Hidden and pushed down */
+  opacity: 0; 
+  transform: translateY(50px); 
+  
+  /* Apply the new slide-up animation */
+  animation: logoSlideUp 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
+}
+
+/* ... keep .loader-logo i styles as they are ... */
+
+/* NEW: Slide Up Animation */
+@keyframes logoSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px); /* Starts from below */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0); /* Ends in normal position */
+  }
 }
 
 .loader-logo i {
@@ -957,14 +1041,15 @@ body.dark-mode .pro-badge {
 }
 
 .seek-bar-wrapper {
-  width: 180px;
+  width: 300px; /* <--- FIXED: Makes it much longer */
+  max-width: 80%; /* Ensures it fits on small mobile screens */
   height: 4px;
   background-color: var(--border-primary);
   border-radius: 10px;
   overflow: hidden;
   position: relative;
   opacity: 0;
-  animation: fadeIn 0.5s ease 0.3s forwards; /* Delay appearance slightly */
+  animation: fadeIn 0.5s ease 0.3s forwards;
 }
 
 .seek-bar-fill {

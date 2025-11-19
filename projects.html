@@ -2,16 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <title>Projects — LYNQ AI</title>
 
-    <!-- Icons -->
     <script
       src="https://kit.fontawesome.com/ae8ff12b97.js"
       crossorigin="anonymous"
     ></script>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -19,55 +17,116 @@
       rel="stylesheet"
     />
 
-    <!-- Syntax Highlighting CSS -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
     />
 
     <link rel="stylesheet" href="style.css" />
-    <!-- Link to page-specific stylesheet -->
+    <link rel="stylesheet" href="./home/home.css" />
+    
     <style>
-      /*
-  projects/projects.css
-  Styles for the Projects page
-*/
+      /* projects/projects.css */
 
-/* --- VIEW SECTION (SCROLL FIX) --- */
-#projects-view {
-  overflow-y: auto;
-  padding-bottom: 20px;
-}
+      /* --- VIEW SECTION (SCROLL FIX) --- */
+      #projects-view {
+        overflow-y: auto;
+        padding-bottom: 40px;
+        height: 100%;
+      }
 
-.status-badge {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.status-badge.completed {
-  background: rgba(16, 163, 127, 0.15);
-  color: #10a37f;
-}
-.status-badge.draft {
-  background: rgba(128, 128, 128, 0.15);
-  color: gray;
-}
-.status-badge.generating {
-  background: rgba(255, 215, 0, 0.2);
-  color: #b8860b;
-}
+      .status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .status-badge.completed {
+        background: rgba(16, 163, 127, 0.15);
+        color: #10a37f;
+      }
+      .status-badge.draft {
+        background: rgba(128, 128, 128, 0.15);
+        color: gray;
+      }
+      .status-badge.generating {
+        background: rgba(255, 215, 0, 0.2);
+        color: #b8860b;
+      }
+      
+      /* --- MOBILE PROFILE BUTTON FIXES (Sync with Home/Settings) --- */
+      @media (max-width: 768px) {
+        /* Top Bar Profile */
+        .top-actions #top-profile-btn-user .avatar {
+          display: flex !important; 
+          margin: 0 !important;
+          width: 28px;
+          height: 28px;
+          font-size: 0.85rem;
+        }
+        .top-actions #top-profile-btn-user {
+          display: flex !important;
+          padding: 0 !important;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          justify-content: center;
+          align-items: center;
+        }
+        .top-actions #top-profile-btn-user span {
+          display: none !important;
+        }
+        
+        /* Sidebar Profile */
+        #sidebar #nav-profile-wrapper .avatar {
+          display: flex !important;
+          margin-right: 10px !important;
+          width: 24px !important;
+          height: 24px !important;
+          font-size: 0.75rem !important;
+        }
+        #sidebar #nav-profile-wrapper {
+          align-items: center;
+          gap: 0; 
+        }
+        
+        /* Mobile Login Button */
+        #login-signup-btn span {
+            display: none;
+        }
+        #login-signup-btn {
+            padding: 8px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            justify-content: center;
+        }
+        #login-signup-btn i {
+            margin: 0;
+        }
+      }
     </style>
   </head>
-  <!-- MODIFIED: Added dark-mode class -->
+  
   <body class="dark-mode">
+    <script>
+      (function() {
+        const savedTheme = localStorage.getItem("lynq-theme");
+        if (savedTheme === "light") {
+          document.body.classList.remove("dark-mode");
+        }
+        const savedAccent = localStorage.getItem('lynq-accent-color');
+        if (savedAccent) {
+            document.documentElement.style.setProperty('--bg-gold', savedAccent);
+        }
+      })();
+    </script>
+
     <div id="app-container">
-      <!-- SIDEBAR -->
-      <!-- MODIFIED: Added collapsed class -->
       <aside id="sidebar" class="collapsed">
         <div style="flex-shrink: 0">
           <div class="sidebar-header">
@@ -82,108 +141,36 @@
 
         <nav class="nav-menu">
           <div class="nav-label">Menu</div>
-          <!-- Links updated -->
-          <a
-            href="index.html"
-            class="nav-item"
-            id="nav-new-chat"
-            ><i class="fa-solid fa-plus"></i> New Chat</a
-          >
-          <a
-            href="index.html"
-            class="nav-item"
-            id="nav-home"
-            ><i class="fa-solid fa-house"></i> Home</a
-          >
-          
-          
-          <a
-            href="projects.html"
-            class="nav-item active"
-            id="nav-projects"
-            ><i class="fa-solid fa-layer-group"></i> Projects</a
-          >
+          <a href="index.html" class="nav-item" id="nav-new-chat"><i class="fa-solid fa-plus"></i> New Chat</a>
+          <a href="index.html" class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i> Home</a>
+          <a href="projects.html" class="nav-item active" id="nav-projects"><i class="fa-solid fa-layer-group"></i> Projects</a>
 
-          <div
-            class="nav-label"
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding-right: 5px;
-              position: relative;
-            "
-          >
+          <div class="nav-label" style="display: flex; justify-content: space-between; align-items: center; padding-right: 5px; position: relative;">
             <span id="recent-chats-label">Recent Chats</span>
-            <input
-              type="text"
-              id="chat-search-input"
-              placeholder="Search chats..."
-              style="
-                display: none;
-                width: 100%;
-                background: var(--bg-primary);
-                border: 1px solid var(--border-primary);
-                border-radius: 6px;
-                padding: 4px 8px;
-                color: var(--text-primary);
-              "
-              onkeyup="filterRecentChats()"
-              onblur="toggleChatSearch(false)"
-            />
-            <i
-              class="fa-solid fa-magnifying-glass search-trigger"
-              id="chat-search-trigger"
-              onclick="toggleChatSearch(true)"
-            ></i>
+            <input type="text" id="chat-search-input" placeholder="Search chats..." style="display: none; width: 100%; background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 6px; padding: 4px 8px; color: var(--text-primary);" onkeyup="filterRecentChats()" onblur="toggleChatSearch(false)" />
+            <i class="fa-solid fa-magnifying-glass search-trigger" id="chat-search-trigger" onclick="toggleChatSearch(true)"></i>
           </div>
           <div id="recent-chats-container"></div>
         </nav>
 
         <div class="sidebar-footer">
-          <a href="settings.html" class="nav-item" id="nav-settings"
-            ><i class="fa-solid fa-gear"></i> Settings</a
-          >
-          <!-- MODIFIED: Separated Login/Signup Links (Visible by default) -->
-          <a
-            href="login.html?action=login"
-            class="nav-item"
-            id="nav-login-link"
-            style="margin-top: 5px;"
-          >
-            Log In
-          </a>
-          <a
-            href="login.html?action=signup"
-            class="nav-item"
-            id="nav-signup-link"
-          >
-            Sign Up
-          </a>
-          <!-- MODIFIED: Profile Link - Hidden by default -->
-          <a
-            href="profile.html"
-            class="nav-item"
-            id="nav-profile-wrapper"
-            style="margin-top: 5px; display: none;"
-          >
-            <div
-              class="avatar user"
-            >
-              MD
-            </div>
-            Mahesh Dongare
+          <a href="settings.html" class="nav-item" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
+          
+          <a href="login.html?action=login" class="nav-item" id="nav-login-link" style="margin-top: 5px; display: none;">Log In</a>
+          <a href="login.html?action=signup" class="nav-item" id="nav-signup-link" style="display: none;">Sign Up</a>
+          
+          <a href="#" onclick="toggleProfilePopup(undefined, true)" class="nav-item" id="nav-profile-wrapper" style="margin-top: 5px; display: none;">
+            <div class="avatar user" id="nav-profile-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0;">U</div>
+            <span id="nav-profile-name">User</span>
           </a>
         </div>
       </aside>
 
-      <!-- MAIN CONTENT -->
       <main id="main-content">
         <div class="top-bar">
           <button class="action-btn" onclick="toggleSidebar()">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <!-- MODIFIED: Added Logo and Title -->
           <div class="top-logo-title">
             <i class="fa-solid fa-bolt"></i> LYNQ AI
           </div>
@@ -192,22 +179,18 @@
             <button class="upgrade-btn" onclick="togglePricing()">
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
-            <!-- MODIFIED: Separated Login/Signup Buttons (Visible by default) -->
-            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-btn" style="margin-right: 8px;">
-              <span>Log In</span>
+            
+            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-signup-btn" style="margin-right: 8px; display: none;">
+              <i class="fa-solid fa-right-to-bracket"></i> <span>Log In</span>
             </button>
-            <button class="top-profile-btn" onclick="location.href='login.html?action=signup'" id="signup-btn" style="margin-right: 8px; background: var(--bg-accent); color: var(--text-accent);">
-              <span>Sign Up</span>
-            </button>
-            <!-- MODIFIED: Profile Button - Hidden by default -->
-            <button class="top-profile-btn" onclick="location.href='profile.html'" id="top-profile-btn-user" style="display: none;">
-              <div class="avatar user">MD</div>
-              <span>Mahesh</span>
+            
+            <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user" style="display: none;">
+              <div class="avatar user" id="top-profile-avatar">U</div>
+              <span id="top-profile-name">User</span>
             </button>
           </div>
         </div>
 
-        <!-- PROJECTS VIEW -->
         <div id="projects-view" class="view-section active">
           <div class="hero-header">
             <h1>My Workspace</h1>
@@ -240,14 +223,11 @@
       </main>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast">
       <i class="fa-solid fa-circle-check"></i> Link copied to clipboard!
     </div>
 
-    <!-- PRICING MODAL (Shared component) -->
     <div class="modal-overlay" id="pricing-modal">
-        <!-- ... (Modal content copied from index.html) ... -->
          <div class="pricing-modal">
         <button class="close-modal" onclick="togglePricing()">&times;</button>
         <div class="pricing-header">
@@ -302,9 +282,34 @@
       </div>
     </div>
 
-    <!-- Shared script for all pages -->
+    <div class="profile-popup-overlay" id="profile-popup">
+      <div class="profile-popup">
+        <div class="profile-popup-avatar" id="popup-avatar">U</div>
+        <h2 class="profile-popup-name" id="popup-name">User</h2>
+        <p class="profile-popup-email" id="popup-email">user@example.com</p>
+        <p class="profile-popup-phone" id="popup-phone">No phone linked</p>
+        
+        <div class="profile-popup-badge">
+          <i class="fa-solid fa-crown"></i> PRO MEMBER
+        </div>
+
+        <button class="profile-popup-logout" onclick="logoutUser()">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    
+    <script src="auth.js"></script>
     <script src="script.js"></script>
-    <!-- Page-specific script -->
-    <script src="./projects/projects.js"></script>
+    <script src="./home/home.js"></script>
+    <script>
+        // Simple page init logger
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("Projects page loaded");
+        });
+    </script>
   </body>
 </html>

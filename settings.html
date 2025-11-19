@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
     <title>Settings — LYNQ AI</title>
 
     <script
@@ -23,171 +23,225 @@
     />
 
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="./home/home.css">
     <style>
-      /*
-  settings/settings.css
-  Styles for the Settings page
-*/
+      /* --- SETTINGS PAGE STYLES --- */
+      #settings-view {
+        overflow-y: auto;
+        padding-bottom: 40px;
+        height: 100%;
+      }
 
-/* --- VIEW SECTION (SCROLL FIX) --- */
-#settings-view {
-  overflow-y: auto;
-  padding-bottom: 20px;
-}
+      .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 40px 20px;
+      }
+      
+      .settings-header {
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--border-primary);
+        padding-bottom: 20px;
+      }
+      .settings-header h1 {
+        font-size: 2.2rem;
+        color: var(--text-heading);
+      }
 
-.settings-container {
-  max-width: 900px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 40px var(--primary-padding);
-}
-.settings-header {
-  margin-bottom: 30px;
-  border-bottom: 1px solid var(--border-primary);
-  padding-bottom: 20px;
-}
-.settings-header h1 {
-  font-size: 2.2rem;
-  color: var(--text-heading);
-}
-.settings-group {
-  margin-bottom: 40px;
-}
-.settings-group h3 {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 15px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.setting-item {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  transition: 0.2s;
-}
-.setting-item:hover {
-  border-color: var(--border-secondary);
-}
-.setting-item.vertical {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-}
-.setting-info h4 {
-  color: var(--text-heading);
-  margin-bottom: 5px;
-  font-size: 1rem;
-}
-.setting-info p {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  margin: 0;
-}
-.toggle-switch {
-  position: relative;
-  width: 50px;
-  height: 28px;
-}
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--border-secondary);
-  transition: 0.4s;
-  border-radius: 34px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-input:checked + .slider {
-  background-color: var(--bg-accent);
-}
-input:checked + .slider:before {
-  transform: translateX(22px);
-}
-.custom-textarea {
-  width: 100%;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  padding: 15px;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  outline: none;
-  resize: vertical;
-  min-height: 80px; /* REDUCED from 100px */
-  margin-top: 10px;
-}
-.custom-textarea:focus {
-  border-color: var(--text-heading);
-}
-.select-box {
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-  outline: none;
-  cursor: pointer;
-}
-.input-field-styled {
-  padding: 10px;
-  width: 100%;
-  max-width: 300px;
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  outline: none;
-}
-.input-field-styled:focus {
-  border-color: var(--text-heading);
-}
+      .settings-group {
+        margin-bottom: 40px;
+      }
+      .settings-group h3 {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-.btn-danger {
-  color: var(--text-danger);
-  background: var(--bg-danger);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.btn-secondary {
-  color: var(--text-heading);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-}
+      .setting-item {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        transition: 0.2s;
+        gap: 20px; /* Ensure space between text and controls */
+      }
+      .setting-item:hover {
+        border-color: var(--border-secondary);
+      }
+      .setting-item.vertical {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .setting-info h4 {
+        color: var(--text-heading);
+        margin-bottom: 5px;
+        font-size: 1rem;
+      }
+      .setting-info p {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      /* Controls */
+      .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 28px;
+        flex-shrink: 0;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--border-secondary);
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: var(--bg-gold); /* Uses dynamic color */
+      }
+      input:checked + .slider:before {
+        transform: translateX(22px);
+      }
+
+      .custom-textarea {
+        width: 100%;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        padding: 15px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        outline: none;
+        resize: vertical;
+        min-height: 80px;
+        margin-top: 5px;
+        font-family: inherit;
+      }
+      .custom-textarea:focus {
+        border-color: var(--text-heading);
+      }
+
+      .select-box {
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-primary);
+        outline: none;
+        cursor: pointer;
+        min-width: 100px;
+      }
+
+      .input-field-styled {
+        padding: 10px;
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        outline: none;
+      }
+      .input-field-styled:focus {
+        border-color: var(--text-heading);
+      }
+
+      /* Buttons */
+      .btn-danger {
+        color: var(--text-danger);
+        background: rgba(211, 47, 47, 0.1);
+        border: 1px solid transparent;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-danger:hover {
+        background: var(--bg-danger);
+        border-color: var(--text-danger);
+      }
+
+      .btn-secondary {
+        color: var(--text-heading);
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .btn-secondary:hover {
+        background: var(--bg-tertiary);
+        border-color: var(--text-secondary);
+      }
+      
+      /* Color Picker Dots */
+      .accent-btn {
+        transition: transform 0.2s;
+      }
+      .accent-btn:hover {
+        transform: scale(1.2);
+      }
+
+      /* --- RESPONSIVE FIXES --- */
+      @media (max-width: 600px) {
+        .setting-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+        .setting-item .toggle-switch,
+        .setting-item .select-box,
+        .setting-item .accent-btn-wrapper {
+          align-self: flex-end;
+        }
+        .settings-container {
+          padding: 20px;
+        }
+        .input-row-responsive {
+          flex-direction: column;
+          align-items: flex-start !important;
+        }
+        .input-row-responsive label {
+          margin-bottom: 5px;
+        }
+      }
     </style>
   </head>
   
@@ -197,6 +251,11 @@ input:checked + .slider:before {
         const savedTheme = localStorage.getItem("lynq-theme");
         if (savedTheme === "light") {
           document.body.classList.remove("dark-mode");
+        }
+        // Restore accent color immediately
+        const savedAccent = localStorage.getItem('lynq-accent-color');
+        if (savedAccent) {
+            document.documentElement.style.setProperty('--bg-gold', savedAccent);
         }
       })();
     </script>
@@ -216,103 +275,23 @@ input:checked + .slider:before {
 
         <nav class="nav-menu">
           <div class="nav-label">Menu</div>
-          <a
-            href="index.html"
-            class="nav-item"
-            id="nav-new-chat"
-            ><i class="fa-solid fa-plus"></i> New Chat</a
-          >
-          <a
-            href="index.html"
-            class="nav-item"
-            id="nav-home"
-            ><i class="fa-solid fa-house"></i> Home</a
-          >
-          
-          <a
-            href="projects.html"
-            class="nav-item"
-            id="nav-projects"
-            ><i class="fa-solid fa-layer-group"></i> Projects</a
-          >
+          <a href="index.html" class="nav-item" id="nav-new-chat"><i class="fa-solid fa-plus"></i> New Chat</a>
+          <a href="index.html" class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i> Home</a>
+          <a href="projects.html" class="nav-item" id="nav-projects"><i class="fa-solid fa-layer-group"></i> Projects</a>
 
-          <div
-            class="nav-label"
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding-right: 5px;
-              position: relative;
-            "
-          >
+          <div class="nav-label" style="display: flex; justify-content: space-between; align-items: center; padding-right: 5px; position: relative;">
             <span id="recent-chats-label">Recent Chats</span>
-            <input
-              type="text"
-              id="chat-search-input"
-              placeholder="Search chats..."
-              style="
-                display: none;
-                width: 100%;
-                background: var(--bg-primary);
-                border: 1px solid var(--border-primary);
-                border-radius: 6px;
-                padding: 4px 8px;
-                color: var(--text-primary);
-              "
-              onkeyup="filterRecentChats()"
-              onblur="toggleChatSearch(false)"
-            />
-            <i
-              class="fa-solid fa-magnifying-glass search-trigger"
-              id="chat-search-trigger"
-              onclick="toggleChatSearch(true)"
-            ></i>
+            <input type="text" id="chat-search-input" placeholder="Search chats..." style="display: none; width: 100%; background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 6px; padding: 4px 8px; color: var(--text-primary);" onkeyup="filterRecentChats()" onblur="toggleChatSearch(false)" />
+            <i class="fa-solid fa-magnifying-glass search-trigger" id="chat-search-trigger" onclick="toggleChatSearch(true)"></i>
           </div>
           <div id="recent-chats-container"></div>
         </nav>
 
         <div class="sidebar-footer">
-          <a href="settings.html" class="nav-item active" id="nav-settings"
-            ><i class="fa-solid fa-gear"></i> Settings</a
-          >
-          
-          <a
-            href="login.html?action=login"
-            class="nav-item"
-            id="nav-login-link"
-            style="margin-top: 5px; display: none;"
-          >
-            Log In
-          </a>
-          <a
-            href="login.html?action=signup"
-            class="nav-item"
-            id="nav-signup-link"
-            style="display: none;"
-          >
-            Sign Up
-          </a>
-          
-          <a
-            href="#"
-            onclick="toggleProfilePopup()"
-            class="nav-item"
-            id="nav-profile-wrapper"
-            style="margin-top: 5px; display: none;"
-          >
-            <div
-              class="avatar user"
-              id="nav-profile-avatar"
-              style="
-                width: 24px;
-                height: 24px;
-                font-size: 0.7rem;
-                margin-right: 0;
-              "
-            >
-              U
-            </div>
+          <a href="settings.html" class="nav-item active" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
+          <a href="login.html?action=login" class="nav-item" id="nav-login-link" style="margin-top: 5px; display: none;">Log In</a>
+          <a href="#" onclick="toggleProfilePopup()" class="nav-item" id="nav-profile-wrapper" style="margin-top: 5px; display: none;">
+            <div class="avatar user" id="nav-profile-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0;">U</div>
             <span id="nav-profile-name">User</span>
           </a>
         </div>
@@ -320,22 +299,14 @@ input:checked + .slider:before {
 
       <main id="main-content">
         <div class="top-bar">
-          <button class="action-btn" onclick="toggleSidebar()">
-            <i class="fa-solid fa-bars"></i>
-          </button>
-          <div class="top-logo-title">
-            <i class="fa-solid fa-bolt"></i> LYNQ AI
-          </div>
+          <button class="action-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+          <div class="top-logo-title"><i class="fa-solid fa-bolt"></i> LYNQ AI</div>
           <div style="flex: 1"></div>
           <div class="top-actions">
-            <button class="upgrade-btn" onclick="togglePricing()">
-              <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
-            </button>
-            
+            <button class="upgrade-btn" onclick="togglePricing()"><i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span></button>
             <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-signup-btn" style="margin-right: 8px; display: none;">
               <i class="fa-solid fa-right-to-bracket"></i> <span>Log In</span>
             </button>
-            
             <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user" style="display: none;">
               <div class="avatar user" id="top-profile-avatar">U</div>
               <span id="top-profile-name">User</span>
@@ -348,47 +319,30 @@ input:checked + .slider:before {
             <div class="settings-header"><h1>Settings</h1></div>
 
             <div class="settings-group">
-              <h3>
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Personalization
-              </h3>
+              <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Personalization</h3>
+              
               <div class="setting-item">
                 <div class="setting-info">
                   <h4>Theme</h4>
                   <p>Switch between light and dark mode</p>
                 </div>
-                <label class="toggle-switch"
-                  ><input
-                    type="checkbox"
-                    id="settings-theme-toggle"
-                    onchange="toggleTheme()" /><span class="slider"></span
-                ></label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settings-theme-toggle" onchange="toggleTheme()" />
+                  <span class="slider"></span>
+                </label>
               </div>
-              <div class="setting-item">
-  <div class="setting-info">
-    <h4>Accent Color</h4>
-    <p>Choose your preferred interface color</p>
-  </div>
-  <div style="display: flex; gap: 10px">
-    <div class="accent-btn" onclick="setAccentColor('#ffd700', this)" 
-         style="width: 20px; height: 20px; background: #ffd700; border-radius: 50%; cursor: pointer; border: 2px solid var(--text-heading);"></div>
-    <div class="accent-btn" onclick="setAccentColor('#10a37f', this)" 
-         style="width: 20px; height: 20px; background: #10a37f; border-radius: 50%; cursor: pointer;"></div>
-    <div class="accent-btn" onclick="setAccentColor('#3296fa', this)" 
-         style="width: 20px; height: 20px; background: #3296fa; border-radius: 50%; cursor: pointer;"></div>
-    <div class="accent-btn" onclick="setAccentColor('#ff4500', this)" 
-         style="width: 20px; height: 20px; background: #ff4500; border-radius: 50%; cursor: pointer;"></div>
-  </div>
-</div>
+
               <div class="setting-item">
                 <div class="setting-info">
-                  <h4>Font Size</h4>
-                  <p>Adjust the text size of chats</p>
+                  <h4>Accent Color</h4>
+                  <p>Choose your preferred interface color</p>
                 </div>
-                <select class="select-box">
-                  <option>Small</option>
-                  <option selected>Medium</option>
-                  <option>Large</option>
-                </select>
+                <div class="accent-btn-wrapper" style="display: flex; gap: 10px">
+                  <div class="accent-btn" onclick="setAccentColor('#ffd700', this)" style="width: 24px; height: 24px; background: #ffd700; border-radius: 50%; cursor: pointer; border: 2px solid var(--text-heading);"></div>
+                  <div class="accent-btn" onclick="setAccentColor('#10a37f', this)" style="width: 24px; height: 24px; background: #10a37f; border-radius: 50%; cursor: pointer;"></div>
+                  <div class="accent-btn" onclick="setAccentColor('#3296fa', this)" style="width: 24px; height: 24px; background: #3296fa; border-radius: 50%; cursor: pointer;"></div>
+                  <div class="accent-btn" onclick="setAccentColor('#ff4500', this)" style="width: 24px; height: 24px; background: #ff4500; border-radius: 50%; cursor: pointer;"></div>
+                </div>
               </div>
             </div>
 
@@ -400,61 +354,7 @@ input:checked + .slider:before {
                   <p>How would you like LYNQ to respond?</p>
                   <textarea class="custom-textarea" id="custom-instructions-textarea" placeholder="e.g. Always answer in Python, be concise, act as a senior engineer..."></textarea>
                 </div>
-                <button class="btn-secondary" style="margin-left: auto" id="save-instructions-btn" onclick="saveCustomInstructions()">
-                  Save Instructions
-                </button>
-              </div>
-            </div>
-
-            <div class="settings-group">
-              <h3>
-                <i class="fa-solid fa-microphone-lines"></i> Voice & Speech
-              </h3>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Text-to-Speech Voice</h4>
-                  <p>Select the AI voice personality</p>
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center">
-                  <select class="select-box" id="voice-selector">
-                    <option value="onyx">Onyx (Deep & Calm)</option>
-                    <option value="nova" selected>Nova (Energetic)</option>
-                    <option value="shimmer">Shimmer (Soft & Warm)</option>
-                  </select>
-                  <button class="btn-secondary" onclick="showToast('Playing voice sample...')">
-                    <i class="fa-solid fa-play"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-group">
-              <h3>
-                <i class="fa-regular fa-life-ring"></i> Support & Feedback
-              </h3>
-              <div
-                class="setting-item"
-                onclick="location.href='help.html'"
-                style="cursor: pointer"
-              >
-                <div class="setting-info">
-                  <h4>Help Center</h4>
-                  <p>Guides, FAQ, and troubleshooting</p>
-                </div>
-                <i
-                  class="fa-solid fa-chevron-right"
-                  style="color: var(--text-secondary)"
-                ></i>
-              </div>
-              <div class="setting-item vertical">
-                <div class="setting-info">
-                  <h4>Send Feedback</h4>
-                  <p>Help us improve LYNQ AI</p>
-                </div>
-                <textarea class="custom-textarea" placeholder="Tell us what you think..." style="min-height: 80px"></textarea>
-                <button class="btn-secondary" style="margin-top: 10px; align-self: flex-end" onclick="showToast('Feedback sent successfully!')">
-                  Submit Feedback
-                </button>
+                <button class="btn-secondary" style="margin-left: auto" id="save-instructions-btn">Save Instructions</button>
               </div>
             </div>
 
@@ -462,21 +362,21 @@ input:checked + .slider:before {
               <h3><i class="fa-solid fa-key"></i> Developer Settings</h3>
               <div class="setting-item vertical">
                 <div class="setting-info">
-                  <h4>API Keys</h4>
-                  <p>Use your own keys to bypass rate limits.</p>
+                  <h4>BYOK (Bring Your Own Keys)</h4>
+                  <p>Keys are stored locally in your browser. We do not save them to our servers.</p>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
-                    <label style="min-width: 100px; font-size: 0.9rem; color: var(--text-secondary);">OpenAI Key</label>
-                    <input type="password" class="input-field-styled" placeholder="sk-..." />
+                <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+                  <div class="input-row-responsive" style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                    <label style="min-width: 120px; font-size: 0.9rem; color: var(--text-secondary);">OpenAI Key</label>
+                    <input type="password" id="input-openai-key" class="input-field-styled" placeholder="sk-..." />
                   </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
-                    <label style="min-width: 100px; font-size: 0.9rem; color: var(--text-secondary);">Gemini Key</label>
-                    <input type="password" class="input-field-styled" placeholder="AIzaSy..." />
+                  <div class="input-row-responsive" style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                    <label style="min-width: 120px; font-size: 0.9rem; color: var(--text-secondary);">Gemini Key</label>
+                    <input type="password" id="input-gemini-key" class="input-field-styled" placeholder="AIzaSy..." />
                   </div>
                 </div>
-                <button class="btn-secondary" style="margin-left: auto; margin-top: 10px" onclick="showToast('API Keys Saved Securely')">
-                  Save Keys
+                <button class="btn-secondary" id="save-keys-btn" style="margin-left: auto; margin-top: 10px">
+                  Save Keys Locally
                 </button>
               </div>
             </div>
@@ -486,104 +386,103 @@ input:checked + .slider:before {
               <div class="setting-item">
                 <div class="setting-info">
                   <h4>Export Data</h4>
-                  <p>Download all your chat history (JSON)</p>
+                  <p>Download chat history (JSON/Markdown)</p>
                 </div>
-                <button class="action-btn" id="export-data-btn">
+                <button class="action-btn" id="export-data-btn" title="Export Data">
                   <i class="fa-solid fa-download"></i>
                 </button>
               </div>
-              <div class="setting-item" style="border-color: var(--bg-danger)">
+              <div class="setting-item" style="border-color: rgba(211, 47, 47, 0.3);">
                 <div class="setting-info">
                   <h4 style="color: var(--text-danger)">Clear All History</h4>
-                  <p>Permanently delete all chats</p>
+                  <p>Permanently delete all chats from this device/account.</p>
                 </div>
-                <button class="btn-danger">Delete All</button>
+                <button class="btn-danger" id="delete-all-btn">Delete All</button>
               </div>
             </div>
+
           </div>
         </div>
       </main>
     </div>
 
-    <div id="toast">
-      <i class="fa-solid fa-circle-check"></i> Link copied to clipboard!
-    </div>
+    <div id="toast"><i class="fa-solid fa-circle-check"></i> Action Successful</div>
 
     <div class="modal-overlay" id="pricing-modal">
-         <div class="pricing-modal">
-        <button class="close-modal" onclick="togglePricing()">&times;</button>
-        <div class="pricing-header">
-          <h2>Upgrade Your Plan</h2>
-          <p style="color: var(--text-secondary)">
-            Unlock the full power of AI with Pro features.
-          </p>
-        </div>
-        <div class="pricing-grid">
-          <div class="price-card">
-            <h3>Starter</h3>
-            <div class="price">
-              $0<span style="font-size: 1rem; font-weight: 400">/mo</span>
-            </div>
-            <ul class="features-list">
-              <li><i class="fa-solid fa-check"></i> Gemini Flash Model</li>
-              <li><i class="fa-solid fa-check"></i> Standard Speed</li>
-              <li><i class="fa-solid fa-check"></i> 5 Projects Limit</li>
-            </ul>
-            <button class="plan-btn free">Current Plan</button>
-          </div>
-          <div class="price-card pro">
-            <div class="popular-tag">MOST POPULAR</div>
-            <h3>Pro Member</h3>
-            <div class="price">
-              $19<span style="font-size: 1rem; font-weight: 400">/mo</span>
-            </div>
-            <ul class="features-list">
-              <li>
-                <i class="fa-solid fa-check"></i> <b>Gemini 1.5 Pro & GPT-4o</b>
-              </li>
-              <li><i class="fa-solid fa-check"></i> Unlimited Fast Projects</li>
-              <li><i class="fa-solid fa-check"></i> Priority Support</li>
-              <li><i class="fa-solid fa-check"></i> Code Execution</li>
-            </ul>
-            <button class="plan-btn pro">Upgrade Now</button>
-          </div>
-          <div class="price-card">
-            <h3>Team</h3>
-            <div class="price">
-              $49<span style="font-size: 1rem; font-weight: 400">/mo</span>
-            </div>
-            <ul class="features-list">
-              <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
-              <li><i class="fa-solid fa-check"></i> Admin Dashboard</li>
-              <li><i class="fa-solid fa-check"></i> Shared Workspace</li>
-              <li><i class="fa-solid fa-check"></i> SSO Integration</li>
-            </ul>
-            <button class="plan-btn free">Contact Sales</button>
-          </div>
-        </div>
-      </div>
-    </div>
+        <div class="pricing-modal">
+       <button class="close-modal" onclick="togglePricing()">&times;</button>
+       <div class="pricing-header">
+         <h2>Upgrade Your Plan</h2>
+         <p style="color: var(--text-secondary)">
+           Unlock the full power of AI with Pro features.
+         </p>
+       </div>
+       <div class="pricing-grid">
+         <div class="price-card">
+           <h3>Starter</h3>
+           <div class="price">
+             $0<span style="font-size: 1rem; font-weight: 400">/mo</span>
+           </div>
+           <ul class="features-list">
+             <li><i class="fa-solid fa-check"></i> Gemini Flash Model</li>
+             <li><i class="fa-solid fa-check"></i> Standard Speed</li>
+             <li><i class="fa-solid fa-check"></i> 5 Projects Limit</li>
+           </ul>
+           <button class="plan-btn free">Current Plan</button>
+         </div>
+         <div class="price-card pro">
+           <div class="popular-tag">MOST POPULAR</div>
+           <h3>Pro Member</h3>
+           <div class="price">
+             $19<span style="font-size: 1rem; font-weight: 400">/mo</span>
+           </div>
+           <ul class="features-list">
+             <li>
+               <i class="fa-solid fa-check"></i> <b>Gemini 1.5 Pro & GPT-4o</b>
+             </li>
+             <li><i class="fa-solid fa-check"></i> Unlimited Fast Projects</li>
+             <li><i class="fa-solid fa-check"></i> Priority Support</li>
+             <li><i class="fa-solid fa-check"></i> Code Execution</li>
+           </ul>
+           <button class="plan-btn pro">Upgrade Now</button>
+         </div>
+         <div class="price-card">
+           <h3>Team</h3>
+           <div class="price">
+             $49<span style="font-size: 1rem; font-weight: 400">/mo</span>
+           </div>
+           <ul class="features-list">
+             <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
+             <li><i class="fa-solid fa-check"></i> Admin Dashboard</li>
+             <li><i class="fa-solid fa-check"></i> Shared Workspace</li>
+             <li><i class="fa-solid fa-check"></i> SSO Integration</li>
+           </ul>
+           <button class="plan-btn free">Contact Sales</button>
+         </div>
+       </div>
+     </div>
+   </div>
 
     <div class="profile-popup-overlay" id="profile-popup">
-      <div class="profile-popup">
-        <button class="profile-popup-close" onclick="toggleProfilePopup()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        
-        <div class="profile-popup-avatar" id="popup-avatar">U</div>
-        <h2 class="profile-popup-name" id="popup-name">User</h2>
-        <p class="profile-popup-email" id="popup-email">user@example.com</p>
-        <p class="profile-popup-phone" id="popup-phone">No phone linked</p>
-        
-        <div class="profile-popup-badge">
-          <i class="fa-solid fa-crown"></i> PRO MEMBER
+        <div class="profile-popup">
+          <button class="profile-popup-close" onclick="toggleProfilePopup()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          
+          <div class="profile-popup-avatar" id="popup-avatar">U</div>
+          <h2 class="profile-popup-name" id="popup-name">User</h2>
+          <p class="profile-popup-email" id="popup-email">user@example.com</p>
+          <p class="profile-popup-phone" id="popup-phone">No phone linked</p>
+          
+          <div class="profile-popup-badge">
+            <i class="fa-solid fa-crown"></i> PRO MEMBER
+          </div>
+  
+          <button class="profile-popup-logout" onclick="logoutUser()">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
         </div>
-
-        <button class="profile-popup-logout" onclick="logoutUser()">
-          <i class="fa-solid fa-right-from-bracket"></i> Logout
-        </button>
       </div>
-    </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -591,231 +490,208 @@ input:checked + .slider:before {
     <script src="script.js"></script>
     
     <script>
-  
-  /*
-    settings.js
-    Logic for the Settings page.
-  */
-  console.log("Settings script loaded.");
+      console.log("Settings script loaded.");
 
-  document.addEventListener("DOMContentLoaded", () => {
-    // 1. Initialize Theme Toggle State
-    // We just need to make sure the checkbox visual matches the current theme.
-    // The actual toggling logic is handled by the global function in script.js.
-    const themeToggle = document.getElementById("settings-theme-toggle");
-    const storedTheme = localStorage.getItem("lynq-theme");
-    
-    if (themeToggle) {
-      // Check if 'dark-mode' class is present on body OR local storage says dark
-      if (document.body.classList.contains("dark-mode") || storedTheme === "dark") {
-        themeToggle.checked = true;
-      } else {
-        themeToggle.checked = false;
-      }
-    }
-
-    // 2. Bind Event Listeners for Buttons
-    // Note: The theme toggle uses onchange="toggleTheme()" in the HTML, 
-    // which calls the global function from script.js.
-
-    const clearBtn = document.querySelector(".btn-danger");
-    if (clearBtn) clearBtn.onclick = clearAllHistory;
-
-    const saveBtn = document.getElementById("save-instructions-btn");
-    if (saveBtn) saveBtn.onclick = saveCustomInstructions;
-
-    const exportBtn = document.getElementById("export-data-btn");
-    if (exportBtn) exportBtn.onclick = exportChatHistory;
-    
-    // 3. Load existing Custom Instructions
-    loadCustomInstructions();
-    // 4. Load Saved Accent Color
-    const savedColor = localStorage.getItem('lynq-accent-color');
-    if (savedColor) {
-       // Apply color
-       document.documentElement.style.setProperty('--bg-gold', savedColor);
-       
-       // Highlight the correct button
-       const matchBtn = Array.from(document.querySelectorAll('.accent-btn')).find(
-           b => b.getAttribute('onclick').includes(savedColor)
-       );
-       if(matchBtn) {
-           document.querySelectorAll('.accent-btn').forEach(b => b.style.border = 'none');
-           matchBtn.style.border = '2px solid var(--text-heading)';
-       }
-    }
-  });
-
-  // --- CUSTOM INSTRUCTIONS LOGIC ---
-  // --- ACCENT COLOR LOGIC ---
-  function setAccentColor(color, btnElement) {
-    // 1. Apply the color to the primary CSS variable (overriding the default gold)
-    document.documentElement.style.setProperty('--bg-gold', color);
-    
-    // 2. Also update the logo icon color (which is usually hardcoded)
-    const logoIcons = document.querySelectorAll('.fa-bolt');
-    logoIcons.forEach(icon => {
-        // We only want to change the yellow/gold bolts, not white/black ones
-        // This is a simple check to avoid breaking other icons
-        if (getComputedStyle(icon).color === 'rgb(255, 215, 0)' || icon.style.color === '#ffd700') {
-            icon.style.color = color;
+      document.addEventListener("DOMContentLoaded", () => {
+        // 1. Theme Toggle Sync
+        const themeToggle = document.getElementById("settings-theme-toggle");
+        const storedTheme = localStorage.getItem("lynq-theme");
+        if (themeToggle) {
+          if (document.body.classList.contains("dark-mode") || storedTheme === "dark") {
+            themeToggle.checked = true;
+          } else {
+            themeToggle.checked = false;
+          }
         }
-    });
 
-    // 3. Save to local storage
-    localStorage.setItem('lynq-accent-color', color);
+        // 2. Bind Buttons
+        const clearBtn = document.getElementById("delete-all-btn");
+        if (clearBtn) clearBtn.addEventListener("click", clearAllHistory);
 
-    // 4. Update the visual selection (move the border)
-    document.querySelectorAll('.accent-btn').forEach(btn => {
-        btn.style.border = 'none';
-    });
-    if (btnElement) {
-        btnElement.style.border = '2px solid var(--text-heading)';
-    }
-  }
-  function saveCustomInstructions() {
-    const textEl = document.getElementById("custom-instructions-textarea");
-    if (textEl) {
-      localStorage.setItem("lynq_custom_instructions", textEl.value);
-      if (typeof showToast === "function") showToast("Instructions saved!");
-    }
-  }
+        const saveInstrBtn = document.getElementById("save-instructions-btn");
+        if (saveInstrBtn) saveInstrBtn.addEventListener("click", saveCustomInstructions);
 
-  function loadCustomInstructions() {
-    const text = localStorage.getItem("lynq_custom_instructions");
-    const textEl = document.getElementById("custom-instructions-textarea");
-    if (text && textEl) {
-      textEl.value = text;
-    }
-  }
-
-  // --- EXPORT DATA LOGIC ---
-  async function exportChatHistory() {
-    // Check Auth (using global getAuthToken from auth.js)
-    if (typeof getAuthToken !== "function") {
-        console.error("Auth function missing");
-        return;
-    }
-
-    const token = await getAuthToken();
-    if (!token) {
-        if (typeof showToast === "function") showToast("Please log in to export data.");
-        return;
-    }
-
-    if (typeof showToast === "function") showToast("Preparing export...");
-
-    try {
-        // 1. Get list of all chats
-        const listResponse = await fetch('/api/chats', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const exportBtn = document.getElementById("export-data-btn");
+        if (exportBtn) exportBtn.addEventListener("click", exportChatHistory);
         
-        if (!listResponse.ok) throw new Error("Failed to fetch chat list");
-        const chatList = await listResponse.json();
+        const saveKeysBtn = document.getElementById("save-keys-btn");
+        if (saveKeysBtn) saveKeysBtn.addEventListener("click", saveApiKeys);
 
-        if (chatList.length === 0) {
-            if (typeof showToast === "function") showToast("No chat history to export.");
-            return;
+        // 3. Load Data
+        loadCustomInstructions();
+        loadApiKeys();
+        
+        // 4. Highlight saved accent color
+        const savedColor = localStorage.getItem('lynq-accent-color');
+        if (savedColor) {
+           const matchBtn = Array.from(document.querySelectorAll('.accent-btn')).find(
+               b => b.getAttribute('onclick').includes(savedColor)
+           );
+           if(matchBtn) {
+               document.querySelectorAll('.accent-btn').forEach(b => b.style.border = 'none');
+               matchBtn.style.border = '2px solid var(--text-heading)';
+           }
+        }
+      });
+
+      // --- LOGIC: Accent Color ---
+      function setAccentColor(color, btnElement) {
+        // Set global variable
+        document.documentElement.style.setProperty('--bg-gold', color);
+        
+        // Update Logo Icons via CSS variable trick if possible, or manual override
+        const logoIcons = document.querySelectorAll('.fa-bolt');
+        logoIcons.forEach(icon => {
+            icon.style.color = color;
+        });
+
+        localStorage.setItem('lynq-accent-color', color);
+
+        // Visual feedback
+        document.querySelectorAll('.accent-btn').forEach(btn => {
+            btn.style.border = 'none';
+        });
+        if (btnElement) {
+            btnElement.style.border = '2px solid var(--text-heading)';
+        }
+      }
+
+      // --- LOGIC: Custom Instructions ---
+      function saveCustomInstructions() {
+        const textEl = document.getElementById("custom-instructions-textarea");
+        if (textEl) {
+          localStorage.setItem("lynq_custom_instructions", textEl.value);
+          if (typeof showToast === "function") showToast("Instructions saved!");
+        }
+      }
+
+      function loadCustomInstructions() {
+        const text = localStorage.getItem("lynq_custom_instructions");
+        const textEl = document.getElementById("custom-instructions-textarea");
+        if (text && textEl) textEl.value = text;
+      }
+
+      // --- LOGIC: API KEYS (FIXED: Actually Saves Now) ---
+      function saveApiKeys() {
+        const openai = document.getElementById("input-openai-key").value;
+        const gemini = document.getElementById("input-gemini-key").value;
+
+        if (openai) localStorage.setItem("lynq_openai_key", openai);
+        if (gemini) localStorage.setItem("lynq_gemini_key", gemini);
+
+        if (typeof showToast === "function") showToast("Keys saved to LocalStorage!");
+      }
+
+      function loadApiKeys() {
+         const openai = localStorage.getItem("lynq_openai_key");
+         const gemini = localStorage.getItem("lynq_gemini_key");
+         if(openai) document.getElementById("input-openai-key").value = openai;
+         if(gemini) document.getElementById("input-gemini-key").value = gemini;
+      }
+
+      // --- LOGIC: Export Data (Optimized) ---
+      async function exportChatHistory() {
+        if (typeof getAuthToken !== "function") return;
+        const token = await getAuthToken();
+
+        // GUEST EXPORT (LocalStorage)
+        if (!token) {
+           if(typeof recentChats !== 'undefined' && recentChats.length > 0) {
+               downloadExport(JSON.stringify(recentChats, null, 2), "LYNQ-Guest-Export.json");
+           } else {
+               showToast("No guest chats to export.");
+           }
+           return;
         }
 
-        let fullExportContent = "# LYNQ AI - Chat History Export\n\n";
-        const dateStr = new Date().toLocaleDateString();
-        fullExportContent += `Export Date: ${dateStr}\n\n`;
+        // LOGGED IN EXPORT
+        if (typeof showToast === "function") showToast("Preparing export... please wait.");
 
-        // 2. Loop through IDs and fetch full history for each
-        for (const chatMeta of chatList) {
-            const detailResponse = await fetch(`/api/chats/${chatMeta.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            if (detailResponse.ok) {
-                const chatData = await detailResponse.json();
-                
-                fullExportContent += "========================================\n";
-                fullExportContent += `CHAT: ${chatData.title}\n`;
-                fullExportContent += `ID: ${chatData.id} | Date: ${new Date(chatMeta.updatedAt).toLocaleString()}\n`;
-                fullExportContent += "========================================\n\n";
+        try {
+            // 1. Fetch List
+            const listResponse = await fetch('/api/chats', { headers: { Authorization: `Bearer ${token}` } });
+            if (!listResponse.ok) throw new Error("Failed to fetch list");
+            const chatList = await listResponse.json();
 
-                chatData.history.forEach(msg => {
-                    const role = msg.role === 'user' ? 'User' : 'AI';
-                    fullExportContent += `**${role}:**\n${msg.content}\n\n`;
-                    if(msg.attachment) {
-                        fullExportContent += `[Attachment: ${msg.attachment.name}]\n\n`;
-                    }
-                    fullExportContent += "---\n\n";
-                });
-                
-                fullExportContent += "\n\n";
+            if (chatList.length === 0) {
+                showToast("No history found.");
+                return;
             }
-        }
 
-        // 3. Trigger Download
-        const blob = new Blob([fullExportContent], { type: "text/markdown" });
+            // 2. Batch Fetch (Simple Loop with small delay to avoid rate limits)
+            let fullHistory = [];
+            for (const chatMeta of chatList) {
+                try {
+                    const res = await fetch(`/api/chats/${chatMeta.id}`, { headers: { Authorization: `Bearer ${token}` } });
+                    if(res.ok) {
+                        const data = await res.json();
+                        fullHistory.push(data);
+                    }
+                } catch (e) { console.warn("Skipped failed chat", chatMeta.id); }
+                
+                // Slight delay to be kind to the server
+                await new Promise(r => setTimeout(r, 50));
+            }
+
+            // 3. Download
+            downloadExport(JSON.stringify(fullHistory, null, 2), `LYNQ-Export-${new Date().toISOString().slice(0,10)}.json`);
+            showToast("Export Complete!");
+
+        } catch (error) {
+            console.error("Export failed:", error);
+            showToast("Export failed. Check console.");
+        }
+      }
+
+      function downloadExport(content, filename) {
+        const blob = new Blob([content], { type: "application/json" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `LYNQ-Export-${new Date().toISOString().split("T")[0]}.md`;
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+      }
+
+      // --- LOGIC: Delete All ---
+      async function clearAllHistory() {
+        const confirmed = confirm("⚠️ DANGER: Are you sure you want to delete ALL chat history? This cannot be undone.");
+        if (!confirmed) return;
+
+        const token = await getAuthToken();
         
-        if (typeof showToast === "function") showToast("Export complete!");
-
-    } catch (error) {
-        console.error("Export failed:", error);
-        if (typeof showToast === "function") showToast("Failed to export data.");
-    }
-  }
-
-  // --- DELETE ALL LOGIC ---
-  async function clearAllHistory() {
-    const confirmed = confirm("DANGER: Are you sure you want to delete ALL chat history? This cannot be undone.");
-    if (!confirmed) return;
-
-    const token = await getAuthToken();
-    
-    // GUEST MODE HANDLING
-    if (!token) {
-        localStorage.removeItem("lynq_app_state"); // Legacy clear
-        // Clear global recentChats array if it exists
-        if(typeof recentChats !== 'undefined') {
-             recentChats.length = 0; 
+        // GUEST CLEANUP
+        if (!token) {
+            localStorage.removeItem("lynq_app_state"); 
+            // Clear global array if present
+            if(typeof recentChats !== 'undefined') recentChats.length = 0;
+            renderRecentChats(); // Update Sidebar
+            showToast("Guest history cleared.");
+            return;
         }
-        if (typeof showToast === "function") showToast("Guest history cleared.");
-        setTimeout(() => location.reload(), 1000);
-        return;
-    }
 
-    // LOGGED IN USER HANDLING
-    try {
-        const response = await fetch('/api/chats', {
-            method: 'DELETE',
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
+        // SERVER CLEANUP
+        try {
+            const response = await fetch('/api/chats', {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-        if (!response.ok) throw new Error("Server failed to delete");
+            if (!response.ok) throw new Error("Server failed to delete");
 
-        if (typeof showToast === "function") showToast("All history deleted permanently.");
-        
-        // Clear global state locally to match server
-        if(typeof recentChats !== 'undefined') {
-            recentChats.length = 0;
+            if (typeof showToast === "function") showToast("All history deleted.");
+            
+            // Reset Local State
+            if(typeof recentChats !== 'undefined') recentChats.length = 0;
+            
+            // Force UI Refresh
+            setTimeout(() => location.href = "index.html", 1000);
+
+        } catch (error) {
+            console.error("Delete failed:", error);
+            showToast("Error deleting history.");
         }
-        
-        // Reload page to refresh UI
-        setTimeout(() => {
-            location.href = "index.html";
-        }, 1500);
-
-    } catch (error) {
-        console.error("Delete all failed:", error);
-        if (typeof showToast === "function") showToast("Error deleting history.");
-    }
-  }
-
-
-</script>
+      }
+    </script>
   </body>
 </html>
