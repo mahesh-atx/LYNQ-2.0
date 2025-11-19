@@ -374,7 +374,6 @@ body.dark-mode .btn-cancel {
 
 /* Improved Input Toolbar Icons */
 .input-area-wrapper {
-  padding: 20px;
   width: 82%;
   max-width: 800px;
   margin: 0 auto;
@@ -964,19 +963,24 @@ textarea#chat-input {
   /* 1. Fixed Input Area */
   /* Ensure chat container scrolls above the fixed input */
   #chat-container {
-    padding-bottom: 200px;
+    padding-bottom: 140px; /* Increase padding so messages clear the fixed input */
+    height: 100%; /* Ensure it takes full height of parent */
+    overflow-y: auto; /* Ensure internal scroll works */
+    overscroll-behavior: contain; /* Prevents scroll chaining to parent */
   }
 
   /* Make the input area fixed at the bottom on mobile */
   .input-area-wrapper.fixed-mobile-input {
-    padding: 0 0;
     position: fixed;
-    bottom: 0;
+    bottom: 30px;    /* Changed from 20px to 30px to make room for footer */
     left: 0;
+    right: 0;
+    z-index: 1000;
+
+    padding: 0 0;
     width: 100%;
     max-width: none;
     background: var(--bg-primary);
-    /* z-index: 10; */
     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
     margin: 0;
   }
@@ -985,80 +989,123 @@ textarea#chat-input {
   .input-container {
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
-    padding: 10px 14px 2em 14px;
+    padding: 5px 8px 1em 8px;
     border: none;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
   }
+}
 
-  /* 2. Mobile Suggestions (Pills) */
-  /* Hide the old suggestion grid (since it was removed from HTML, this is defensive) */
-  .suggestion-grid {
-    display: none !important;
-  }
+.input-area-wrapper {
+  padding: 20px;
+}
 
-  /* Show and style the new suggestion pills */
-  .suggestion-pills-mobile {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    padding: 0 10px;
-  }
+/* 2. Mobile Suggestions (Pills) */
+/* Hide the old suggestion grid (since it was removed from HTML, this is defensive) */
+.suggestion-grid {
+  display: none !important;
+}
 
-  .pill-card {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-capsule);
-    padding: 10px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: 0.2s;
-  }
-  .pill-card:hover {
-    background: var(--bg-primary);
-  }
+/* Show and style the new suggestion pills */
+.suggestion-pills-mobile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 0 10px;
+}
 
-  /* 3. Top Bar (Sign Up Button) */
+.pill-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-capsule);
+  padding: 10px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+.pill-card:hover {
+  background: var(--bg-primary);
+}
 
-  /* Hide all existing top-profile buttons and upgrade text on mobile */
-  #login-signup-btn,
-  .top-actions #top-profile-btn-user,
-  .top-actions .upgrade-btn span {
-    display: none !important;
-  }
+/* 3. Top Bar (Sign Up Button) */
 
-  /* Show the new mobile-signup-btn */
-  .top-actions .mobile-signup-btn {
-    display: flex;
-    font-weight: 600;
-    background: var(--bg-accent);
-    color: var(--text-accent);
-    padding: 8px 12px;
-    border-radius: 20px;
-  }
+/* Hide all existing top-profile buttons and upgrade text on mobile */
+#login-signup-btn,
+.top-actions #top-profile-btn-user,
+.top-actions .upgrade-btn span {
+  display: none !important;
+}
 
-  .top-actions .mobile-signup-btn .avatar {
-    display: none;
-  }
-  .bubble {
-    width: 100%;
-  }
-  .msg-content-wrapper {
-    padding-right: 2em;
-    max-width: 100%;
-  }
-  .avatar {
-    display: none;
-  }
+/* Show the new mobile-signup-btn */
+/* --- FIX: MOBILE SIGN UP BUTTON --- */
+.top-actions .mobile-signup-btn {
+  display: flex !important; /* Force it to show */
+  background-color: var(
+    --text-heading
+  ) !important; /* High Contrast Background */
+  color: var(--bg-primary) !important; /* High Contrast Text */
+  border: none !important; /* Remove gray border */
+  padding: 8px 18px !important; /* Comfortable touch area */
+  border-radius: 24px; /* Pill shape */
+  font-weight: 600;
+  font-size: 0.85rem;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Subtle shadow for pop */
+  margin-right: 5px;
+  transition: transform 0.2s;
+}
+
+.top-actions .mobile-signup-btn:active {
+  transform: scale(0.95); /* Click effect */
+}
+
+/* Hide the desktop login button to prevent duplicates */
+#login-signup-btn {
+  display: none !important;
+}
+
+/* Optional: Hide Upgrade Text on small screens to make room */
+.upgrade-btn span {
+  display: none;
+}
+.upgrade-btn {
+  padding: 8px 10px;
+}
+
+.top-actions .mobile-signup-btn .avatar {
+  display: none;
+}
+.bubble {
+  width: 100%;
+}
+.msg-content-wrapper {
+  padding-right: 2em;
+  max-width: 100%;
+}
+.avatar {
+  display: none;
+}
+.footer-text {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  
+  padding-bottom: 5px;
+  transition: opacity 0.2s;
 }
 
 /* --- CRUCIAL FIX: DESKTOP OVERRIDE (applies only on screens > 768px) --- */
 @media (min-width: 769px) {
   /* Explicitly hide all mobile-only elements on desktop */
+  .input-area-wrapper {
+    padding: 20px;
+}
 
   .mobile-signup-btn {
     display: none !important;
@@ -1076,8 +1123,61 @@ textarea#chat-input {
 
   /* Ensure chat container reverts to desktop padding */
   #chat-container {
-    padding-bottom: 20px; /* Restore original bottom padding */
+    padding-bottom: 140px; /* Increase padding so messages clear the fixed input */
+    height: 100%; /* Ensure it takes full height of parent */
+    overflow-y: auto; /* Ensure internal scroll works */
+    overscroll-behavior: contain; /* Prevents scroll chaining to parent */
   }
 
   /* Ensure desktop profile/login buttons are shown correctly */
 }
+/* --- FOOTER DISCLAIMER --- */
+.footer-text {
+    position: fixed;  /* Pin to viewport */
+    bottom: 0;        /* Stick to bottom */
+    left: 0;
+    width: 100%;
+    z-index: 900;     /* Sit below input (z-index 1000) */
+    background: var(--bg-primary); /* Opaque background to hide scrolling text */
+    
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    padding: 8px 0 12px 0; /* Comfortable padding */
+    margin: 0;
+  }
+
+.footer-text:hover {
+  opacity: 1;
+}
+
+.footer-text a {
+  color: var(--text-heading);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px dotted transparent;
+  transition: border-color 0.2s;
+}
+
+.footer-text a:hover {
+  border-color: var(--text-heading);
+}
+
+/* Adjust for Mobile to prevent clutter */
+@media (max-width: 768px) {
+  .footer-text {
+    font-size: 0.65rem;
+    background: var(
+      --bg-primary
+    ); /* Match background to cover content behind */
+    margin-top: 5px;
+    padding-bottom: 10px;
+  }
+  /* .input-area-wrapper:focus-within + .footer-text {
+  display: none !important;
+}
+.input-area-wrapper.fixed-mobile-input:focus-within {
+  bottom: 0 !important;
+} */
+}
+

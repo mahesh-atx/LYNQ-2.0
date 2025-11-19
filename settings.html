@@ -364,17 +364,21 @@ input:checked + .slider:before {
                 ></label>
               </div>
               <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Accent Color</h4>
-                  <p>Choose your preferred interface color</p>
-                </div>
-                <div style="display: flex; gap: 10px">
-                  <div style="width: 20px; height: 20px; background: #ffd700; border-radius: 50%; cursor: pointer; border: 2px solid var(--text-heading);"></div>
-                  <div style="width: 20px; height: 20px; background: #10a37f; border-radius: 50%; cursor: pointer;"></div>
-                  <div style="width: 20px; height: 20px; background: #3296fa; border-radius: 50%; cursor: pointer;"></div>
-                  <div style="width: 20px; height: 20px; background: #ff4500; border-radius: 50%; cursor: pointer;"></div>
-                </div>
-              </div>
+  <div class="setting-info">
+    <h4>Accent Color</h4>
+    <p>Choose your preferred interface color</p>
+  </div>
+  <div style="display: flex; gap: 10px">
+    <div class="accent-btn" onclick="setAccentColor('#ffd700', this)" 
+         style="width: 20px; height: 20px; background: #ffd700; border-radius: 50%; cursor: pointer; border: 2px solid var(--text-heading);"></div>
+    <div class="accent-btn" onclick="setAccentColor('#10a37f', this)" 
+         style="width: 20px; height: 20px; background: #10a37f; border-radius: 50%; cursor: pointer;"></div>
+    <div class="accent-btn" onclick="setAccentColor('#3296fa', this)" 
+         style="width: 20px; height: 20px; background: #3296fa; border-radius: 50%; cursor: pointer;"></div>
+    <div class="accent-btn" onclick="setAccentColor('#ff4500', this)" 
+         style="width: 20px; height: 20px; background: #ff4500; border-radius: 50%; cursor: pointer;"></div>
+  </div>
+</div>
               <div class="setting-item">
                 <div class="setting-info">
                   <h4>Font Size</h4>
@@ -587,99 +591,230 @@ input:checked + .slider:before {
     <script src="script.js"></script>
     
     <script>
+  
   /*
-  settings.js
-  This file contains logic ONLY for the Settings page (settings.html).
-*/
-console.log("Settings script loaded.");
+    settings.js
+    Logic for the Settings page.
+  */
+  console.log("Settings script loaded.");
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Initialize settings state
-  console.log("Settings DOMContentLoaded");
-
-  // Set theme toggle state based on loaded theme
-  // We check body class here because our inline script ran first
-  const themeToggle = document.getElementById("settings-theme-toggle");
-  if (themeToggle) {
-    if (document.body.classList.contains("dark-mode")) {
-      themeToggle.checked = true;
-    } else {
-      themeToggle.checked = false;
+  document.addEventListener("DOMContentLoaded", () => {
+    // 1. Initialize Theme Toggle State
+    // We just need to make sure the checkbox visual matches the current theme.
+    // The actual toggling logic is handled by the global function in script.js.
+    const themeToggle = document.getElementById("settings-theme-toggle");
+    const storedTheme = localStorage.getItem("lynq-theme");
+    
+    if (themeToggle) {
+      // Check if 'dark-mode' class is present on body OR local storage says dark
+      if (document.body.classList.contains("dark-mode") || storedTheme === "dark") {
+        themeToggle.checked = true;
+      } else {
+        themeToggle.checked = false;
+      }
     }
-  }
 
-  // Add listeners for this page's buttons
-  const clearBtn = document.querySelector(".btn-danger");
-  if (clearBtn) clearBtn.onclick = clearAllHistory;
+    // 2. Bind Event Listeners for Buttons
+    // Note: The theme toggle uses onchange="toggleTheme()" in the HTML, 
+    // which calls the global function from script.js.
 
-  const saveBtn = document.getElementById("save-instructions-btn");
-  if (saveBtn) saveBtn.onclick = saveCustomInstructions;
+    const clearBtn = document.querySelector(".btn-danger");
+    if (clearBtn) clearBtn.onclick = clearAllHistory;
 
-  const exportBtn = document.getElementById("export-data-btn");
-  if (exportBtn) exportBtn.onclick = exportChatHistory;
+    const saveBtn = document.getElementById("save-instructions-btn");
+    if (saveBtn) saveBtn.onclick = saveCustomInstructions;
 
-  // Load saved custom instructions
-  loadCustomInstructions();
-});
-
-function saveCustomInstructions() {
-  const textEl = document.getElementById("custom-instructions-textarea");
-  if (textEl) {
-    localStorage.setItem("lynq_custom_instructions", textEl.value);
-    showToast("Instructions saved!"); // global func
-  }
-}
-
-function loadCustomInstructions() {
-  const text = localStorage.getItem("lynq_custom_instructions");
-  const textEl = document.getElementById("custom-instructions-textarea");
-  if (text && textEl) {
-    textEl.value = text;
-  }
-}
-
-function exportChatHistory() {
-  if (recentChats.length === 0) {
-    // global var
-    showToast("Nothing to export."); // global func
-    return;
-  }
-
-  let fullExport = "";
-
-  recentChats.forEach((chat) => {
-    // global var
-    fullExport += `--- CHAT: ${chat.title} (ID: ${chat.id}) ---\n\n`;
-    fullExport += chat.history
-      .map(
-        (m) => `**${m.role === "user" ? "User" : "LYNQ AI"}:**\n\n${m.content}`
-      )
-      .join("\n\n---\n\n");
-    fullExport += "\n\n\n";
+    const exportBtn = document.getElementById("export-data-btn");
+    if (exportBtn) exportBtn.onclick = exportChatHistory;
+    
+    // 3. Load existing Custom Instructions
+    loadCustomInstructions();
+    // 4. Load Saved Accent Color
+    const savedColor = localStorage.getItem('lynq-accent-color');
+    if (savedColor) {
+       // Apply color
+       document.documentElement.style.setProperty('--bg-gold', savedColor);
+       
+       // Highlight the correct button
+       const matchBtn = Array.from(document.querySelectorAll('.accent-btn')).find(
+           b => b.getAttribute('onclick').includes(savedColor)
+       );
+       if(matchBtn) {
+           document.querySelectorAll('.accent-btn').forEach(b => b.style.border = 'none');
+           matchBtn.style.border = '2px solid var(--text-heading)';
+       }
+    }
   });
 
-  const blob = new Blob([fullExport], { type: "text/markdown" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `LYNQ-All-Chats-${new Date().toISOString().split("T")[0]}.md`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
+  // --- CUSTOM INSTRUCTIONS LOGIC ---
+  // --- ACCENT COLOR LOGIC ---
+  function setAccentColor(color, btnElement) {
+    // 1. Apply the color to the primary CSS variable (overriding the default gold)
+    document.documentElement.style.setProperty('--bg-gold', color);
+    
+    // 2. Also update the logo icon color (which is usually hardcoded)
+    const logoIcons = document.querySelectorAll('.fa-bolt');
+    logoIcons.forEach(icon => {
+        // We only want to change the yellow/gold bolts, not white/black ones
+        // This is a simple check to avoid breaking other icons
+        if (getComputedStyle(icon).color === 'rgb(255, 215, 0)' || icon.style.color === '#ffd700') {
+            icon.style.color = color;
+        }
+    });
 
-function clearAllHistory() {
-  if (confirm("Are you sure you want to delete all chat history?")) {
-    localStorage.removeItem("lynq_app_state");
-    localStorage.removeItem("lynq_custom_instructions");
+    // 3. Save to local storage
+    localStorage.setItem('lynq-accent-color', color);
 
-    if (typeof showToast === "function") {
-      showToast("All local settings and history cleared. Reloading page...");
+    // 4. Update the visual selection (move the border)
+    document.querySelectorAll('.accent-btn').forEach(btn => {
+        btn.style.border = 'none';
+    });
+    if (btnElement) {
+        btnElement.style.border = '2px solid var(--text-heading)';
     }
-    setTimeout(() => {
-      location.reload();
-    }, 1000);
   }
-}
+  function saveCustomInstructions() {
+    const textEl = document.getElementById("custom-instructions-textarea");
+    if (textEl) {
+      localStorage.setItem("lynq_custom_instructions", textEl.value);
+      if (typeof showToast === "function") showToast("Instructions saved!");
+    }
+  }
+
+  function loadCustomInstructions() {
+    const text = localStorage.getItem("lynq_custom_instructions");
+    const textEl = document.getElementById("custom-instructions-textarea");
+    if (text && textEl) {
+      textEl.value = text;
+    }
+  }
+
+  // --- EXPORT DATA LOGIC ---
+  async function exportChatHistory() {
+    // Check Auth (using global getAuthToken from auth.js)
+    if (typeof getAuthToken !== "function") {
+        console.error("Auth function missing");
+        return;
+    }
+
+    const token = await getAuthToken();
+    if (!token) {
+        if (typeof showToast === "function") showToast("Please log in to export data.");
+        return;
+    }
+
+    if (typeof showToast === "function") showToast("Preparing export...");
+
+    try {
+        // 1. Get list of all chats
+        const listResponse = await fetch('/api/chats', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!listResponse.ok) throw new Error("Failed to fetch chat list");
+        const chatList = await listResponse.json();
+
+        if (chatList.length === 0) {
+            if (typeof showToast === "function") showToast("No chat history to export.");
+            return;
+        }
+
+        let fullExportContent = "# LYNQ AI - Chat History Export\n\n";
+        const dateStr = new Date().toLocaleDateString();
+        fullExportContent += `Export Date: ${dateStr}\n\n`;
+
+        // 2. Loop through IDs and fetch full history for each
+        for (const chatMeta of chatList) {
+            const detailResponse = await fetch(`/api/chats/${chatMeta.id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (detailResponse.ok) {
+                const chatData = await detailResponse.json();
+                
+                fullExportContent += "========================================\n";
+                fullExportContent += `CHAT: ${chatData.title}\n`;
+                fullExportContent += `ID: ${chatData.id} | Date: ${new Date(chatMeta.updatedAt).toLocaleString()}\n`;
+                fullExportContent += "========================================\n\n";
+
+                chatData.history.forEach(msg => {
+                    const role = msg.role === 'user' ? 'User' : 'AI';
+                    fullExportContent += `**${role}:**\n${msg.content}\n\n`;
+                    if(msg.attachment) {
+                        fullExportContent += `[Attachment: ${msg.attachment.name}]\n\n`;
+                    }
+                    fullExportContent += "---\n\n";
+                });
+                
+                fullExportContent += "\n\n";
+            }
+        }
+
+        // 3. Trigger Download
+        const blob = new Blob([fullExportContent], { type: "text/markdown" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `LYNQ-Export-${new Date().toISOString().split("T")[0]}.md`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        if (typeof showToast === "function") showToast("Export complete!");
+
+    } catch (error) {
+        console.error("Export failed:", error);
+        if (typeof showToast === "function") showToast("Failed to export data.");
+    }
+  }
+
+  // --- DELETE ALL LOGIC ---
+  async function clearAllHistory() {
+    const confirmed = confirm("DANGER: Are you sure you want to delete ALL chat history? This cannot be undone.");
+    if (!confirmed) return;
+
+    const token = await getAuthToken();
+    
+    // GUEST MODE HANDLING
+    if (!token) {
+        localStorage.removeItem("lynq_app_state"); // Legacy clear
+        // Clear global recentChats array if it exists
+        if(typeof recentChats !== 'undefined') {
+             recentChats.length = 0; 
+        }
+        if (typeof showToast === "function") showToast("Guest history cleared.");
+        setTimeout(() => location.reload(), 1000);
+        return;
+    }
+
+    // LOGGED IN USER HANDLING
+    try {
+        const response = await fetch('/api/chats', {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) throw new Error("Server failed to delete");
+
+        if (typeof showToast === "function") showToast("All history deleted permanently.");
+        
+        // Clear global state locally to match server
+        if(typeof recentChats !== 'undefined') {
+            recentChats.length = 0;
+        }
+        
+        // Reload page to refresh UI
+        setTimeout(() => {
+            location.href = "index.html";
+        }, 1500);
+
+    } catch (error) {
+        console.error("Delete all failed:", error);
+        if (typeof showToast === "function") showToast("Error deleting history.");
+    }
+  }
+
 
 </script>
   </body>

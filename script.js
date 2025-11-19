@@ -245,6 +245,19 @@ async function loadState(loadChats = true) {
     localStorage.setItem("lynq-theme", "dark");
     if (settingsToggle) settingsToggle.checked = true;
   }
+  // --- Accent Color Check ---
+  const savedAccent = localStorage.getItem("lynq-accent-color");
+  if (savedAccent) {
+    // Apply to the global CSS variable
+    document.documentElement.style.setProperty("--bg-gold", savedAccent);
+
+    // Optional: Try to update the Logo icon if it exists on this page
+    // (Wait slightly for DOM to be ready if needed, or apply directly)
+    setTimeout(() => {
+      const logoIcon = document.querySelector(".top-logo-title i.fa-bolt");
+      if (logoIcon) logoIcon.style.color = savedAccent;
+    }, 50);
+  }
 
   // Sidebar state check - FORCE CLOSED DEFAULT
   if (sidebar) {

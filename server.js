@@ -346,6 +346,24 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
   }
 });
 
+// DELETE: Delete ALL chats for the authenticated user
+app.delete("/api/chats", verifyAuthToken, async (req, res) => {
+  try {
+    const result = await Chat.deleteMany({
+      userId: req.user.uid, // Ensure we only delete the requesting user's chats
+    });
+
+    res.json({ 
+      success: true, 
+      message: "All history deleted", 
+      deletedCount: result.deletedCount 
+    });
+  } catch (err) {
+    console.error("Error deleting all chats:", err);
+    res.status(500).json({ error: "Failed to delete history" });
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(

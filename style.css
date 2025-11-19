@@ -79,8 +79,9 @@ body {
 /* --- LAYOUT --- */
 #app-container {
   display: flex;
-  height: 100vh;
+  height: 100dvh; /* Adapts instantly to keyboard height */
   width: 100vw;
+  overflow: hidden; /* Prevents outer page scrolling */
 }
 
 /* --- SIDEBAR --- */
@@ -100,6 +101,7 @@ body {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   overflow-x: hidden;
+  z-index: 99999999990;
 }
 
 /* Desktop Collapsed */
@@ -906,9 +908,9 @@ body.dark-mode .pro-badge {
     padding: 8px 12px; 
   }
 
-  .top-profile-btn span {
+  /* .top-profile-btn span {
     display: none;
-  }
+  } */
   .top-profile-btn {
       padding: 5px; 
       border-radius: 50%; 
