@@ -209,20 +209,39 @@
       }
 
       /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
-      .auth-right {
-        flex: 1;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        justify-content: end; 
-        align-items: center;
-        padding: 40px;
-        text-align: left;
-        background: linear-gradient(135deg, #1e3a8a 0%, #064e3b 100%);
-        background-size: cover;
-        background-position: center;
-        overflow: hidden;
-      }
+      /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
+/* --- RIGHT SIDE: IMAGE & OVERLAY --- */
+.auth-right {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: end; 
+  align-items: center;
+  padding: 40px;
+  text-align: left;
+  /* Simple background now, we add the gradient overlay via a new class */
+  background: url(./assets/download.jpeg);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+/* --- NEW OVERLAY CLASS --- */
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Dark blue/black gradient for a more modern, deep contrast */
+  background: linear-gradient(
+    180deg, 
+    rgba(18, 18, 18, 0.2) 0%, /* Lighter dark at the top */
+    rgba(18, 18, 18, 0.8) 100% /* Heavier dark at the bottom where the text is */
+  );
+  z-index: 1; /* Below the content (z-index: 2) */
+}
 
       .overlay-content {
         position: relative;
@@ -454,6 +473,7 @@
 
         <!-- RIGHT PANEL: Image & Overlay -->
         <div class="auth-right">
+          <div class="image-overlay"></div>
           <div class="overlay-content">
             <h2 class="overlay-title">Get Started<br>with Us</h2>
             <p class="overlay-sub">Complete these easy steps to register your account.</p>
