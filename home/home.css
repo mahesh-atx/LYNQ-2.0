@@ -1246,3 +1246,58 @@ textarea#chat-input {
     display: none !important;
   }
 
+/* --- MULTIMEDIA STYLES --- */
+
+/* 1. Images: Small, side-by-side row */
+/* --- MULTIMEDIA STYLES --- */
+
+/* 1. Images: Small row layout */
+.bubble img {
+  height: 120px;
+  width: auto;
+  display: inline-block;
+  margin: 8px 8px 8px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border-primary);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.bubble img:hover {
+  transform: scale(1.05);
+}
+
+/* 2. YouTube Container (Inline Version) */
+/* --- MULTIMEDIA STYLES --- */
+
+/* Container: Ensures video has width and isn't hidden */
+.video-embed-container {
+  display: block;
+  width: 100%;
+  max-width: 100%; /* Fill the chat bubble width */
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Iframe: Enforces 16:9 Aspect Ratio */
+.yt-embed {
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Crucial: Gives the video height */
+  border: none;
+  display: block;
+}
+
+/* 4. General Links (Gold Color) */
+.bubble a {
+  color: #ffd700;
+  text-decoration: none;
+  border-bottom: 1px dotted #ffd700;
+  font-weight: 500;
+}
+.bubble a:hover {
+  opacity: 0.8;
+}

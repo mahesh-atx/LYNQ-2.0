@@ -313,11 +313,14 @@ async function loadState(loadChats = true) {
   }
 }
 
+// script.js
+
 async function getApiResponse(
   prompt,
   systemMessage = null,
   history = [],
-  signal = null
+  signal = null,
+  webSearchActive = false // <--- NEW: Accept button state
 ) {
   // --- MODIFIED: Auth is now optional ---
   let headers = { "Content-Type": "application/json" };
@@ -332,15 +335,34 @@ async function getApiResponse(
     }
   }
 
+  /* --- PRESERVED KEYWORD GUESSING LOGIC (COMMENTED OUT) ---
+  const searchTriggers = [
+    "search",
+    "find",
+    "google",
+    "latest",
+    "news",
+    "current",
+    "price",
+    "who is",
+    "what is",
+  ];
+  const shouldSearch = searchTriggers.some((keyword) =>
+    prompt.toLowerCase().includes(keyword)
+  );
+  */
+
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: headers, // Use the new conditional headers
+      headers: headers,
       body: JSON.stringify({
         prompt: prompt,
         systemMessage: systemMessage,
         history: history,
         model: currentSelectedModel,
+        // Use the button state instead of the keyword guess
+        webSearch: webSearchActive, 
       }),
       signal: signal,
     });

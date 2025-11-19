@@ -29,7 +29,7 @@ let toolsDropdown;
 let attachFileBtn;
 let fileUploadInput;
 let attachmentPreviewContainer;
-
+let isWebSearchActive = false;
 // --- HOME/CHAT PAGE STATE ---
 let isCanvasModeActive = false; // State for canvas mode toggle
 let currentAttachment = null; // Holds { name: "...", text: "...", type: "pdf" }
@@ -125,6 +125,26 @@ function toggleCanvasMode(forceState) {
     isCanvasModeActive = true;
     if (canvasToggleBtn) canvasToggleBtn.classList.add("active");
     if (typeof showToast === "function") showToast("Canvas Mode Enabled");
+  }
+}
+
+/**
+ * Toggles the Web Search mode state.
+ */
+function toggleWebSearch() {
+  const btn = document.getElementById("web-search-toggle-btn");
+  if (!btn) return;
+
+  // Toggle state
+  isWebSearchActive = !isWebSearchActive;
+
+  // Update UI
+  if (isWebSearchActive) {
+    btn.classList.add("active");
+    if (typeof showToast === "function") showToast("Web Search Enabled");
+  } else {
+    btn.classList.remove("active");
+    if (typeof showToast === "function") showToast("Web Search Disabled");
   }
 }
 
@@ -528,21 +548,41 @@ ${pdfContext}
   } else if (isCanvasActive) {
     contextAddon = `
 --- CONTEXT: CANVAS CODE EDITING MODE ---
-You are an AI Software Engineer specializing in **Modern Web Development**.
-- Your primary output should be **code blocks** (HTML, React, Angular, JS, etc.) for the Canvas.
-- Use **Tailwind CSS** use latest play cdn (via CDN in HTML).
-- use google fonts for fonts, use fontawsoeme cdn for icons, texts, etc
-- **Single-File Mandate:** All code, styling, and logic must be in a single file (e.g., \`.html\`, \`.jsx\`).
-- If generating code, you **MUST** provide a brief, summary of the code and the changes you made in the conversational chat pane **before** outputting the code block, using the following structure:
+You are an **Expert Senior Frontend Developer & UI/UX Designer**. 
+Your goal is to build a **Complete, High-Fidelity, Production-Grade Website** in a **SINGLE HTML FILE**.
+
+### 1. STRICT TECHNICAL CONSTRAINTS
+- **Single File Only:** Output ONE \`index.html\` file. 
+  - CSS must be inside \`<style>\` tags.
+  - JS must be inside \`<script>\` tags.
+  - **DO NOT** output separate .css or .js files.
+- **Language:** ALL content, comments, and logic must be in **ENGLISH**.
+- **Libraries:** - Use **Tailwind CSS** (via CDN) for styling.
+  - Use **FontAwesome** (via CDN) for icons.
+  - Use **Google Fonts** (e.g., 'Inter', 'Poppins', or 'Outfit').
+
+### 2. DESIGN REQUIREMENTS (Make it "Engaging")
+- **Visual Style:** Modern, premium, and polished. Use subtle gradients, deep shadows, and rounded corners.
+- **Interactivity:** Add hover effects, smooth scrolling (scroll-behavior: smooth), and simple entrance animations (fade-in/slide-up).
+- **Responsiveness:** The site MUST look perfect on mobile phones (include a working hamburger menu).
+- **Content:** Use realistic, professional placeholder text (not just "Lorem Ipsum"). Use high-quality placeholder images (e.g., from Unsplash source).
+
+### 3. REQUIRED SECTIONS
+1. **Sticky Navbar:** With logo, links, and mobile menu toggle.
+2. **Hero Section:** Big bold headline, engaging subtext, CTA buttons, and a hero image/graphic.
+3. **Features/Services:** A grid layout using cards with icons and hover effects.
+4. **About/Portfolio:** A section with text and image side-by-side.
+5. **Testimonials/Trust:** Social proof section.
+6. **Footer:** Professional footer with copyright and social links.
+
+### 4. OUTPUT FORMAT
+First, provide a brief summary. Then, output the **COMPLETE CODE** in a single block.
+
 \`\`\`markdown
-### 💡 [Brief Title of the Code/Changes]
-- **Goal:** [One sentence explaining the feature or bug fixed.]
-- **Files Updated:** [List all files generated or edited (e.g., \`index.html\`).]
-- **Key Changes/Features:**
-    - [Detailed bullet point 1]
-    - [Detailed bullet point 2]
+### 🚀 [Website Title]
+- **Style:** [e.g., Modern SaaS / Dark Mode Portfolio]
+- **Key Features:** [e.g., Mobile Menu, Scroll Animations]
 \`\`\`
-- Output only the updated canvas code, and nothing else, after the summary.
 --- END CANVAS CONTEXT ---
 `;
   }
@@ -691,7 +731,8 @@ async function handleSend() {
       text,
       finalSystemMessage,
       historyForApi,
-      signal
+      signal,
+      isWebSearchActive
     );
 
     if (!response || typeof response !== "string" || response.trim() === "") {
@@ -843,6 +884,10 @@ async function streamResponse(fullText) {
   // 3. Finalize UI after all streaming is done
   const sendBtn = document.getElementById("send-btn");
   const stopBtn = document.getElementById("stop-btn");
+
+  // --- NEW: PROCESS VIDEO EMBEDS ---
+  embedYouTubeVideos(bubble);
+
   if (sendBtn) sendBtn.style.display = "flex";
   if (stopBtn) stopBtn.style.display = "none";
   isResponding = false;
@@ -1382,6 +1427,14 @@ document.addEventListener("DOMContentLoaded", () => {
     "attachment-preview-container"
   );
 
+  // --- NEW: Web Search Button Listener ---
+  const webSearchBtn = document.getElementById("web-search-toggle-btn");
+  if (webSearchBtn) {
+    webSearchBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Keep dropdown open so user sees the toggle happen
+      toggleWebSearch();
+    });
+  }
   // --- Initialize Home/Chat Page Listeners ---
   if (chatInput) {
     setTimeout(initVoiceInput, 100);
@@ -1455,3 +1508,69 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+/**
+ * Scans a message bubble for YouTube links and appends an iframe player.
+ */
+/**
+ * FINAL YouTube Embedder
+ * Scans for both clickable links AND raw text URLs.
+ * Converts the FIRST found video into a player.
+ */
+/**
+ * FINAL YouTube Embedder
+ * 1. Regex fixed (Removed 'g' flag to correctly capture ID).
+ * 2. REPLACES the text link with the video player.
+ */
+function embedYouTubeVideos(bubbleElement) {
+  console.log("🎬 Scanning for YouTube videos...");
+
+  // IMPORTANT: Removed the 'g' flag at the end. 
+  // This ensures match[1] correctly grabs the 11-character ID.
+  const ytRegex = /(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|v\/|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/;
+
+  const links = bubbleElement.querySelectorAll("a");
+
+  links.forEach((link) => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+
+    // Test the link against the regex
+    const match = href.match(ytRegex);
+
+    // match[1] will now be the Video ID (e.g., "dQw4w9WgXcQ")
+    if (match && match[1]) {
+      const videoId = match[1];
+      console.log("✅ Video ID found:", videoId);
+      createVideoPlayer(link, videoId);
+    }
+  });
+}
+
+/**
+ * Helper: Creates the Iframe and Swaps it with the Link
+ */
+function createVideoPlayer(linkElement, videoId) {
+  // Create the container
+  const container = document.createElement("div");
+  container.className = "video-embed-container";
+
+  // Create the Iframe
+  const iframe = document.createElement("iframe");
+  // rel=0 ensures no random videos show up after it ends
+  iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=0`;
+  iframe.className = "yt-embed";
+  iframe.setAttribute("allowFullScreen", "");
+  iframe.setAttribute(
+    "allow",
+    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  );
+
+  container.appendChild(iframe);
+
+  // --- REPLACE LOGIC ---
+  // This swaps the blue <a> link with the video player <div>
+  if (linkElement.parentNode) {
+    linkElement.replaceWith(container);
+  }
+}

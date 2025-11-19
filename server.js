@@ -290,28 +290,127 @@ app.delete("/api/chats/:id", verifyAuthToken, async (req, res) => {
   }
 });
 
+// --- NEW: Web Search Helper Function ---
+// server.js
+
+// --- NEW: Brave Search Helper Function ---
+// server.js
+
+// --- NEW: Google Search Helper Function ---
+// server.js
+
+// --- UPDATED: Universal India-First Search ---
+async function performWebSearch(query) {
+  const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
+  const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
+
+  if (!apiKey || !cx) {
+    console.warn("Google Search Keys missing.");
+    return null;
+  }
+
+  try {
+    // 1. Request A: Web Search (India Priority via &gl=in)
+    // We DO NOT use 'cr=countryIN' so it can still find global info if needed.
+    const webUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=4&gl=in`;
+    
+    // 2. Request B: Image Search (India Priority via &gl=in)
+    const imgUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=4&searchType=image&gl=in`;
+
+    // Run parallel requests
+    const [webRes, imgRes] = await Promise.all([
+      fetch(webUrl),
+      fetch(imgUrl)
+    ]);
+
+    const webData = await webRes.json();
+    const imgData = await imgRes.json();
+
+    // Format results
+    let contextString = "\n\n--- REAL-TIME SEARCH RESULTS (India Priority) ---\n";
+
+    // A. Text Results (General Info)
+    if (webData.items && webData.items.length > 0) {
+      webData.items.forEach((item, index) => {
+        contextString += `Source [${index + 1}]: ${item.title}\nURL: ${item.link}\nSummary: ${item.snippet}\n\n`;
+      });
+    }
+
+    // B. Image Results (Generic - Works for Products, News, Diagrams, etc.)
+    contextString += "--- RELEVANT IMAGES (Embed these using ![Alt](url)) ---\n";
+    
+    if (imgData.items && imgData.items.length > 0) {
+      imgData.items.forEach((item, index) => {
+        // Google Image Search returns direct image links
+        contextString += `Image [${index + 1}]: ${item.link}\n`;
+      });
+    } else {
+      contextString += "No images found.\n";
+    }
+
+    contextString += "--- END SEARCH RESULTS ---\n\n";
+    return contextString;
+
+  } catch (error) {
+    console.error("Web search error:", error);
+    return null;
+  }
+}
+
 // --- Existing Groq API Endpoint (NOW PUBLIC, OPTIONALLY AUTHED) ---
 // Only authenticated users can access the AI
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
-  // We apply optional auth. `req.user` will be null for guests
-  // or contain user data for logged-in users.
-  // This allows us to add rate-limiting for guests later if needed.
-
-  const { prompt, systemMessage, history, model, max_tokens } = req.body;
+  const { prompt, systemMessage, history, model, max_tokens, webSearch } =
+    req.body; // Added webSearch flag
 
   let messages = [];
-  if (systemMessage) {
-    messages.push({ role: "system", content: systemMessage });
+  let finalSystemMessage = systemMessage || "You are a helpful AI.";
+
+  // --- STEP 1: THE CHAIN (Web Search) ---
+  // --- STEP 1: THE CHAIN (Web Search) ---
+  // --- STEP 1: THE CHAIN (Web Search) ---
+  if (webSearch) {
+    console.log("Performing Web Search for:", prompt);
+    const searchContext = await performWebSearch(prompt);
+
+    if (searchContext) {
+      finalSystemMessage += `\n\nINSTRUCTIONS: You have access to the following real-time search results. 
+    Use them to answer the user query.
+
+    REQUIRED OUTPUT RULES:
+    1. ALWAYS include helpful images and links from search results (even if user didn't ask).
+    2. IMAGE RULES:
+       - If any result contains an image URL, embed it using Markdown:
+         ![Image](URL)
+       - Include multiple images if relevant.
+    3. VIDEO RULES:
+       - If results contain a YouTube URL (youtube.com or youtu.be), include it as:
+         **▶ Watch Video:** [Title](URL)
+       - Include multiple useful videos if relevant.
+    4. WEB LINKS:
+       - Provide clickable reference links to top useful pages:
+         - **Source:** [Title](URL)
+    5. Provide short descriptions for images & videos (why they're useful).
+    6. Cite written info as [Source 1], [Source 2], etc.
+
+    ${searchContext}`;
+    }
   }
+
+  // --- STEP 2: Construct Messages ---
+  messages.push({ role: "system", content: finalSystemMessage });
+
   if (history && Array.isArray(history)) {
     messages = messages.concat(history);
   }
+
   if (prompt) {
     messages.push({ role: "user", content: prompt });
   } else {
     return res.status(400).json({ error: "No prompt provided" });
   }
 
+  // --- STEP 3: Call AI (Groq) ---
   try {
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -319,7 +418,7 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.API_KEY}`, // Groq key
+          Authorization: `Bearer ${process.env.API_KEY}`,
         },
         body: JSON.stringify({
           model: model || process.env.MODEL,
@@ -345,7 +444,6 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // DELETE: Delete ALL chats for the authenticated user
 app.delete("/api/chats", verifyAuthToken, async (req, res) => {
   try {
