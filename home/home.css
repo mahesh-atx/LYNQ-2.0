@@ -1183,7 +1183,7 @@ textarea#chat-input {
   }
 
   .msg-content-wrapper {
-    padding-right: 2em;
+    /* padding-right: 2em; */
     max-width: 100%;
   }
 
