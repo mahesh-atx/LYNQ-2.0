@@ -2,8 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"
+    />
     <title>Projects — LYNQ AI</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
 
     <script
       src="https://kit.fontawesome.com/ae8ff12b97.js"
@@ -24,7 +45,7 @@
 
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="./home/home.css" />
-    
+
     <style>
       /* projects/projects.css */
 
@@ -57,12 +78,12 @@
         background: rgba(255, 215, 0, 0.2);
         color: #b8860b;
       }
-      
+
       /* --- MOBILE PROFILE BUTTON FIXES (Sync with Home/Settings) --- */
       @media (max-width: 768px) {
         /* Top Bar Profile */
         .top-actions #top-profile-btn-user .avatar {
-          display: flex !important; 
+          display: flex !important;
           margin: 0 !important;
           width: 28px;
           height: 28px;
@@ -80,7 +101,7 @@
         .top-actions #top-profile-btn-user span {
           display: none !important;
         }
-        
+
         /* Sidebar Profile */
         #sidebar #nav-profile-wrapper .avatar {
           display: flex !important;
@@ -91,37 +112,37 @@
         }
         #sidebar #nav-profile-wrapper {
           align-items: center;
-          gap: 0; 
+          gap: 0;
         }
-        
+
         /* Mobile Login Button */
         #login-signup-btn span {
-            display: none;
+          display: none;
         }
         #login-signup-btn {
-            padding: 8px;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            justify-content: center;
+          padding: 8px;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          justify-content: center;
         }
         #login-signup-btn i {
-            margin: 0;
+          margin: 0;
         }
       }
     </style>
   </head>
-  
+
   <body class="dark-mode">
     <script>
-      (function() {
+      (function () {
         const savedTheme = localStorage.getItem("lynq-theme");
         if (savedTheme === "light") {
           document.body.classList.remove("dark-mode");
         }
-        const savedAccent = localStorage.getItem('lynq-accent-color');
+        const savedAccent = localStorage.getItem("lynq-accent-color");
         if (savedAccent) {
-            document.documentElement.style.setProperty('--bg-gold', savedAccent);
+          document.documentElement.style.setProperty("--bg-gold", savedAccent);
         }
       })();
     </script>
@@ -141,26 +162,91 @@
 
         <nav class="nav-menu">
           <div class="nav-label">Menu</div>
-          <a href="index.html" class="nav-item" id="nav-new-chat"><i class="fa-solid fa-plus"></i> New Chat</a>
-          <a href="index.html" class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i> Home</a>
-          <a href="projects.html" class="nav-item active" id="nav-projects"><i class="fa-solid fa-layer-group"></i> Projects</a>
+          <a href="index.html" class="nav-item" id="nav-new-chat"
+            ><i class="fa-solid fa-plus"></i> New Chat</a
+          >
+          <a href="index.html" class="nav-item" id="nav-home"
+            ><i class="fa-solid fa-house"></i> Home</a
+          >
+          <a href="projects.html" class="nav-item active" id="nav-projects"
+            ><i class="fa-solid fa-layer-group"></i> Projects</a
+          >
 
-          <div class="nav-label" style="display: flex; justify-content: space-between; align-items: center; padding-right: 5px; position: relative;">
+          <div
+            class="nav-label"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-right: 5px;
+              position: relative;
+            "
+          >
             <span id="recent-chats-label">Recent Chats</span>
-            <input type="text" id="chat-search-input" placeholder="Search chats..." style="display: none; width: 100%; background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 6px; padding: 4px 8px; color: var(--text-primary);" onkeyup="filterRecentChats()" onblur="toggleChatSearch(false)" />
-            <i class="fa-solid fa-magnifying-glass search-trigger" id="chat-search-trigger" onclick="toggleChatSearch(true)"></i>
+            <input
+              type="text"
+              id="chat-search-input"
+              placeholder="Search chats..."
+              style="
+                display: none;
+                width: 100%;
+                background: var(--bg-primary);
+                border: 1px solid var(--border-primary);
+                border-radius: 6px;
+                padding: 4px 8px;
+                color: var(--text-primary);
+              "
+              onkeyup="filterRecentChats()"
+              onblur="toggleChatSearch(false)"
+            />
+            <i
+              class="fa-solid fa-magnifying-glass search-trigger"
+              id="chat-search-trigger"
+              onclick="toggleChatSearch(true)"
+            ></i>
           </div>
           <div id="recent-chats-container"></div>
         </nav>
 
         <div class="sidebar-footer">
-          <a href="settings.html" class="nav-item" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
-          
-          <a href="login.html?action=login" class="nav-item" id="nav-login-link" style="margin-top: 5px; display: none;">Log In</a>
-          <a href="login.html?action=signup" class="nav-item" id="nav-signup-link" style="display: none;">Sign Up</a>
-          
-          <a href="#" onclick="toggleProfilePopup(undefined, true)" class="nav-item" id="nav-profile-wrapper" style="margin-top: 5px; display: none;">
-            <div class="avatar user" id="nav-profile-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0;">U</div>
+          <a href="settings.html" class="nav-item" id="nav-settings"
+            ><i class="fa-solid fa-gear"></i> Settings</a
+          >
+
+          <a
+            href="login.html?action=login"
+            class="nav-item"
+            id="nav-login-link"
+            style="margin-top: 5px; display: none"
+            >Log In</a
+          >
+          <a
+            href="login.html?action=signup"
+            class="nav-item"
+            id="nav-signup-link"
+            style="display: none"
+            >Sign Up</a
+          >
+
+          <a
+            href="#"
+            onclick="toggleProfilePopup(undefined, true)"
+            class="nav-item"
+            id="nav-profile-wrapper"
+            style="margin-top: 5px; display: none"
+          >
+            <div
+              class="avatar user"
+              id="nav-profile-avatar"
+              style="
+                width: 24px;
+                height: 24px;
+                font-size: 0.7rem;
+                margin-right: 0;
+              "
+            >
+              U
+            </div>
             <span id="nav-profile-name">User</span>
           </a>
         </div>
@@ -179,12 +265,22 @@
             <button class="upgrade-btn" onclick="togglePricing()">
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
-            
-            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-signup-btn" style="margin-right: 8px; display: none;">
+
+            <button
+              class="top-profile-btn"
+              onclick="location.href='login.html?action=login'"
+              id="login-signup-btn"
+              style="margin-right: 8px; display: none"
+            >
               <i class="fa-solid fa-right-to-bracket"></i> <span>Log In</span>
             </button>
-            
-            <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user" style="display: none;">
+
+            <button
+              class="top-profile-btn"
+              onclick="toggleProfilePopup()"
+              id="top-profile-btn-user"
+              style="display: none"
+            >
               <div class="avatar user" id="top-profile-avatar">U</div>
               <span id="top-profile-name">User</span>
             </button>
@@ -228,7 +324,7 @@
     </div>
 
     <div class="modal-overlay" id="pricing-modal">
-         <div class="pricing-modal">
+      <div class="pricing-modal">
         <button class="close-modal" onclick="togglePricing()">&times;</button>
         <div class="pricing-header">
           <h2>Upgrade Your Plan</h2>
@@ -288,7 +384,7 @@
         <h2 class="profile-popup-name" id="popup-name">User</h2>
         <p class="profile-popup-email" id="popup-email">user@example.com</p>
         <p class="profile-popup-phone" id="popup-phone">No phone linked</p>
-        
+
         <div class="profile-popup-badge">
           <i class="fa-solid fa-crown"></i> PRO MEMBER
         </div>
@@ -301,15 +397,15 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    
+
     <script src="auth.js"></script>
     <script src="script.js"></script>
     <script src="./home/home.js"></script>
     <script>
-        // Simple page init logger
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("Projects page loaded");
-        });
+      // Simple page init logger
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("Projects page loaded");
+      });
     </script>
   </body>
 </html>

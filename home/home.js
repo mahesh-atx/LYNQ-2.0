@@ -1525,9 +1525,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function embedYouTubeVideos(bubbleElement) {
   console.log("🎬 Scanning for YouTube videos...");
 
-  // IMPORTANT: Removed the 'g' flag at the end. 
+  // IMPORTANT: Removed the 'g' flag at the end.
   // This ensures match[1] correctly grabs the 11-character ID.
-  const ytRegex = /(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|v\/|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/;
+  const ytRegex =
+    /(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|v\/|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/;
 
   const links = bubbleElement.querySelectorAll("a");
 

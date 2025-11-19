@@ -9,7 +9,24 @@
       src="https://kit.fontawesome.com/ae8ff12b97.js"
       crossorigin="anonymous"
     ></script>
-
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -23,22 +40,27 @@
     />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="./home/home.css" />
-    
+
     <style>
       /* help/help.css specific overrides */
       #help-view {
         overflow-y: auto;
         padding-bottom: 20px;
       }
-      
+
       .help-container {
         max-width: 900px;
         margin: 0 auto;
         width: 100%;
         padding: 40px var(--primary-padding);
       }
-      .help-header { margin-bottom: 30px; }
-      .help-header h1 { font-size: 2.2rem; color: var(--text-heading); }
+      .help-header {
+        margin-bottom: 30px;
+      }
+      .help-header h1 {
+        font-size: 2.2rem;
+        color: var(--text-heading);
+      }
 
       .help-search {
         position: relative;
@@ -86,9 +108,15 @@
         color: var(--text-heading);
         margin-bottom: 15px;
       }
-      .help-card h4 { margin-bottom: 8px; color: var(--text-heading); }
-      .help-card p { font-size: 0.85rem; color: var(--text-secondary); }
-      
+      .help-card h4 {
+        margin-bottom: 8px;
+        color: var(--text-heading);
+      }
+      .help-card p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
       .faq-item {
         background: var(--bg-tertiary);
         border: 1px solid var(--border-primary);
@@ -190,12 +218,21 @@
         border-color: var(--text-heading);
       }
       @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
       }
       @media (max-width: 768px) {
-        .form-row { flex-direction: column; gap: 10px; }
+        .form-row {
+          flex-direction: column;
+          gap: 10px;
+        }
       }
     </style>
   </head>
@@ -226,10 +263,38 @@
             ><i class="fa-solid fa-layer-group"></i> Projects</a
           >
 
-          <div class="nav-label" style="display: flex; justify-content: space-between; align-items: center; padding-right: 5px; position: relative;">
+          <div
+            class="nav-label"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-right: 5px;
+              position: relative;
+            "
+          >
             <span id="recent-chats-label">Recent Chats</span>
-            <input type="text" id="chat-search-input" placeholder="Search chats..." style="display: none; width: 100%; background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 6px; padding: 4px 8px; color: var(--text-primary);" onkeyup="filterRecentChats()" onblur="toggleChatSearch(false)" />
-            <i class="fa-solid fa-magnifying-glass search-trigger" id="chat-search-trigger" onclick="toggleChatSearch(true)"></i>
+            <input
+              type="text"
+              id="chat-search-input"
+              placeholder="Search chats..."
+              style="
+                display: none;
+                width: 100%;
+                background: var(--bg-primary);
+                border: 1px solid var(--border-primary);
+                border-radius: 6px;
+                padding: 4px 8px;
+                color: var(--text-primary);
+              "
+              onkeyup="filterRecentChats()"
+              onblur="toggleChatSearch(false)"
+            />
+            <i
+              class="fa-solid fa-magnifying-glass search-trigger"
+              id="chat-search-trigger"
+              onclick="toggleChatSearch(true)"
+            ></i>
           </div>
           <div id="recent-chats-container"></div>
         </nav>
@@ -238,14 +303,41 @@
           <a href="settings.html" class="nav-item" id="nav-settings"
             ><i class="fa-solid fa-gear"></i> Settings</a
           >
-          <a href="login.html?action=login" class="nav-item" id="nav-login-link" style="margin-top: 5px; display: none;">
+          <a
+            href="login.html?action=login"
+            class="nav-item"
+            id="nav-login-link"
+            style="margin-top: 5px; display: none"
+          >
             Log In
           </a>
-          <a href="login.html?action=signup" class="nav-item" id="nav-signup-link" style="display: none;">
+          <a
+            href="login.html?action=signup"
+            class="nav-item"
+            id="nav-signup-link"
+            style="display: none"
+          >
             Sign Up
           </a>
-          <a href="#" onclick="toggleProfilePopup()" class="nav-item" id="nav-profile-wrapper" style="margin-top: 5px; display: none;">
-            <div class="avatar user" id="nav-profile-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0;">U</div>
+          <a
+            href="#"
+            onclick="toggleProfilePopup()"
+            class="nav-item"
+            id="nav-profile-wrapper"
+            style="margin-top: 5px; display: none"
+          >
+            <div
+              class="avatar user"
+              id="nav-profile-avatar"
+              style="
+                width: 24px;
+                height: 24px;
+                font-size: 0.7rem;
+                margin-right: 0;
+              "
+            >
+              U
+            </div>
             <span id="nav-profile-name">User</span>
           </a>
         </div>
@@ -264,12 +356,22 @@
             <button class="upgrade-btn" onclick="togglePricing()">
               <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
             </button>
-            
-            <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-signup-btn" style="margin-right: 8px; display: none;">
+
+            <button
+              class="top-profile-btn"
+              onclick="location.href='login.html?action=login'"
+              id="login-signup-btn"
+              style="margin-right: 8px; display: none"
+            >
               <i class="fa-solid fa-right-to-bracket"></i> <span>Log In</span>
             </button>
-            
-            <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user" style="display: none;">
+
+            <button
+              class="top-profile-btn"
+              onclick="toggleProfilePopup()"
+              id="top-profile-btn-user"
+              style="display: none"
+            >
               <div class="avatar user" id="top-profile-avatar">U</div>
               <span id="top-profile-name">User</span>
             </button>
@@ -279,13 +381,29 @@
         <div id="help-view" class="view-section active">
           <div class="help-container">
             <div class="help-header"><h1>Help Center</h1></div>
-            <button class="btn-secondary" onclick="location.href='settings.html'" style="margin-bottom: 20px; padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-primary); background: var(--bg-tertiary); color: var(--text-heading); cursor: pointer;">
+            <button
+              class="btn-secondary"
+              onclick="location.href='settings.html'"
+              style="
+                margin-bottom: 20px;
+                padding: 8px 16px;
+                border-radius: 8px;
+                border: 1px solid var(--border-primary);
+                background: var(--bg-tertiary);
+                color: var(--text-heading);
+                cursor: pointer;
+              "
+            >
               <i class="fa-solid fa-arrow-left"></i> Back to Settings
             </button>
 
             <div class="help-search">
               <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="help-search-input" placeholder="Search for articles, guides, and troubleshooting..." />
+              <input
+                type="text"
+                id="help-search-input"
+                placeholder="Search for articles, guides, and troubleshooting..."
+              />
             </div>
 
             <div class="help-grid">
@@ -312,31 +430,39 @@
                 What is LYNQ AI Pro? <i class="fa-solid fa-chevron-down"></i>
               </div>
               <div class="faq-answer">
-                LYNQ AI Pro is our advanced tier giving you access to Gemini 1.5 Pro and GPT-4o models, priority support, and unlimited fast project generation.
+                LYNQ AI Pro is our advanced tier giving you access to Gemini 1.5
+                Pro and GPT-4o models, priority support, and unlimited fast
+                project generation.
               </div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
               <div class="faq-question">
-                How do I generate an API Key? <i class="fa-solid fa-chevron-down"></i>
+                How do I generate an API Key?
+                <i class="fa-solid fa-chevron-down"></i>
               </div>
               <div class="faq-answer">
-                Go to Settings > Account > API Keys. You can generate up to 5 keys for personal use in your custom applications.
+                Go to Settings > Account > API Keys. You can generate up to 5
+                keys for personal use in your custom applications.
               </div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
               <div class="faq-question">
-                Can I use LYNQ AI for commercial projects? <i class="fa-solid fa-chevron-down"></i>
+                Can I use LYNQ AI for commercial projects?
+                <i class="fa-solid fa-chevron-down"></i>
               </div>
               <div class="faq-answer">
-                Yes! All code and content generated by LYNQ AI (Pro Plan) is yours to use commercially without attribution.
+                Yes! All code and content generated by LYNQ AI (Pro Plan) is
+                yours to use commercially without attribution.
               </div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
               <div class="faq-question">
-                How do I reset my chat history? <i class="fa-solid fa-chevron-down"></i>
+                How do I reset my chat history?
+                <i class="fa-solid fa-chevron-down"></i>
               </div>
               <div class="faq-answer">
-                You can clear your entire history in Settings > Data & Privacy. Be careful, as this action cannot be undone.
+                You can clear your entire history in Settings > Data & Privacy.
+                Be careful, as this action cannot be undone.
               </div>
             </div>
             <div class="faq-item" onclick="this.classList.toggle('open')">
@@ -344,7 +470,8 @@
                 Is my data private? <i class="fa-solid fa-chevron-down"></i>
               </div>
               <div class="faq-answer">
-                Absolutely. We do not train our public models on data from Pro users. Your workspace is private and encrypted.
+                Absolutely. We do not train our public models on data from Pro
+                users. Your workspace is private and encrypted.
               </div>
             </div>
 
@@ -359,19 +486,40 @@
               <div class="form-row">
                 <div class="form-group">
                   <label>Name</label>
-                  <input type="text" id="contact-name" placeholder="Your Name" />
+                  <input
+                    type="text"
+                    id="contact-name"
+                    placeholder="Your Name"
+                  />
                 </div>
                 <div class="form-group">
                   <label>Email</label>
-                  <input type="email" id="contact-email" placeholder="your@email.com" />
+                  <input
+                    type="email"
+                    id="contact-email"
+                    placeholder="your@email.com"
+                  />
                 </div>
               </div>
               <div class="form-group">
                 <label>Message</label>
-                <input type="text" id="contact-subject" placeholder="Subject" style="margin-bottom:10px;" />
-                <textarea id="contact-message" rows="4" placeholder="Describe your issue..."></textarea>
+                <input
+                  type="text"
+                  id="contact-subject"
+                  placeholder="Subject"
+                  style="margin-bottom: 10px"
+                />
+                <textarea
+                  id="contact-message"
+                  rows="4"
+                  placeholder="Describe your issue..."
+                ></textarea>
               </div>
-              <button class="upgrade-btn" id="contact-send-btn" style="margin-top: 20px">
+              <button
+                class="upgrade-btn"
+                id="contact-send-btn"
+                style="margin-top: 20px"
+              >
                 Send Message
               </button>
             </div>
@@ -385,7 +533,7 @@
     </div>
 
     <div class="modal-overlay" id="pricing-modal">
-         <div class="pricing-modal">
+      <div class="pricing-modal">
         <button class="close-modal" onclick="togglePricing()">&times;</button>
         <div class="pricing-header">
           <h2>Upgrade Your Plan</h2>
@@ -467,131 +615,134 @@
   Logic specific to the Help Center page
 */
 
-document.addEventListener("DOMContentLoaded", () => {
-  
-  // 1. Setup Search Functionality
-  const searchInput = document.getElementById("help-search-input");
-  if (searchInput) {
-    searchInput.addEventListener("keyup", (e) => {
-      const query = e.target.value.toLowerCase();
-      filterHelpContent(query);
-    });
-  }
+      document.addEventListener("DOMContentLoaded", () => {
+        // 1. Setup Search Functionality
+        const searchInput = document.getElementById("help-search-input");
+        if (searchInput) {
+          searchInput.addEventListener("keyup", (e) => {
+            const query = e.target.value.toLowerCase();
+            filterHelpContent(query);
+          });
+        }
 
-  // 2. Setup Contact Form Submission
-  const contactBtn = document.getElementById("contact-send-btn");
-  if (contactBtn) {
-    contactBtn.addEventListener("click", handleContactSubmit);
-  }
+        // 2. Setup Contact Form Submission
+        const contactBtn = document.getElementById("contact-send-btn");
+        if (contactBtn) {
+          contactBtn.addEventListener("click", handleContactSubmit);
+        }
 
-  // 3. Listen for Auth State to pre-fill form
-  // (Wait for script.js to fire authStateReady)
-  document.addEventListener("authStateReady", (e) => {
-    const user = e.detail.user;
-    if (user) {
-      prefillContactForm(user);
-    }
-  });
-  
-  // Fallback: Check if currentUser is already available globally
-  if (typeof currentUser !== 'undefined' && currentUser) {
-      prefillContactForm(currentUser);
-  }
-});
+        // 3. Listen for Auth State to pre-fill form
+        // (Wait for script.js to fire authStateReady)
+        document.addEventListener("authStateReady", (e) => {
+          const user = e.detail.user;
+          if (user) {
+            prefillContactForm(user);
+          }
+        });
 
-/**
- * Filters FAQ items and Help Cards based on search query
- */
-function filterHelpContent(query) {
-  // Filter FAQ Items
-  const faqItems = document.querySelectorAll(".faq-item");
-  faqItems.forEach((item) => {
-    const question = item.querySelector(".faq-question").innerText.toLowerCase();
-    const answer = item.querySelector(".faq-answer").innerText.toLowerCase();
-    
-    if (question.includes(query) || answer.includes(query)) {
-      item.style.display = "block";
-    } else {
-      item.style.display = "none";
-    }
-  });
+        // Fallback: Check if currentUser is already available globally
+        if (typeof currentUser !== "undefined" && currentUser) {
+          prefillContactForm(currentUser);
+        }
+      });
 
-  // Filter Help Cards (Categories)
-  const helpCards = document.querySelectorAll(".help-card");
-  helpCards.forEach((card) => {
-    const title = card.querySelector("h4").innerText.toLowerCase();
-    const desc = card.querySelector("p").innerText.toLowerCase();
+      /**
+       * Filters FAQ items and Help Cards based on search query
+       */
+      function filterHelpContent(query) {
+        // Filter FAQ Items
+        const faqItems = document.querySelectorAll(".faq-item");
+        faqItems.forEach((item) => {
+          const question = item
+            .querySelector(".faq-question")
+            .innerText.toLowerCase();
+          const answer = item
+            .querySelector(".faq-answer")
+            .innerText.toLowerCase();
 
-    if (title.includes(query) || desc.includes(query)) {
-      card.style.display = "block";
-    } else {
-      card.style.display = "none";
-    }
-  });
-}
+          if (question.includes(query) || answer.includes(query)) {
+            item.style.display = "block";
+          } else {
+            item.style.display = "none";
+          }
+        });
 
-/**
- * Pre-fills the contact form with logged-in user data
- */
-function prefillContactForm(user) {
-  const nameInput = document.getElementById("contact-name");
-  const emailInput = document.getElementById("contact-email");
+        // Filter Help Cards (Categories)
+        const helpCards = document.querySelectorAll(".help-card");
+        helpCards.forEach((card) => {
+          const title = card.querySelector("h4").innerText.toLowerCase();
+          const desc = card.querySelector("p").innerText.toLowerCase();
 
-  if (nameInput && user.displayName) {
-    nameInput.value = user.displayName;
-  }
-  if (emailInput && user.email) {
-    emailInput.value = user.email;
-    emailInput.readOnly = true; // Optional: prevent changing email if logged in
-    emailInput.style.opacity = "0.7";
-  }
-}
+          if (title.includes(query) || desc.includes(query)) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
 
-/**
- * Handles the contact form submission (Simulation)
- */
-function handleContactSubmit(e) {
-  e.preventDefault(); // Prevent page reload
-  
-  const nameInput = document.getElementById("contact-name");
-  const emailInput = document.getElementById("contact-email");
-  const messageInput = document.getElementById("contact-message");
-  const subjectInput = document.getElementById("contact-subject");
-  const btn = e.target;
+      /**
+       * Pre-fills the contact form with logged-in user data
+       */
+      function prefillContactForm(user) {
+        const nameInput = document.getElementById("contact-name");
+        const emailInput = document.getElementById("contact-email");
 
-  // Validation
-  if (!nameInput.value || !emailInput.value || !messageInput.value) {
-    if (typeof showToast === "function") {
-      showToast("Please fill in all fields.");
-    } else {
-      alert("Please fill in all fields.");
-    }
-    return;
-  }
+        if (nameInput && user.displayName) {
+          nameInput.value = user.displayName;
+        }
+        if (emailInput && user.email) {
+          emailInput.value = user.email;
+          emailInput.readOnly = true; // Optional: prevent changing email if logged in
+          emailInput.style.opacity = "0.7";
+        }
+      }
 
-  // Simulate Sending state
-  const originalText = btn.innerText;
-  btn.innerText = "Sending...";
-  btn.disabled = true;
-  btn.style.opacity = "0.7";
+      /**
+       * Handles the contact form submission (Simulation)
+       */
+      function handleContactSubmit(e) {
+        e.preventDefault(); // Prevent page reload
 
-  // Simulate API call delay (1.5 seconds)
-  setTimeout(() => {
-    btn.innerText = originalText;
-    btn.disabled = false;
-    btn.style.opacity = "1";
-    
-    // Clear Message only (keep contact info)
-    messageInput.value = "";
-    if(subjectInput) subjectInput.value = "";
+        const nameInput = document.getElementById("contact-name");
+        const emailInput = document.getElementById("contact-email");
+        const messageInput = document.getElementById("contact-message");
+        const subjectInput = document.getElementById("contact-subject");
+        const btn = e.target;
 
-    if (typeof showToast === "function") {
-      showToast("Message sent successfully! We'll get back to you soon.");
-    } else {
-      alert("Message sent successfully!");
-    }
-  }, 1500);
-}
+        // Validation
+        if (!nameInput.value || !emailInput.value || !messageInput.value) {
+          if (typeof showToast === "function") {
+            showToast("Please fill in all fields.");
+          } else {
+            alert("Please fill in all fields.");
+          }
+          return;
+        }
+
+        // Simulate Sending state
+        const originalText = btn.innerText;
+        btn.innerText = "Sending...";
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+
+        // Simulate API call delay (1.5 seconds)
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+
+          // Clear Message only (keep contact info)
+          messageInput.value = "";
+          if (subjectInput) subjectInput.value = "";
+
+          if (typeof showToast === "function") {
+            showToast("Message sent successfully! We'll get back to you soon.");
+          } else {
+            alert("Message sent successfully!");
+          }
+        }, 1500);
+      }
     </script>
   </body>
 </html>

@@ -362,7 +362,7 @@ async function getApiResponse(
         history: history,
         model: currentSelectedModel,
         // Use the button state instead of the keyword guess
-        webSearch: webSearchActive, 
+        webSearch: webSearchActive,
       }),
       signal: signal,
     });

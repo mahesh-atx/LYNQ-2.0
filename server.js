@@ -45,7 +45,6 @@ try {
   process.exit(1);
 }
 
-
 if (!MONGODB_URI) {
   console.error(
     "Error: MONGODB_URI is not defined. Please check your .env file."
@@ -313,7 +312,9 @@ async function performWebSearch(query) {
   try {
     // Fetch 6 results to get a good mix of text/images/videos
     // &gl=in prioritizes India
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=6&gl=in`;
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
+      query
+    )}&num=6&gl=in`;
 
     const response = await fetch(url);
     const data = await response.json();
@@ -327,14 +328,14 @@ async function performWebSearch(query) {
       const title = item.title || "No Title";
       const link = item.link;
       const snippet = item.snippet || "";
-      
+
       // 1. DETECT IMAGES (Extract from Pagemap)
       let imageUrl = "";
       if (item.pagemap) {
         if (item.pagemap.cse_image?.length > 0) {
           imageUrl = item.pagemap.cse_image[0].src;
-        } else if (item.pagemap.metatags?.[0]?.['og:image']) {
-          imageUrl = item.pagemap.metatags[0]['og:image'];
+        } else if (item.pagemap.metatags?.[0]?.["og:image"]) {
+          imageUrl = item.pagemap.metatags[0]["og:image"];
         }
       }
 
@@ -342,14 +343,14 @@ async function performWebSearch(query) {
       const isVideo = link.includes("youtube.com") || link.includes("youtu.be");
 
       // --- FORMATTING THE CARD ---
-      
+
       // A. The Title (Clickable Link)
       markdownOutput += `### [${title}](${link})\n`;
 
       // B. The Media
       if (isVideo) {
         // Output raw link; Frontend (home.js) will convert to Player
-        markdownOutput += `**▶ Watch Video:** ${link}\n\n`; 
+        markdownOutput += `**▶ Watch Video:** ${link}\n\n`;
       } else if (imageUrl) {
         // Standard Markdown Image
         markdownOutput += `![Image](${imageUrl})\n`;
@@ -357,13 +358,12 @@ async function performWebSearch(query) {
 
       // C. The Text Snippet
       markdownOutput += `> ${snippet}\n\n`;
-      
+
       // D. Separator
-      markdownOutput += `---\n`; 
+      markdownOutput += `---\n`;
     });
 
     return markdownOutput;
-
   } catch (error) {
     console.error("Web search error:", error);
     return null;
@@ -494,10 +494,10 @@ app.delete("/api/chats", verifyAuthToken, async (req, res) => {
       userId: req.user.uid, // Ensure we only delete the requesting user's chats
     });
 
-    res.json({ 
-      success: true, 
-      message: "All history deleted", 
-      deletedCount: result.deletedCount 
+    res.json({
+      success: true,
+      message: "All history deleted",
+      deletedCount: result.deletedCount,
     });
   } catch (err) {
     console.error("Error deleting all chats:", err);

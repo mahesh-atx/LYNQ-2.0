@@ -96,7 +96,8 @@ body {
   height: 100%;
   padding: 20px;
   /* Keeping specific transitions for sidebar movement */
-  transition: transform 0.3s ease, min-width 0.3s ease, padding 0.3s ease, border 0.3s ease; 
+  transition: transform 0.3s ease, min-width 0.3s ease, padding 0.3s ease,
+    border 0.3s ease;
   z-index: 100;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -110,25 +111,25 @@ body {
   min-width: 0;
   padding: 0;
   border-right: none;
-  transform: translateX(calc(0px - var(--sidebar-width))); 
+  transform: translateX(calc(0px - var(--sidebar-width)));
 }
 
 /* Desktop Open */
 #sidebar:not(.collapsed) {
-    width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
-    padding: 20px;
-    border-right: 1px solid var(--border-primary);
-    transform: translateX(0);
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  padding: 20px;
+  border-right: 1px solid var(--border-primary);
+  transform: translateX(0);
 }
 
 /* Mobile Active */
 #sidebar.active {
-    transform: translateX(0) !important;
-    width: 80% !important; /* Mobile width */
-    min-width: 80% !important;
-    padding: 20px !important;
-    border-right: 1px solid var(--border-primary) !important;
+  transform: translateX(0) !important;
+  width: 80% !important; /* Mobile width */
+  min-width: 80% !important;
+  padding: 20px !important;
+  border-right: 1px solid var(--border-primary) !important;
 }
 
 .sidebar-header {
@@ -145,12 +146,12 @@ body {
 .nav-menu {
   flex: 1;
   overflow-y: auto;
-  overflow-x: visible; 
+  overflow-x: visible;
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding-top: 10px;
-  min-height: 0; 
+  min-height: 0;
   margin-bottom: 10px;
 }
 
@@ -293,13 +294,13 @@ body {
 
 /* --- TOP BAR --- */
 .top-bar {
-  height: 60px; 
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 30px;
   z-index: 10;
-  background: var(--bg-primary); 
+  background: var(--bg-primary);
 }
 .top-actions {
   display: flex;
@@ -311,7 +312,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: 15px; 
+  margin-left: 15px;
   font-size: 1.2rem;
   font-weight: 500;
   color: var(--text-heading);
@@ -319,13 +320,13 @@ body {
   flex-shrink: 0;
 }
 .top-logo-title i {
-  color: #ffd700; 
+  color: #ffd700;
   font-size: 1.4rem;
 }
 
 .action-btn {
-  background: transparent; 
-  border: none; 
+  background: transparent;
+  border: none;
   color: var(--text-secondary);
   font-size: 1.2rem;
   cursor: pointer;
@@ -338,7 +339,7 @@ body {
 }
 .action-btn:hover {
   color: var(--text-heading);
-  background: rgba(0,0,0,0.05); 
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .upgrade-btn {
@@ -385,7 +386,7 @@ body {
   width: 28px;
   height: 28px;
   font-size: 0.8rem;
-  margin-top: 0; 
+  margin-top: 0;
 }
 
 /* --- MAIN CONTENT --- */
@@ -403,7 +404,7 @@ body {
   display: none;
   flex: 1;
   flex-direction: column;
-  overflow: hidden; 
+  overflow: hidden;
   height: 100%;
 }
 .view-section.active {
@@ -505,12 +506,24 @@ body {
   animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
 @keyframes fadein {
-  from { bottom: 0; opacity: 0; }
-  to { bottom: 30px; opacity: 1; }
+  from {
+    bottom: 0;
+    opacity: 0;
+  }
+  to {
+    bottom: 30px;
+    opacity: 1;
+  }
 }
 @keyframes fadeout {
-  from { bottom: 30px; opacity: 1; }
-  to { bottom: 0; opacity: 0; }
+  from {
+    bottom: 30px;
+    opacity: 1;
+  }
+  to {
+    bottom: 0;
+    opacity: 0;
+  }
 }
 
 /* --- PRICING MODAL --- */
@@ -656,10 +669,10 @@ body {
   width: 100%;
   height: 100%;
   /* Make background transparent so it feels like a dropdown, not a modal */
-  background: transparent; 
+  background: transparent;
   z-index: 2000;
   display: none;
-  
+
   /* Align the card to the Top-Right */
   align-items: flex-start;
   justify-content: flex-end;
@@ -667,25 +680,31 @@ body {
 
 /* --- Sidebar Position (Bottom-Left) --- */
 .profile-popup-overlay.sidebar-mode {
-  align-items: flex-end;   /* Align to Bottom */
+  align-items: flex-end; /* Align to Bottom */
   justify-content: flex-start; /* Align to Left */
 }
 
 .profile-popup-overlay.sidebar-mode .profile-popup {
   /* Position it just above the sidebar footer */
   margin-top: 0;
-  margin-bottom: 80px; 
-  margin-left: 20px; 
+  margin-bottom: 80px;
+  margin-left: 20px;
   margin-right: 0;
-  
+
   /* Animate from the bottom up */
   transform-origin: bottom left;
   animation: popupScaleUp 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 @keyframes popupScaleUp {
-  from { opacity: 0; transform: scale(0.9) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Mobile Override: Reset to center or safe position on phone */
@@ -699,7 +718,7 @@ body {
   }
 }
 
-.profile-popup-overlay{
+.profile-popup-overlay {
   z-index: 99999;
 }
 
@@ -709,31 +728,37 @@ body {
 
 .profile-popup {
   background: var(--bg-tertiary);
-  
+
   /* Compact Dropdown Dimensions */
   width: 300px;
-  margin-top: 70px;  /* Position below the Top Bar */
+  margin-top: 70px; /* Position below the Top Bar */
   margin-right: 20px; /* Spacing from right edge */
-  
+
   border-radius: 16px;
   padding: 20px;
   border: 1px solid var(--border-primary);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Stronger shadow for depth */
-  
+
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   position: relative;
-  
+
   /* Animation from Top-Right */
   transform-origin: top right;
   animation: popupScaleIn 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 @keyframes popupScaleIn {
-  from { opacity: 0; transform: scale(0.9) translateY(-10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Hide the 'X' button since clicking outside closes it (cleaner UI) */
@@ -743,7 +768,7 @@ body {
 
 /* --- Compact Inner Elements --- */
 .profile-popup-avatar {
-  width: 60px;  /* Smaller avatar */
+  width: 60px; /* Smaller avatar */
   height: 60px;
   border-radius: 50%;
   background: var(--text-heading);
@@ -903,8 +928,12 @@ body.dark-mode .pro-badge {
   display: inline-block;
 }
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* --- MISC & ANIMATIONS --- */
@@ -913,39 +942,55 @@ body.dark-mode .pro-badge {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(15px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- SHARED MEDIA QUERIES --- */
 @media (max-width: 768px) {
   :root {
-    --sidebar-width: 280px; 
+    --sidebar-width: 280px;
   }
   #sidebar {
-    transform: translateX(-100%); 
+    transform: translateX(-100%);
     position: fixed;
     width: 80%;
     min-width: 80%;
-    margin-left: 0; 
+    margin-left: 0;
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
     z-index: 9999;
   }
   #sidebar.active {
-    transform: translateX(0); 
+    transform: translateX(0);
   }
   .mobile-only {
     display: block;
   }
-  
+
   .grid-layout,
   .pricing-grid {
     grid-template-columns: 1fr;
@@ -953,7 +998,7 @@ body.dark-mode .pro-badge {
   .price-card.pro {
     transform: none;
   }
-  
+
   .chat-context-menu {
     left: auto;
     right: 10px;
@@ -961,7 +1006,7 @@ body.dark-mode .pro-badge {
     transform: none;
   }
 
-  .message.user .bubble{
+  .message.user .bubble {
     margin-top: 2em;
   }
 }
@@ -971,29 +1016,29 @@ body.dark-mode .pro-badge {
     display: none;
   }
   .upgrade-btn {
-    padding: 8px 12px; 
+    padding: 8px 12px;
   }
 
   /* .top-profile-btn span {
     display: none;
   } */
   .top-profile-btn {
-      padding: 5px; 
-      border-radius: 50%; 
+    padding: 5px;
+    border-radius: 50%;
   }
   .top-profile-btn .avatar {
-      margin-right: 0;
+    margin-right: 0;
   }
 
   .top-bar {
-      padding: 0 10px; 
+    padding: 0 10px;
   }
-  
+
   #login-signup-btn span {
-      display: none;
+    display: none;
   }
   #login-signup-btn {
-      padding: 8px; 
+    padding: 8px;
   }
 }
 
@@ -1012,13 +1057,13 @@ body.dark-mode .pro-badge {
   display: flex;
   align-items: center;
   gap: 15px;
-  
+
   /* Start State: Hidden and pushed down */
-  opacity: 0; 
-  transform: translateY(50px); 
-  
+  opacity: 0;
+  transform: translateY(50px);
+
   /* Apply the new slide-up animation */
-  animation: logoSlideUp 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards;
+  animation: logoSlideUp 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
 /* ... keep .loader-logo i styles as they are ... */
@@ -1071,9 +1116,15 @@ body.dark-mode .pro-badge {
 }
 
 @keyframes seek {
-  0% { left: -40%; }
-  50% { left: 100%; }
-  100% { left: -40%; }
+  0% {
+    left: -40%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: -40%;
+  }
 }
 
 /* --- FIX: FORCE AVATAR VISIBILITY ON MOBILE --- */
@@ -1099,6 +1150,6 @@ body.dark-mode .pro-badge {
   }
 }
 
-.placeholder{
-      margin-block: 12px;
+.placeholder {
+  margin-block: 12px;
 }

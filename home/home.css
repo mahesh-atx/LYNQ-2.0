@@ -972,7 +972,7 @@ textarea#chat-input {
   /* Make the input area fixed at the bottom on mobile */
   .input-area-wrapper.fixed-mobile-input {
     position: fixed;
-    bottom: 30px;    /* Changed from 20px to 30px to make room for footer */
+    bottom: 30px; /* Changed from 20px to 30px to make room for footer */
     left: 0;
     right: 0;
     z-index: 1000;
@@ -1035,9 +1035,9 @@ textarea#chat-input {
 
 /* Hide all existing top-profile buttons and upgrade text on mobile */
 #login-signup-btn,
-  .top-actions .upgrade-btn span {
-    display: none !important;
-  }
+.top-actions .upgrade-btn span {
+  display: none !important;
+}
 
 /* Show the new mobile-signup-btn */
 /* --- FIX: MOBILE SIGN UP BUTTON --- */
@@ -1060,22 +1060,22 @@ textarea#chat-input {
 }
 
 .top-actions .mobile-signup-btn:active {
-    transform: scale(0.95);
-  }
-  
-  /* Optional: Clean up profile button on mobile (Hide text "User" to save space) */
-  .top-actions #top-profile-btn-user span {
-    display: none;
-  }
-  .top-actions #top-profile-btn-user {
-    padding: 4px;
-    border-radius: 50%;
-    aspect-ratio: 1/1;
-    justify-content: center;
-  }
-  .top-actions #top-profile-btn-user .avatar {
-    margin: 0;
-  }
+  transform: scale(0.95);
+}
+
+/* Optional: Clean up profile button on mobile (Hide text "User" to save space) */
+.top-actions #top-profile-btn-user span {
+  display: none;
+}
+.top-actions #top-profile-btn-user {
+  padding: 4px;
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  justify-content: center;
+}
+.top-actions #top-profile-btn-user .avatar {
+  margin: 0;
+}
 
 /* Hide the desktop login button to prevent duplicates */
 #login-signup-btn {
@@ -1090,18 +1090,16 @@ textarea#chat-input {
   padding: 8px 10px;
 }
 
-
 .bubble {
   width: 100%;
 }
-
 
 .footer-text {
   text-align: center;
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin-top: 10px;
-  
+
   padding-bottom: 5px;
   transition: opacity 0.2s;
 }
@@ -1111,24 +1109,24 @@ textarea#chat-input {
   /* Explicitly hide all mobile-only elements on desktop */
   .input-area-wrapper {
     padding: 20px;
-}
+  }
 
   .mobile-signup-btn {
     display: none !important;
   }
 
   /* Ensure desktop input wrapper is NOT fixed and uses auto margins */
- .input-area-wrapper,
+  .input-area-wrapper,
   .input-area-wrapper.fixed-mobile-input {
     position: relative !important; /* Disable 'fixed' positioning */
     bottom: auto !important;
     left: auto !important;
     right: auto !important;
-    
+
     width: 82%;
     max-width: 800px;
     margin: 0 auto; /* Center horizontally */
-    
+
     background: transparent; /* Remove mobile background */
     box-shadow: none;
     padding: 0;
@@ -1136,26 +1134,26 @@ textarea#chat-input {
   }
 
   /* Ensure chat container reverts to desktop padding */
- #chat-container {
-    padding-bottom: 20px !important; 
-    height: 100%; 
-    overflow-y: auto; 
+  #chat-container {
+    padding-bottom: 20px !important;
+    height: 100%;
+    overflow-y: auto;
   }
 
   /* Ensure desktop profile/login buttons are shown correctly */
 }
 /* --- FOOTER DISCLAIMER --- */
 .footer-text {
-    position: relative !important; /* Disable 'fixed' positioning */
-    bottom: auto !important;
-    left: auto !important;
-    
-    width: 100%;
-    background: transparent;
-    padding: 10px 0 20px 0;
-    margin: 0;
-    z-index: 1;
-  }
+  position: relative !important; /* Disable 'fixed' positioning */
+  bottom: auto !important;
+  left: auto !important;
+
+  width: 100%;
+  background: transparent;
+  padding: 10px 0 20px 0;
+  margin: 0;
+  z-index: 1;
+}
 
 .footer-text:hover {
   opacity: 1;
@@ -1185,19 +1183,19 @@ textarea#chat-input {
   }
 
   .msg-content-wrapper {
-  padding-right: 2em;
-  max-width: 100%;
-}
+    padding-right: 2em;
+    max-width: 100%;
+  }
 
-.avatar{
-  display: none !important;
-}
+  .avatar {
+    display: none !important;
+  }
 
   .top-actions .mobile-signup-btn .avatar {
-  display: none;
-}
+    display: none;
+  }
 
-/* --- FIX: Sidebar Profile Button on Mobile --- */
+  /* --- FIX: Sidebar Profile Button on Mobile --- */
   /* Force the avatar inside the sidebar to show */
   #sidebar #nav-profile-wrapper .avatar {
     display: flex !important; /* Override the global hide */
@@ -1210,9 +1208,9 @@ textarea#chat-input {
   /* Ensure the container aligns them properly */
   #sidebar #nav-profile-wrapper {
     align-items: center;
-    gap: 0; 
+    gap: 0;
   }
-  
+
   /* .input-area-wrapper:focus-within + .footer-text {
   display: none !important;
 }
@@ -1222,29 +1220,29 @@ textarea#chat-input {
 }
 
 /* FIX: Force the avatar to show in the top bar on mobile */
-  .top-actions #top-profile-btn-user .avatar {
-    display: flex !important; /* Override global hide */
-    margin: 0 !important;
-    width: 28px;  /* Fixed size */
-    height: 28px;
-    font-size: 0.85rem;
-  }
+.top-actions #top-profile-btn-user .avatar {
+  display: flex !important; /* Override global hide */
+  margin: 0 !important;
+  width: 28px; /* Fixed size */
+  height: 28px;
+  font-size: 0.85rem;
+}
 
-  /* Ensure the button is a perfect circle */
-  .top-actions #top-profile-btn-user {
-    display: flex !important; /* Ensure button itself is visible */
-    padding: 0 !important;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    justify-content: center;
-    align-items: center;
-  }
+/* Ensure the button is a perfect circle */
+.top-actions #top-profile-btn-user {
+  display: flex !important; /* Ensure button itself is visible */
+  padding: 0 !important;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+}
 
-  /* Keep the text name hidden on mobile to save space */
-  .top-actions #top-profile-btn-user span {
-    display: none !important;
-  }
+/* Keep the text name hidden on mobile to save space */
+.top-actions #top-profile-btn-user span {
+  display: none !important;
+}
 
 /* --- MULTIMEDIA STYLES --- */
 
@@ -1259,7 +1257,7 @@ textarea#chat-input {
   margin: 8px 8px 8px 0;
   border-radius: 8px;
   border: 1px solid var(--border-primary);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s;
 }
@@ -1280,7 +1278,7 @@ textarea#chat-input {
   border-radius: 12px;
   overflow: hidden;
   background: #000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Iframe: Enforces 16:9 Aspect Ratio */
