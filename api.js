@@ -1,21 +1,10 @@
-/*
-  api.js
-  Centralized service for handling all backend communication.
-  - Automatically injects Firebase Auth headers.
-  - Centralizes error handling.
-  - Prevents code repetition across the app.
-*/
-
-// We will import the auth instance from our refactored auth module
-import { getAuth } from "./auth.js";
+/* api.js */
 
 const API_BASE = "/api";
 const CHAT_API_BASE = "/api/chats";
 
 /**
  * Generic authenticated fetch wrapper.
- * @param {string} endpoint - relative path (e.g., '/chats')
- * @param {object} options - fetch options (method, body, etc.)
  */
 async function authenticatedFetch(endpoint, options = {}) {
   const headers = {
@@ -23,9 +12,8 @@ async function authenticatedFetch(endpoint, options = {}) {
     ...options.headers,
   };
 
-  // 1. Get the current user and token securely
-  const auth = getAuth();
-  const user = auth.currentUser;
+  // 1. Get the current user directly from the global Firebase SDK
+  const user = firebase.auth().currentUser;
 
   if (user) {
     try {
@@ -34,7 +22,6 @@ async function authenticatedFetch(endpoint, options = {}) {
       headers["Authorization"] = `Bearer ${token}`;
     } catch (error) {
       console.error("Token retrieval failed:", error);
-      // We don't block the request here; the server will decide if it's 401
     }
   }
 
@@ -46,10 +33,10 @@ async function authenticatedFetch(endpoint, options = {}) {
   try {
     const response = await fetch(endpoint, config);
 
-    // 2. Global Error Handling (401/403)
+    // 2. Global Error Handling
     if (response.status === 401 || response.status === 403) {
       console.warn("Unauthorized request. Session might be expired.");
-      document.dispatchEvent(new CustomEvent("auth-error"));
+      // Optional: Trigger a logout or UI update here
       throw new Error("Unauthorized");
     }
 
@@ -69,9 +56,8 @@ async function authenticatedFetch(endpoint, options = {}) {
   }
 }
 
-// --- PUBLIC API METHODS ---
-
-export const api = {
+// --- ATTACH TO WINDOW (Makes it accessible to script.js and home.js) ---
+window.api = {
   // Chat CRUD
   getChats: () => authenticatedFetch(CHAT_API_BASE),
 
@@ -89,10 +75,12 @@ export const api = {
     }),
 
   // AI Generation
-  generateResponse: (payload) =>
+  // Note: We pass 'signal' to allow the Stop button to work
+  generateResponse: (payload, signal) =>
     authenticatedFetch("/api/generate", {
       method: "POST",
       body: JSON.stringify(payload),
+      signal: signal,
     }),
 
   // User Sync
