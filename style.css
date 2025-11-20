@@ -1153,3 +1153,27 @@ body.dark-mode .pro-badge {
 .placeholder {
   margin-block: 12px;
 }
+
+/* --- NEW: Responsive Video Embeds --- */
+/* This forces the iframe to be responsive and full-width */
+.video-embed-container {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio (9 / 16 = 0.5625) */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  border-radius: 12px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  background: #000; /* Black background while loading */
+  box-shadow: var(--shadow-soft);
+}
+
+.video-embed-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}

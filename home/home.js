@@ -33,7 +33,7 @@ let isWebSearchActive = false;
 // --- HOME/CHAT PAGE STATE ---
 let isCanvasModeActive = false; // State for canvas mode toggle
 let currentAttachment = null; // Holds { name: "...", text: "...", type: "pdf" }
-const TOKEN_LIMIT = 4000; // Define context limit once
+const TOKEN_LIMIT = 2000; // Define context limit once
 
 /**
  * Initializes voice recognition functionality.

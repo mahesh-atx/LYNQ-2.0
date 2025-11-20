@@ -62,8 +62,7 @@ mongoose
     process.exit(1);
   });
 
-// --- NEW: User Schema ---
-// This links our Mongoose DB to Firebase Auth
+// --- User Schema ---
 const UserSchema = new mongoose.Schema({
   firebaseUid: { type: String, required: true, unique: true, index: true },
   email: { type: String, required: true, unique: true },
@@ -90,16 +89,14 @@ const MessageSchema = new mongoose.Schema({
 });
 
 const ChatSchema = new mongoose.Schema({
-  // --- NEW: Link to the User's *Firebase UID* ---
   userId: { type: String, required: true, index: true },
-  chatId: { type: Number, required: true, index: true }, // Keep frontend ID
+  chatId: { type: Number, required: true, index: true },
   title: { type: String, required: true },
   history: [MessageSchema],
   pinned: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
-// Create a compound index for efficient user-specific chat lookups
 ChatSchema.index({ userId: 1, chatId: 1 }, { unique: true });
 
 ChatSchema.pre("save", function (next) {
@@ -109,35 +106,23 @@ ChatSchema.pre("save", function (next) {
 
 const Chat = mongoose.model("Chat", ChatSchema);
 
-// --- NEW: Optional Authentication Middleware ---
-/**
- * Tries to verify a Firebase Auth token.
- * If valid, attaches user to `req.user`.
- * If invalid or missing, sets `req.user = null` and continues.
- */
+// --- Authentication Middleware ---
 const optionalAuthToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const idToken = authHeader.split("Bearer ")[1];
     try {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
-      req.user = decodedToken; // Add user info
+      req.user = decodedToken;
     } catch (error) {
-      // Token is invalid, expired, or something else. Treat as guest.
       req.user = null;
     }
   } else {
-    // No token provided. Treat as guest.
     req.user = null;
   }
-  next(); // Continue to the endpoint
+  next();
 };
 
-// --- NEW: Authentication Middleware ---
-/**
- * Verifies the Firebase Auth token sent from the client.
- * If valid, attaches the decoded user token to `req.user`.
- */
 const verifyAuthToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -147,7 +132,7 @@ const verifyAuthToken = async (req, res, next) => {
   const idToken = authHeader.split("Bearer ")[1];
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    req.user = decodedToken; // Add user info (uid, email, etc.) to the request
+    req.user = decodedToken;
     next();
   } catch (error) {
     console.error("Error verifying auth token:", error);
@@ -155,17 +140,10 @@ const verifyAuthToken = async (req, res, next) => {
   }
 };
 
-// --- NEW: User API Endpoints ---
-
-/**
- * POST /api/users/sync
- * Called by the client (auth.js) after a successful login/signup.
- * Creates or updates the user's profile in our Mongoose DB.
- */
+// --- User API Endpoints ---
 app.post("/api/users/sync", verifyAuthToken, async (req, res) => {
   try {
-    const { uid, email, name, picture } = req.user; // Get info from the *verified token*
-
+    const { uid, email, name, picture } = req.user;
     const user = await User.findOneAndUpdate(
       { firebaseUid: uid },
       {
@@ -175,9 +153,8 @@ app.post("/api/users/sync", verifyAuthToken, async (req, res) => {
           photoURL: picture,
         },
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true } // Create if not exist
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
-
     res.json({ success: true, user });
   } catch (err) {
     console.error("Error syncing user:", err);
@@ -185,13 +162,10 @@ app.post("/api/users/sync", verifyAuthToken, async (req, res) => {
   }
 });
 
-// --- SECURED: Chat Data API Endpoints ---
-// All these routes now require a valid token and are user-specific.
-
-// GET: Load all recent chats for the *authenticated user*
+// --- Chat Data API Endpoints ---
 app.get("/api/chats", verifyAuthToken, async (req, res) => {
   try {
-    const chats = await Chat.find({ userId: req.user.uid }) // Filter by user ID
+    const chats = await Chat.find({ userId: req.user.uid })
       .select("chatId title pinned updatedAt")
       .sort({ updatedAt: -1 });
 
@@ -209,13 +183,12 @@ app.get("/api/chats", verifyAuthToken, async (req, res) => {
   }
 });
 
-// GET: Load a single chat, ensuring it belongs to the *authenticated user*
 app.get("/api/chats/:id", verifyAuthToken, async (req, res) => {
   try {
     const chatId = req.params.id;
     const chat = await Chat.findOne({
       chatId: chatId,
-      userId: req.user.uid, // Ensure user ownership
+      userId: req.user.uid,
     });
 
     if (!chat) {
@@ -234,7 +207,6 @@ app.get("/api/chats/:id", verifyAuthToken, async (req, res) => {
   }
 });
 
-// POST or PUT: Save/Update a chat for the *authenticated user*
 app.post("/api/chats/save", verifyAuthToken, async (req, res) => {
   const { id, title, history, pinned } = req.body;
 
@@ -244,25 +216,17 @@ app.post("/api/chats/save", verifyAuthToken, async (req, res) => {
 
   try {
     const update = {
-      userId: req.user.uid, // Ensure userId is set
+      userId: req.user.uid,
       title,
       history,
       pinned: pinned !== undefined ? pinned : false,
     };
-
-    const options = {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
-    };
-
-    // Find by compound key: chatId AND userId
+    const options = { new: true, upsert: true, setDefaultsOnInsert: true };
     const savedChat = await Chat.findOneAndUpdate(
       { chatId: id, userId: req.user.uid },
       update,
       options
     );
-
     res.json({ success: true, id: savedChat.chatId });
   } catch (err) {
     console.error("Error saving chat:", err);
@@ -270,19 +234,17 @@ app.post("/api/chats/save", verifyAuthToken, async (req, res) => {
   }
 });
 
-// DELETE: Delete a chat, ensuring it belongs to the *authenticated user*
 app.delete("/api/chats/:id", verifyAuthToken, async (req, res) => {
   try {
     const chatId = req.params.id;
     const result = await Chat.deleteOne({
       chatId: chatId,
-      userId: req.user.uid, // Ensure user ownership
+      userId: req.user.uid,
     });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "Chat not found or access denied" });
     }
-
     res.json({ success: true, message: "Chat deleted" });
   } catch (err) {
     console.error("Error deleting chat:", err);
@@ -290,31 +252,48 @@ app.delete("/api/chats/:id", verifyAuthToken, async (req, res) => {
   }
 });
 
-// --- NEW: Web Search Helper Function ---
-// server.js
+app.delete("/api/chats", verifyAuthToken, async (req, res) => {
+  try {
+    const result = await Chat.deleteMany({
+      userId: req.user.uid,
+    });
+    res.json({
+      success: true,
+      message: "All history deleted",
+      deletedCount: result.deletedCount,
+    });
+  } catch (err) {
+    console.error("Error deleting all chats:", err);
+    res.status(500).json({ error: "Failed to delete history" });
+  }
+});
 
-// --- NEW: Brave Search Helper Function ---
-// server.js
-
-// --- NEW: Google Search Helper Function ---
-// server.js
-
-// --- UPDATED: Universal India-First Search ---
-// server.js
-
-// --- UPDATED: Rich Media Direct Search ---
-// --- UPDATED: Rich Media Direct Search Formatter ---
+// --- Web Search Helper Function ---
 async function performWebSearch(query) {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
   const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
 
-  if (!apiKey || !cx) return null;
+  if (!apiKey || !cx) {
+    console.log("❌ Keys missing! Aborting search.");
+    return null;
+  }
+
+  // --- UPDATED LOGIC: Boost YouTube results for learning queries ---
+  let finalQuery = query;
+  let isVideoMode = false; // <--- NEW: Flag to track if we are in video mode
+
+  if (query.toLowerCase().match(/(tutorial|learning|guide|course|how to)/)) {
+    finalQuery += " youtube";
+    isVideoMode = true; // <--- Set flag
+    console.log(
+      `🎥 Educational query detected. Adding 'youtube' to search: "${finalQuery}"`
+    );
+  }
+  // ----------------------------------------------------------------
 
   try {
-    // Fetch 6 results to get a good mix of text/images/videos
-    // &gl=in prioritizes India
     const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
-      query
+      finalQuery
     )}&num=6&gl=in`;
 
     const response = await fetch(url);
@@ -322,7 +301,6 @@ async function performWebSearch(query) {
 
     if (!data.items || data.items.length === 0) return null;
 
-    // --- BUILD THE DIRECT MARKDOWN RESPONSE ---
     let markdownOutput = "### 🌐 Real-Time Web Results\n\n";
 
     data.items.forEach((item) => {
@@ -330,7 +308,6 @@ async function performWebSearch(query) {
       const link = item.link;
       const snippet = item.snippet || "";
 
-      // 1. DETECT IMAGES (Extract from Pagemap)
       let imageUrl = "";
       if (item.pagemap) {
         if (item.pagemap.cse_image?.length > 0) {
@@ -340,27 +317,20 @@ async function performWebSearch(query) {
         }
       }
 
-      // 2. DETECT VIDEO (YouTube)
       const isVideo = link.includes("youtube.com") || link.includes("youtu.be");
 
-      // --- FORMATTING THE CARD ---
-
-      // A. The Title (Clickable Link)
       markdownOutput += `### [${title}](${link})\n`;
 
-      // B. The Media
       if (isVideo) {
-        // Output raw link; Frontend (home.js) will convert to Player
         markdownOutput += `**▶ Watch Video:** ${link}\n\n`;
-      } else if (imageUrl) {
-        // Standard Markdown Image
+      } else if (imageUrl && !isVideoMode) {
+        // --- FIX: SUPPRESS IMAGES IN VIDEO MODE ---
+        // If we are in "Video Mode" (isVideoMode = true), we intentionally SKIP adding the static image.
+        // This prevents duplicate thumbnails appearing alongside the video players.
         markdownOutput += `![Image](${imageUrl})\n`;
       }
 
-      // C. The Text Snippet
       markdownOutput += `> ${snippet}\n\n`;
-
-      // D. Separator
       markdownOutput += `---\n`;
     });
 
@@ -371,14 +341,13 @@ async function performWebSearch(query) {
   }
 }
 
-// --- Existing Groq API Endpoint (NOW PUBLIC, OPTIONALLY AUTHED) ---
-// Only authenticated users can access the AI
+// --- MAIN GENERATION ENDPOINT ---
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
-  const { prompt, systemMessage, history, model, max_tokens, webSearch } =
+  // 1. Get the original flag from the user (usually 'false' if button is off)
+  let { prompt, systemMessage, history, model, max_tokens, webSearch } =
     req.body;
 
-  // --- 1. KEYWORD DETECTION ---
-  // Words that imply the user wants an AI-generated Guide, Plan, or Explanation.
+  // 2. Define "Trigger Keywords" to FORCE Deep Research
   const complexKeywords = [
     "roadmap",
     "tutorial",
@@ -395,27 +364,44 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     "summary",
     "guide",
     "best practice",
+    "what is", // Auto-trigger for "what is ai"
+    "who is", // Auto-trigger for "who is..."
+    "price", // Auto-trigger for shopping/pricing
+    "vs", // Auto-trigger for comparisons
+    "latest", // Auto-trigger for news
+    "current", // Auto-trigger for updates
+    "news",
   ];
 
-  const isDeepResearchNeeded = complexKeywords.some((keyword) =>
+  // 3. Check if prompt contains any keywords
+  const hasTriggerKeyword = complexKeywords.some((keyword) =>
     prompt.toLowerCase().includes(keyword)
   );
 
-  let finalSystemMessage = systemMessage || "You are a helpful AI.";
+  // 4. AUTO-TRIGGER: Force Search ON if keyword found
+  if (hasTriggerKeyword) {
+    webSearch = true;
+    console.log(
+      `⚡ Auto-Trigger: Keyword detected in "${prompt}". Forcing Web Search ON.`
+    );
+  }
 
-  // --- 2. WEB SEARCH LOGIC ---
+  // 5. Determine Deep Research Mode
+  const isDeepResearchNeeded = hasTriggerKeyword;
+
+  let finalSystemMessage = systemMessage || "You are a helpful AI.";
+  let searchResults = null;
+
+  // --- WEB SEARCH LOGIC ---
   if (webSearch) {
     console.log(
       `🔎 Web Search ON. Query: "${prompt}" | Deep Mode: ${isDeepResearchNeeded}`
     );
 
-    // Fetch the formatted Markdown results
-    const searchResults = await performWebSearch(prompt);
+    searchResults = await performWebSearch(prompt);
 
     if (searchResults) {
       // SCENARIO A: Direct Mode (Simple Query)
-      // If user just searches "iPhone 16 price" or "Sony TV images",
-      // we return the Google results DIRECTLY. Faster & cheaper.
       if (!isDeepResearchNeeded) {
         console.log(
           "🚀 Fast Path: Returning Search Results directly (Skipping AI)."
@@ -424,25 +410,24 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
       }
 
       // SCENARIO B: Deep Mode (Complex Query)
-      // User wants a "Roadmap". We feed the search results to the AI
-      // so it can synthesize a new answer.
       console.log("🧠 Deep Path: Synthesizing results with AI.");
+
       finalSystemMessage += `\n\nINSTRUCTIONS: You have access to the following real-time search results.
-      Use these results to answer the user's complex request.
       
-      IMPORTANT:
-      1. Cite the sources provided in the text.
-      2. If the search results include images/videos, EMBED them in your answer using the markdown provided.
+      ${searchResults}
       
-      ${searchResults}`;
+      IMPORTANT REQUEST:
+      1. Answer the user's question comprehensively using this information.
+      2. **INTEGRATE IMAGES & VIDEOS**: Do not list the search results at the end. Instead, pick the most relevant images/videos from the results and EMBED them directly into your response using Markdown (e.g., ![Image Title](url)).
+      3. Place the images naturally near the text they illustrate.
+      4. Use the exact URLs provided in the search results.
+      `;
     } else {
       console.log("❌ Search returned no data. Falling back to standard AI.");
     }
   }
 
-  // --- 3. STANDARD AI GENERATION ---
-  // (Runs for Deep Mode OR if Web Search is OFF)
-
+  // --- STANDARD AI GENERATION ---
   let messages = [{ role: "system", content: finalSystemMessage }];
 
   if (history && Array.isArray(history)) {
@@ -482,36 +467,22 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     if (!reply) {
       return res.status(500).json({ error: "No reply from model" });
     }
-    res.json({ text: reply });
+
+    // --- CHANGED: WE NO LONGER FORCE APPEND AT THE END ---
+    let finalResponse = reply;
+
+    res.json({ text: finalResponse });
   } catch (err) {
     console.error("Server-side fetch error:", err);
     res.status(500).json({ error: err.message });
   }
 });
-// DELETE: Delete ALL chats for the authenticated user
-app.delete("/api/chats", verifyAuthToken, async (req, res) => {
-  try {
-    const result = await Chat.deleteMany({
-      userId: req.user.uid, // Ensure we only delete the requesting user's chats
-    });
 
-    res.json({
-      success: true,
-      message: "All history deleted",
-      deletedCount: result.deletedCount,
-    });
-  } catch (err) {
-    console.error("Error deleting all chats:", err);
-    res.status(500).json({ error: "Failed to delete history" });
-  }
-});
-
-// --- NEW: Internal Self-Ping Logic for Render Free Plan ---
-const RENDER_URL = process.env.RENDER_EXTERNAL_URL; // Render provides this automatically
-const PING_INTERVAL_MS = 14 * 60 * 1000; // 14 minutes (less than the 15-minute timeout)
+// --- Internal Self-Ping Logic ---
+const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+const PING_INTERVAL_MS = 14 * 60 * 1000;
 
 if (RENDER_URL) {
-  // Use built-in 'https' module for the GET request
   setInterval(() => {
     try {
       https
@@ -527,20 +498,19 @@ if (RENDER_URL) {
           }
         })
         .on("error", (err) => {
-          // It's normal for the ping to sometimes fail/timeout if the service is busy.
           console.error("[Self-Ping] Error:", err.message);
         });
     } catch (error) {
       console.error("[Self-Ping] Error initiating ping:", error);
     }
   }, PING_INTERVAL_MS);
-
-  console.log(`✅ Self-Ping job scheduled to run every 14 minutes on ${RENDER_URL}`);
+  console.log(
+    `✅ Self-Ping job scheduled to run every 14 minutes on ${RENDER_URL}`
+  );
 } else {
-    console.log("⚠️ Self-Ping skipped: RENDER_EXTERNAL_URL not found.");
+  console.log("⚠️ Self-Ping skipped: RENDER_EXTERNAL_URL not found.");
 }
 
-// Start the server
 app.listen(port, () => {
   console.log(
     `LYNQ AI app (frontend and backend) listening on http://localhost:${port}`
