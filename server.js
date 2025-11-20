@@ -349,28 +349,176 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
 
   // 2. Define "Trigger Keywords" to FORCE Deep Research
   const complexKeywords = [
+    // --- ORIGINAL & CODING ---
     "roadmap",
     "tutorial",
     "code",
+    "coding",
+    "programming",
+    "development",
+    "framework",
+    "library",
+    "api",
+    "database",
+    "debug",
+    "fix",
+    "error",
+    "solve",
+    "issue",
+    "setup",
+    "installation",
+    "config",
     "generate",
     "write",
-    "essay",
-    "script",
-    "plan",
-    "difference",
+    "draft",
+    "rewrite",
+
+    // --- EXPLANATION & LEARNING ---
     "explain",
+    "describe",
+    "understand",
+    "comprehend",
+    "what is",
+    "who is",
+    "define",
+    "meaning",
+    "translate",
+    "difference",
+    "compare",
+    "vs",
     "how to",
+    "guide",
+    "walkthrough",
+    "step-by-step",
     "list",
     "summary",
-    "guide",
     "best practice",
-    "what is", // Auto-trigger for "what is ai"
-    "who is", // Auto-trigger for "who is..."
-    "price", // Auto-trigger for shopping/pricing
-    "vs", // Auto-trigger for comparisons
-    "latest", // Auto-trigger for news
-    "current", // Auto-trigger for updates
+    "example",
+    "sample",
+    "template",
+    "course",
+    "learning",
+    "lesson",
+    "curriculum",
+    "school",
+    "class",
+    "education",
+    "study",
+    "teach",
+    "training",
+    "instructor",
+    "beginner",
+    "advanced",
+
+    // --- SEARCH ENGINE: SHOPPING & REVIEWS (New) ---
+    "review", // High volume
+    "rating", // High volume
+    "best", // High volume (e.g., "best laptop")
+    "top", // High volume (e.g., "top 10 movies")
+    "cheap", // High volume
+    "affordable",
+    "discount",
+    "coupon",
+    "promo code",
+    "deal",
+    "price",
+    "cost",
+    "buy",
+    "shop",
+    "order",
+    "store",
+
+    // --- SEARCH ENGINE: LOCAL & LOGISTICS (New) ---
+    "near me", // Extremely high volume
+    "location",
+    "address",
+    "hours", // e.g., "opening hours"
+    "open now",
+    "map",
+    "direction",
+    "weather", // High volume
+    "forecast",
+    "flight",
+    "hotel",
+    "booking",
+    "ticket",
+    "travel",
+    "itinerary",
+    "visa",
+
+    // --- SEARCH ENGINE: HEALTH & LIFESTYLE (New) ---
+    "symptoms", // High volume
+    "treatment",
+    "cure",
+    "medicine",
+    "dosage",
+    "side effects",
+    "benefits", // e.g., "benefits of yoga"
+    "diet",
+    "nutrition",
+    "calories",
+    "workout",
+    "exercise",
+    "recipe",
+    "menu",
+
+    // --- SEARCH ENGINE: TECH, DOWNLOADS & ACCOUNTS (New) ---
+    "download", // High volume
+    "free",
+    "install",
+    "update",
+    "driver", // e.g., "audio driver"
+    "apk", // Mobile apps
+    "wallpaper",
+    "login",
+    "signup",
+    "register",
+    "password",
+    "account",
+    "delete account",
+
+    // --- SEARCH ENGINE: ENTERTAINMENT (New) ---
+    "video",
+    "image",
+    "photo",
+    "picture",
+    "movie",
+    "film",
+    "clip",
+    "trailer",
+    "youtube",
+    "vlog",
+    "documentary",
+    "lyrics", // High volume
+    "cast", // e.g., "cast of breaking bad"
+    "release date",
+    "season",
+    "episode",
+    "plot",
+    "ending explained",
+    "spoiler",
+
+    // --- SEARCH ENGINE: QUICK FACTS & FINANCE (New) ---
     "news",
+    "latest",
+    "current",
+    "sports",
+    "score", // e.g., "cricket score"
+    "result",
+    "schedule",
+    "jobs",
+    "hiring",
+    "career",
+    "salary",
+    "interview",
+    "net worth", // High volume for celebs
+    "age",
+    "height",
+    "population",
+    "synonym",
+    "antonym",
+    "thesaurus",
+    "convert", // e.g., "convert usd to inr"
   ];
 
   // 3. Check if prompt contains any keywords
@@ -413,15 +561,55 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
       console.log("🧠 Deep Path: Synthesizing results with AI.");
 
       finalSystemMessage += `\n\nINSTRUCTIONS: You have access to the following real-time search results.
-      
-      ${searchResults}
-      
-      IMPORTANT REQUEST:
-      1. Answer the user's question comprehensively using this information.
-      2. **INTEGRATE IMAGES & VIDEOS**: Do not list the search results at the end. Instead, pick the most relevant images/videos from the results and EMBED them directly into your response using Markdown (e.g., ![Image Title](url)).
-      3. Place the images naturally near the text they illustrate.
-      4. Use the exact URLs provided in the search results.
-      `;
+
+${searchResults}
+
+IMPORTANT REQUEST:
+1. **COMPREHENSIVE ANSWER:** Synthesize the information to answer the user's question fully.
+2. **INTEGRATE VISUALS:** Do not list search results at the end. Instead, pick the most relevant images from the results and EMBED them directly into your response using Markdown (e.g., ![Image Title](url)).
+   - Place images naturally near the text they illustrate.
+   - Use the exact URLs provided in the search results.
+   - **Video Handling:** If a relevant video is found, provide the video title and link clearly. Do not embed static video thumbnails as images unless they link directly to the content.
+
+3. **CONTENT-SPECIFIC FORMATTING:** Adjust your response style based on the user's intent:
+
+   - **IF PRODUCT/COURSE/SERVICE (Shopping, Buy, Price, Best):**
+     - Create a **Price Comparison and Provide best buy links with anchor text (e.g., [Buy on Amazon](url)) Table** if data exists from multiple platforms.
+     - List **Features, Pros, and Cons**.
+     - Must EMBED product images directly above or near the product description.
+     - Include user ratings if available.
+     - Suggest alternatives if applicable.
+
+   - **IF CODING/DEV (Code, Debug, Python, JS):**
+     - Use proper Markdown code blocks (e.g., \`\`\`javascript) for scripts.
+     - Explain the logic step-by-step.
+     - If the result contains code snippets, refine them into a complete, working example.
+     - Give videos for tutorials if available.
+     - Provide links to official documentation.
+     - Suggest best practices.
+
+   - **IF TUTORIAL/HOW-TO (Guide, Recipe, Install, Workout):**
+     - Use clear **Numbered Lists** (1., 2., 3.) for steps.
+     - Bold key actions or ingredients.
+     - Include images for specific steps if available in the results.
+     - If a video tutorial is found, provide the title and link prominently.
+
+   - **IF EXPLANATION/LEARNING (Explain, What is, Define):**
+      - Use **Headings and Subheadings** to organize content.
+      - Provide **Examples** to illustrate concepts.
+      - Include relevant images or diagrams from the search results.
+      - Link to further reading or resources.
+
+   - **IF NEWS/ENTERTAINMENT (Latest, News, Movie, Release Date):**
+     - Mention the **Date of the news** to ensure freshness.
+     - For movies/media, list Cast, Release Date, and Ratings.
+     - For news, summarize the headline and key facts clearly.**
+
+   - **IF LOCAL/QUICK FACTS (Weather, Near Me, Definition):**
+     - Provide the answer immediately (e.g., the temperature, the address, or the definition).
+     - Be concise and direct.
+
+`;
     } else {
       console.log("❌ Search returned no data. Falling back to standard AI.");
     }
