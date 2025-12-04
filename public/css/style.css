@@ -5,7 +5,8 @@
 
   /* Light Theme */
   --bg-primary: #efeded;
-  --bg-secondary: rgba(249, 248, 249, 0.85); /* Glassy */
+  --bg-secondary: rgba(249, 248, 249, 0.85);
+  /* Glassy */
   --bg-tertiary: #ffffff;
   --bg-accent: #252425;
   --bg-chat-bubble-user: #e0e0e0;
@@ -31,7 +32,8 @@
 
 body.dark-mode {
   --bg-primary: #121212;
-  --bg-secondary: rgba(30, 30, 30, 0.85); /* Glassy */
+  --bg-secondary: rgba(30, 30, 30, 0.85);
+  /* Glassy */
   --bg-tertiary: #2a2a2a;
   --bg-accent: #f9f8f9;
   --bg-chat-bubble-user: #333333;
@@ -79,16 +81,19 @@ body {
 /* --- LAYOUT --- */
 #app-container {
   display: flex;
-  height: 100dvh; /* Adapts instantly to keyboard height */
+  height: 100dvh;
+  /* Adapts instantly to keyboard height */
   width: 100vw;
-  overflow: hidden; /* Prevents outer page scrolling */
+  overflow: hidden;
+  /* Prevents outer page scrolling */
 }
 
 /* --- SIDEBAR --- */
 #sidebar {
   /* Default Desktop State (Collapsed) */
   width: var(--sidebar-width);
-  min-width: 0; /* Ensures it can collapse properly */
+  min-width: 0;
+  /* Ensures it can collapse properly */
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border-primary);
   display: flex;
@@ -126,7 +131,8 @@ body {
 /* Mobile Active */
 #sidebar.active {
   transform: translateX(0) !important;
-  width: 80% !important; /* Mobile width */
+  width: 80% !important;
+  /* Mobile width */
   min-width: 80% !important;
   padding: 20px !important;
   border-right: 1px solid var(--border-primary) !important;
@@ -158,9 +164,11 @@ body {
 .nav-menu::-webkit-scrollbar {
   width: 4px;
 }
+
 .nav-menu::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .nav-menu::-webkit-scrollbar-thumb {
   background: var(--border-secondary);
   border-radius: 4px;
@@ -184,6 +192,7 @@ body {
   transition: 0.2s;
   color: var(--text-secondary);
 }
+
 .search-trigger:hover {
   background: var(--bg-primary);
   color: var(--text-heading);
@@ -205,16 +214,19 @@ body {
   position: relative;
   flex-shrink: 0;
 }
+
 .nav-item:hover {
   background: var(--bg-primary);
   color: var(--text-heading);
 }
+
 .nav-item.active {
   background: var(--bg-primary);
   color: var(--text-heading);
   font-weight: 600;
   border: 1px solid var(--border-primary);
 }
+
 .nav-item i {
   width: 20px;
   text-align: center;
@@ -224,9 +236,11 @@ body {
   position: relative;
   flex-shrink: 0;
 }
+
 .chat-item-wrapper .nav-item {
   padding-right: 35px;
 }
+
 .chat-options-trigger {
   position: absolute;
   right: 10px;
@@ -239,9 +253,11 @@ body {
   transition: 0.2s;
   z-index: 5;
 }
+
 .chat-item-wrapper:hover .chat-options-trigger {
   opacity: 1;
 }
+
 .chat-item-wrapper:hover .nav-item {
   background: var(--bg-primary);
 }
@@ -267,6 +283,7 @@ body {
 .chat-context-menu.show {
   display: flex;
 }
+
 .context-item {
   padding: 10px 12px;
   font-size: 0.85rem;
@@ -278,6 +295,7 @@ body {
   border-radius: 8px;
   transition: 0.1s;
 }
+
 .context-item:hover {
   background: var(--bg-danger);
   color: var(--text-danger);
@@ -302,6 +320,7 @@ body {
   z-index: 10;
   background: var(--bg-primary);
 }
+
 .top-actions {
   display: flex;
   align-items: center;
@@ -319,6 +338,7 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
 }
+
 .top-logo-title i {
   color: #ffd700;
   font-size: 1.4rem;
@@ -337,6 +357,7 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .action-btn:hover {
   color: var(--text-heading);
   background: rgba(0, 0, 0, 0.05);
@@ -359,6 +380,7 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
 }
+
 .upgrade-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
@@ -378,10 +400,12 @@ body {
   font-weight: 500;
   font-size: 0.9rem;
 }
+
 .top-profile-btn:hover {
   background: var(--bg-secondary);
   border-color: var(--border-secondary);
 }
+
 .top-profile-btn .avatar {
   width: 28px;
   height: 28px;
@@ -407,6 +431,7 @@ body {
   overflow: hidden;
   height: 100%;
 }
+
 .view-section.active {
   display: flex;
   animation: fadeIn 0.4s ease;
@@ -417,11 +442,13 @@ body {
   padding: 50px var(--primary-padding) 30px;
   text-align: center;
 }
+
 .hero-header h1 {
   font-size: 2.8rem;
   color: var(--text-heading);
   margin-bottom: 10px;
 }
+
 .hero-header p {
   color: var(--text-secondary);
   font-size: 1.1rem;
@@ -435,6 +462,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
 }
+
 .tool-card {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
@@ -448,11 +476,13 @@ body {
   position: relative;
   overflow: hidden;
 }
+
 .tool-card:hover {
   transform: translateY(-5px);
   border-color: var(--text-heading);
   box-shadow: var(--shadow-soft);
 }
+
 .tool-icon {
   width: 50px;
   height: 50px;
@@ -464,15 +494,18 @@ body {
   font-size: 1.4rem;
   color: var(--text-heading);
 }
+
 .tool-card h3 {
   font-size: 1.3rem;
   color: var(--text-heading);
 }
+
 .tool-card p {
   color: var(--text-secondary);
   font-size: 0.95rem;
   line-height: 1.6;
 }
+
 .tool-arrow {
   margin-top: auto;
   color: var(--text-heading);
@@ -501,25 +534,30 @@ body {
   gap: 10px;
   justify-content: center;
 }
+
 #toast.show {
   visibility: visible;
   animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
+
 @keyframes fadein {
   from {
     bottom: 0;
     opacity: 0;
   }
+
   to {
     bottom: 30px;
     opacity: 1;
   }
 }
+
 @keyframes fadeout {
   from {
     bottom: 30px;
     opacity: 1;
   }
+
   to {
     bottom: 0;
     opacity: 0;
@@ -541,9 +579,11 @@ body {
   justify-content: center;
   animation: fadeIn 0.3s ease;
 }
+
 .modal-overlay.active {
   display: flex;
 }
+
 .pricing-modal {
   background: var(--bg-tertiary);
   width: 90%;
@@ -555,6 +595,7 @@ body {
   overflow-y: auto;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
+
 .close-modal {
   position: absolute;
   top: 20px;
@@ -565,20 +606,24 @@ body {
   cursor: pointer;
   color: var(--text-secondary);
 }
+
 .pricing-header {
   text-align: center;
   margin-bottom: 40px;
 }
+
 .pricing-header h2 {
   font-size: 2.5rem;
   color: var(--text-heading);
   margin-bottom: 10px;
 }
+
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 25px;
 }
+
 .price-card {
   border: 1px solid var(--border-primary);
   border-radius: 20px;
@@ -590,6 +635,7 @@ body {
   background: var(--bg-primary);
   position: relative;
 }
+
 .price-card.pro {
   border: 2px solid #ffd700;
   background: var(--bg-tertiary);
@@ -597,23 +643,27 @@ body {
   box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15);
   z-index: 2;
 }
+
 .price-card h3 {
   font-size: 1.5rem;
   color: var(--text-heading);
   margin-bottom: 10px;
 }
+
 .price {
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--text-heading);
   margin-bottom: 20px;
 }
+
 .features-list {
   list-style: none;
   text-align: left;
   margin-bottom: 25px;
   flex: 1;
 }
+
 .features-list li {
   margin-bottom: 10px;
   color: var(--text-secondary);
@@ -622,9 +672,11 @@ body {
   align-items: center;
   gap: 10px;
 }
+
 .features-list li i {
   color: #10a37f;
 }
+
 .plan-btn {
   padding: 12px;
   border-radius: 12px;
@@ -634,18 +686,22 @@ body {
   width: 100%;
   transition: 0.2s;
 }
+
 .plan-btn.free {
   background: var(--border-secondary);
   color: var(--text-heading);
 }
+
 .plan-btn.pro {
   background: var(--bg-gold);
   color: #2a2a2a;
 }
+
 .plan-btn:hover {
   opacity: 0.9;
   transform: translateY(-2px);
 }
+
 .popular-tag {
   position: absolute;
   top: -12px;
@@ -680,8 +736,10 @@ body {
 
 /* --- Sidebar Position (Bottom-Left) --- */
 .profile-popup-overlay.sidebar-mode {
-  align-items: flex-end; /* Align to Bottom */
-  justify-content: flex-start; /* Align to Left */
+  align-items: flex-end;
+  /* Align to Bottom */
+  justify-content: flex-start;
+  /* Align to Left */
 }
 
 .profile-popup-overlay.sidebar-mode .profile-popup {
@@ -701,6 +759,7 @@ body {
     opacity: 0;
     transform: scale(0.9) translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -713,8 +772,10 @@ body {
     align-items: center;
     justify-content: center;
   }
+
   .profile-popup-overlay.sidebar-mode .profile-popup {
-    margin: 0; /* Remove desktop margins */
+    margin: 0;
+    /* Remove desktop margins */
   }
 }
 
@@ -731,13 +792,16 @@ body {
 
   /* Compact Dropdown Dimensions */
   width: 300px;
-  margin-top: 70px; /* Position below the Top Bar */
-  margin-right: 20px; /* Spacing from right edge */
+  margin-top: 70px;
+  /* Position below the Top Bar */
+  margin-right: 20px;
+  /* Spacing from right edge */
 
   border-radius: 16px;
   padding: 20px;
   border: 1px solid var(--border-primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Stronger shadow for depth */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  /* Stronger shadow for depth */
 
   display: flex;
   flex-direction: column;
@@ -755,6 +819,7 @@ body {
     opacity: 0;
     transform: scale(0.9) translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -768,7 +833,8 @@ body {
 
 /* --- Compact Inner Elements --- */
 .profile-popup-avatar {
-  width: 60px; /* Smaller avatar */
+  width: 60px;
+  /* Smaller avatar */
   height: 60px;
   border-radius: 50%;
   background: var(--text-heading);
@@ -781,7 +847,8 @@ body {
 }
 
 .profile-popup-name {
-  font-size: 1.2rem; /* Smaller text */
+  font-size: 1.2rem;
+  /* Smaller text */
   font-weight: 600;
   color: var(--text-heading);
   margin-bottom: 2px;
@@ -816,7 +883,8 @@ body {
 .profile-popup-logout {
   width: 100%;
   padding: 10px;
-  background: rgba(211, 47, 47, 0.1); /* Subtle red bg */
+  background: rgba(211, 47, 47, 0.1);
+  /* Subtle red bg */
   color: var(--text-danger);
   border: none;
   border-radius: 10px;
@@ -829,6 +897,7 @@ body {
   gap: 8px;
   font-size: 0.9rem;
 }
+
 .profile-popup-logout:hover {
   background: var(--bg-danger);
 }
@@ -836,7 +905,8 @@ body {
 /* --- Mobile Handling --- */
 @media (max-width: 768px) {
   .profile-popup {
-    margin-right: 10px; /* Tighter spacing on phones */
+    margin-right: 10px;
+    /* Tighter spacing on phones */
     width: 280px;
   }
 }
@@ -845,6 +915,7 @@ body {
 .model-selector-wrapper {
   position: relative;
 }
+
 .model-btn {
   background: transparent;
   border: none;
@@ -861,10 +932,12 @@ body {
   transition: all 0.2s;
   opacity: 0.8;
 }
+
 .model-btn:hover {
   background: var(--bg-primary);
   opacity: 1;
 }
+
 .model-dropdown {
   position: absolute;
   bottom: 120%;
@@ -880,9 +953,11 @@ body {
   z-index: 100;
   animation: fadeUp 0.2s ease;
 }
+
 .model-dropdown.show {
   display: flex;
 }
+
 .model-option {
   padding: 10px 12px;
   border-radius: 10px;
@@ -893,14 +968,17 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
 .model-option:hover {
   background: var(--bg-primary);
 }
+
 .model-option.selected {
   color: var(--text-heading);
   font-weight: 600;
   background: var(--bg-primary);
 }
+
 .pro-badge {
   background: #000;
   color: #fff;
@@ -912,6 +990,7 @@ body {
   margin-left: auto;
   margin-right: 5px;
 }
+
 body.dark-mode .pro-badge {
   background: #fff;
   color: #000;
@@ -927,10 +1006,12 @@ body.dark-mode .pro-badge {
   animation: spin 1s linear infinite;
   display: inline-block;
 }
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -945,25 +1026,30 @@ body.dark-mode .pro-badge {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
+
 @keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(15px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 @keyframes fadeUp {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -975,18 +1061,23 @@ body.dark-mode .pro-badge {
   :root {
     --sidebar-width: 280px;
   }
+
   #sidebar {
     transform: translateX(-100%);
     position: fixed;
     width: 80%;
-    min-width: 80%;
+    max-width: 320px;
+    /* FIX: Constrain sidebar width on tablets */
     margin-left: 0;
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-    z-index: 9999;
+    z-index: 2000;
+    /* FIX: Normalized z-index */
   }
+
   #sidebar.active {
     transform: translateX(0);
   }
+
   .mobile-only {
     display: block;
   }
@@ -995,6 +1086,7 @@ body.dark-mode .pro-badge {
   .pricing-grid {
     grid-template-columns: 1fr;
   }
+
   .price-card.pro {
     transform: none;
   }
@@ -1015,6 +1107,7 @@ body.dark-mode .pro-badge {
   .upgrade-btn span {
     display: none;
   }
+
   .upgrade-btn {
     padding: 8px 12px;
   }
@@ -1026,6 +1119,7 @@ body.dark-mode .pro-badge {
     padding: 5px;
     border-radius: 50%;
   }
+
   .top-profile-btn .avatar {
     margin-right: 0;
   }
@@ -1037,6 +1131,7 @@ body.dark-mode .pro-badge {
   #login-signup-btn span {
     display: none;
   }
+
   #login-signup-btn {
     padding: 8px;
   }
@@ -1072,22 +1167,28 @@ body.dark-mode .pro-badge {
 @keyframes logoSlideUp {
   from {
     opacity: 0;
-    transform: translateY(50px); /* Starts from below */
+    transform: translateY(50px);
+    /* Starts from below */
   }
+
   to {
     opacity: 1;
-    transform: translateY(0); /* Ends in normal position */
+    transform: translateY(0);
+    /* Ends in normal position */
   }
 }
 
 .loader-logo i {
-  color: #ffd700; /* Gold Bolt */
+  color: #ffd700;
+  /* Gold Bolt */
   filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4));
 }
 
 .seek-bar-wrapper {
-  width: 300px; /* <--- FIXED: Makes it much longer */
-  max-width: 80%; /* Ensures it fits on small mobile screens */
+  width: 300px;
+  /* <--- FIXED: Makes it much longer */
+  max-width: 80%;
+  /* Ensures it fits on small mobile screens */
   height: 4px;
   background-color: var(--border-primary);
   border-radius: 10px;
@@ -1119,9 +1220,11 @@ body.dark-mode .pro-badge {
   0% {
     left: -40%;
   }
+
   50% {
     left: 100%;
   }
+
   100% {
     left: -40%;
   }
@@ -1129,6 +1232,7 @@ body.dark-mode .pro-badge {
 
 /* --- FIX: FORCE AVATAR VISIBILITY ON MOBILE --- */
 @media (max-width: 768px) {
+
   /* 1. Force the inner avatar circle to display (override generic mobile hide) */
   .top-actions #top-profile-btn-user .avatar {
     display: flex !important;
@@ -1158,14 +1262,16 @@ body.dark-mode .pro-badge {
 /* This forces the iframe to be responsive and full-width */
 .video-embed-container {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio (9 / 16 = 0.5625) */
+  padding-bottom: 56.25%;
+  /* 16:9 aspect ratio (9 / 16 = 0.5625) */
   height: 0;
   overflow: hidden;
   max-width: 100%;
   border-radius: 12px;
   margin-top: 12px;
   margin-bottom: 12px;
-  background: #000; /* Black background while loading */
+  background: #000;
+  /* Black background while loading */
   box-shadow: var(--shadow-soft);
 }
 
