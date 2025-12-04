@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <title>Profile — LYNQ AI</title>
+
+    <script src="https://kit.fontawesome.com/ae8ff12b97.js" crossorigin="anonymous"></script>
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png" />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/home.css" />
+    <style>
+        /* --- PROFILE PAGE STYLES --- */
+        #profile-view {
+            overflow-y: auto;
+            padding-bottom: 40px;
+            height: 100%;
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 40px 20px;
+        }
+
+        .profile-page-header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-primary);
+            padding-bottom: 20px;
+        }
+
+        .profile-page-header h1 {
+            font-size: 2.2rem;
+            color: var(--text-heading);
+        }
+
+        /* Profile Hero Card */
+        .profile-hero {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(135deg, var(--bg-gold), #fdb931);
+            opacity: 0.15;
+        }
+
+        .profile-avatar-xl {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bg-gold), #fdb931);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 600;
+            color: #2a2a2a;
+            margin: 0 auto 20px;
+            position: relative;
+            z-index: 1;
+            border: 4px solid var(--bg-tertiary);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-hero-name {
+            font-size: 1.8rem;
+            color: var(--text-heading);
+            margin-bottom: 5px;
+        }
+
+        .profile-hero-email {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .profile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--bg-gold), #fdb931);
+            color: #2a2a2a;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Profile Info Cards */
+        .profile-section {
+            margin-bottom: 30px;
+        }
+
+        .profile-section h3 {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-info-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .profile-info-item {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid var(--border-primary);
+            transition: 0.2s;
+        }
+
+        .profile-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-info-item:hover {
+            background: var(--bg-primary);
+        }
+
+        .profile-info-item i {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-heading);
+            font-size: 1rem;
+        }
+
+        .profile-info-content {
+            flex: 1;
+        }
+
+        .profile-info-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .profile-info-value {
+            color: var(--text-heading);
+            font-size: 1rem;
+        }
+
+        /* Action Buttons */
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .profile-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 20px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: left;
+            width: 100%;
+        }
+
+        .profile-action-btn:hover {
+            background: var(--bg-primary);
+            border-color: var(--border-secondary);
+        }
+
+        .profile-action-btn i {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .profile-action-btn .action-content {
+            flex: 1;
+        }
+
+        .profile-action-btn .action-title {
+            color: var(--text-heading);
+            font-weight: 500;
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .profile-action-btn .action-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .profile-action-btn .action-arrow {
+            color: var(--text-secondary);
+        }
+
+        .profile-action-btn.danger {
+            border-color: rgba(211, 47, 47, 0.3);
+        }
+
+        .profile-action-btn.danger:hover {
+            background: var(--bg-danger);
+            border-color: var(--text-danger);
+        }
+
+        .profile-action-btn.danger i {
+            color: var(--text-danger);
+            background: var(--bg-danger);
+        }
+
+        .profile-action-btn.danger .action-title {
+            color: var(--text-danger);
+        }
+
+        /* Login Prompt for Guests */
+        .guest-profile-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 24px;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .guest-profile-card i.guest-icon {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            margin-bottom: 20px;
+        }
+
+        .guest-profile-card h2 {
+            color: var(--text-heading);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .guest-profile-card p {
+            color: var(--text-secondary);
+            max-width: 400px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+
+        .guest-profile-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .guest-profile-actions .auth-btn {
+            min-width: 140px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .profile-container {
+                padding: 20px;
+            }
+
+            .profile-hero {
+                padding: 30px 20px;
+            }
+
+            .profile-avatar-xl {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .profile-hero-name {
+                font-size: 1.5rem;
+            }
+
+            .guest-profile-card {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="dark-mode">
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem("lynq-theme");
+            if (savedTheme === "light") {
+                document.body.classList.remove("dark-mode");
+            }
+            const savedAccent = localStorage.getItem("lynq-accent-color");
+            if (savedAccent) {
+                document.documentElement.style.setProperty("--bg-gold", savedAccent);
+            }
+        })();
+    </script>
+
+    <div id="app-container">
+        <aside id="sidebar" class="collapsed">
+            <div style="flex-shrink: 0">
+                <div class="sidebar-header">
+                    <span style="display: flex; align-items: center; gap: 10px"><i class="fa-solid fa-bolt"></i> LYNQ
+                        AI</span>
+                    <button class="action-btn mobile-only" onclick="toggleSidebar()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-label">Menu</div>
+                <a href="index.html" class="nav-item" id="nav-new-chat"><i class="fa-solid fa-plus"></i> New Chat</a>
+                <a href="index.html" class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i> Home</a>
+                <a href="projects.html" class="nav-item" id="nav-projects"><i class="fa-solid fa-layer-group"></i>
+                    Projects</a>
+
+                <div class="nav-label" style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding-right: 5px;
+              position: relative;
+            ">
+                    <span id="recent-chats-label">Recent Chats</span>
+                    <input type="text" id="chat-search-input" placeholder="Search chats..." style="
+                display: none;
+                width: 100%;
+                background: var(--bg-primary);
+                border: 1px solid var(--border-primary);
+                border-radius: 6px;
+                padding: 4px 8px;
+                color: var(--text-primary);
+              " onkeyup="filterRecentChats()" onblur="toggleChatSearch(false)" />
+                    <i class="fa-solid fa-magnifying-glass search-trigger" id="chat-search-trigger"
+                        onclick="toggleChatSearch(true)"></i>
+                </div>
+                <div id="recent-chats-container"></div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="profile.html" class="nav-item active" id="nav-profile"><i class="fa-solid fa-user"></i>
+                    Profile</a>
+                <a href="settings.html" class="nav-item" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
+            </div>
+        </aside>
+
+        <main id="main-content">
+            <div class="top-bar">
+                <button class="action-btn" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="top-logo-title">
+                    <i class="fa-solid fa-bolt"></i> LYNQ AI
+                </div>
+                <div style="flex: 1"></div>
+                <div class="top-actions">
+                    <button class="auth-btn login-btn" onclick="location.href='login.html'" id="header-login-btn"
+                        style="display: none;">
+                        Login
+                    </button>
+
+                    <button class="auth-btn signup-btn" onclick="location.href='login.html?action=signup'"
+                        id="header-signup-btn" style="display: none;">
+                        Sign Up
+                    </button>
+
+                    <div class="header-greeting" id="header-greeting" style="display: none;">
+                        <span>Hi,</span>
+                        <span class="greeting-name" id="greeting-name">User</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profile-view" class="view-section active">
+                <div class="profile-container">
+                    <div class="profile-page-header">
+                        <h1>Profile</h1>
+                    </div>
+
+                    <!-- Logged In View -->
+                    <div id="logged-in-profile" style="display: none;">
+                        <div class="profile-hero">
+                            <div class="profile-avatar-xl" id="profile-avatar">U</div>
+                            <h2 class="profile-hero-name" id="profile-name">User</h2>
+                            <p class="profile-hero-email" id="profile-email">user@example.com</p>
+                            <div class="profile-badge">
+                                <i class="fa-solid fa-crown"></i> Free Plan
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3><i class="fa-solid fa-circle-info"></i> Account Information</h3>
+                            <div class="profile-info-card">
+                                <div class="profile-info-item">
+                                    <i class="fa-solid fa-envelope"></i>
+                                    <div class="profile-info-content">
+                                        <div class="profile-info-label">Email Address</div>
+                                        <div class="profile-info-value" id="profile-email-value">user@example.com</div>
+                                    </div>
+                                </div>
+                                <div class="profile-info-item">
+                                    <i class="fa-solid fa-phone"></i>
+                                    <div class="profile-info-content">
+                                        <div class="profile-info-label">Phone Number</div>
+                                        <div class="profile-info-value" id="profile-phone-value">No phone linked</div>
+                                    </div>
+                                </div>
+                                <div class="profile-info-item">
+                                    <i class="fa-solid fa-calendar"></i>
+                                    <div class="profile-info-content">
+                                        <div class="profile-info-label">Member Since</div>
+                                        <div class="profile-info-value" id="profile-joined">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3><i class="fa-solid fa-sliders"></i> Quick Actions</h3>
+                            <div class="profile-actions">
+                                <button class="profile-action-btn" onclick="location.href='settings.html'">
+                                    <i class="fa-solid fa-gear"></i>
+                                    <div class="action-content">
+                                        <div class="action-title">Settings</div>
+                                        <div class="action-desc">Theme, customization, API keys</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </button>
+                                <button class="profile-action-btn" onclick="location.href='help.html'">
+                                    <i class="fa-solid fa-circle-question"></i>
+                                    <div class="action-content">
+                                        <div class="action-title">Help Center</div>
+                                        <div class="action-desc">FAQs, guides, and support</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </button>
+                                <button class="profile-action-btn danger" onclick="logoutUser()">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    <div class="action-content">
+                                        <div class="action-title">Logout</div>
+                                        <div class="action-desc">Sign out of your account</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guest View -->
+                    <div id="guest-profile" style="display: none;">
+                        <div class="guest-profile-card">
+                            <i class="fa-solid fa-user-circle guest-icon"></i>
+                            <h2>Welcome to LYNQ AI</h2>
+                            <p>Sign in to access your profile, sync your chats across devices, and unlock personalized
+                                features.</p>
+                            <div class="guest-profile-actions">
+                                <button class="auth-btn login-btn" onclick="location.href='login.html'">Login</button>
+                                <button class="auth-btn signup-btn"
+                                    onclick="location.href='login.html?action=signup'">Create Account</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast">
+        <i class="fa-solid fa-circle-check"></i> Action Successful
+    </div>
+
+    <div class="modal-overlay" id="pricing-modal">
+        <div class="pricing-modal">
+            <button class="close-modal" onclick="togglePricing()">&times;</button>
+            <div class="pricing-header">
+                <h2>Upgrade Your Plan</h2>
+                <p style="color: var(--text-secondary)">
+                    Unlock the full power of AI with Pro features.
+                </p>
+            </div>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <h3>Starter</h3>
+                    <div class="price">
+                        $0<span style="font-size: 1rem; font-weight: 400">/mo</span>
+                    </div>
+                    <ul class="features-list">
+                        <li><i class="fa-solid fa-check"></i> Gemini Flash Model</li>
+                        <li><i class="fa-solid fa-check"></i> Standard Speed</li>
+                        <li><i class="fa-solid fa-check"></i> 5 Projects Limit</li>
+                    </ul>
+                    <button class="plan-btn free">Current Plan</button>
+                </div>
+                <div class="price-card pro">
+                    <div class="popular-tag">MOST POPULAR</div>
+                    <h3>Pro Member</h3>
+                    <div class="price">
+                        $19<span style="font-size: 1rem; font-weight: 400">/mo</span>
+                    </div>
+                    <ul class="features-list">
+                        <li>
+                            <i class="fa-solid fa-check"></i> <b>Gemini 1.5 Pro & GPT-4o</b>
+                        </li>
+                        <li><i class="fa-solid fa-check"></i> Unlimited Fast Projects</li>
+                        <li><i class="fa-solid fa-check"></i> Priority Support</li>
+                        <li><i class="fa-solid fa-check"></i> Code Execution</li>
+                    </ul>
+                    <button class="plan-btn pro">Upgrade Now</button>
+                </div>
+                <div class="price-card">
+                    <h3>Team</h3>
+                    <div class="price">
+                        $49<span style="font-size: 1rem; font-weight: 400">/mo</span>
+                    </div>
+                    <ul class="features-list">
+                        <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
+                        <li><i class="fa-solid fa-check"></i> Admin Dashboard</li>
+                        <li><i class="fa-solid fa-check"></i> Shared Workspace</li>
+                        <li><i class="fa-solid fa-check"></i> SSO Integration</li>
+                    </ul>
+                    <button class="plan-btn free">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/script.js"></script>
+
+    <script>
+        console.log("Profile page loaded.");
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Listen for auth state
+            document.addEventListener("authStateReady", (e) => {
+                updateProfilePage(e.detail.user);
+            });
+
+            // Fallback if already available
+            if (typeof currentUser !== "undefined") {
+                updateProfilePage(currentUser);
+            }
+        });
+
+        function updateProfilePage(user) {
+            const loggedInView = document.getElementById("logged-in-profile");
+            const guestView = document.getElementById("guest-profile");
+
+            if (user) {
+                // Show logged in view
+                loggedInView.style.display = "block";
+                guestView.style.display = "none";
+
+                // Populate data
+                const displayName = user.displayName || user.email.split("@")[0];
+                const avatarInitial = (displayName[0] || "U").toUpperCase();
+
+                document.getElementById("profile-avatar").innerText = avatarInitial;
+                document.getElementById("profile-name").innerText = displayName;
+                document.getElementById("profile-email").innerText = user.email;
+                document.getElementById("profile-email-value").innerText = user.email;
+                document.getElementById("profile-phone-value").innerText = user.phoneNumber || "No phone linked";
+
+                // Format join date
+                if (user.metadata && user.metadata.creationTime) {
+                    const joinDate = new Date(user.metadata.creationTime);
+                    document.getElementById("profile-joined").innerText = joinDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+            } else {
+                // Show guest view
+                loggedInView.style.display = "none";
+                guestView.style.display = "block";
+            }
+        }
+    </script>
+</body>
+
+</html>

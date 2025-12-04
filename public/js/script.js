@@ -1,4 +1,4 @@
-/*
+﻿/*
   script.js
   This file contains shared logic and state used across ALL pages.
   
@@ -798,77 +798,47 @@ function initializeModelButton() {
  */
 function updateUIAfterAuth(user) {
   // Top Bar Elements
-  const loginSignupBtn = document.getElementById("login-signup-btn");
-  const topProfileBtn = document.getElementById("top-profile-btn-user");
-  const topProfileAvatar = document.getElementById("top-profile-avatar");
-  const topProfileName = document.getElementById("top-profile-name");
-  const mobileSignupBtn = document.querySelector(".mobile-signup-btn");
-
-  // Sidebar Elements
-  const navLoginLink = document.getElementById("nav-login-link");
-  const navProfileWrapper = document.getElementById("nav-profile-wrapper");
-  const navProfileAvatar = document.getElementById("nav-profile-avatar");
-  const navProfileName = document.getElementById("nav-profile-name");
+  const headerLoginBtn = document.getElementById("header-login-btn");
+  const headerSignupBtn = document.getElementById("header-signup-btn");
+  const authDivider = document.getElementById("auth-divider");
+  const headerGreeting = document.getElementById("header-greeting");
+  const greetingName = document.getElementById("greeting-name");
 
   const welcomeName = document.getElementById("welcome-name");
   const guestBanner = document.getElementById("guest-banner");
-
-  // Profile Popup Elements (for population)
-  const popupName = document.getElementById("popup-name");
-  const popupEmail = document.getElementById("popup-email");
-  const popupPhone = document.getElementById("popup-phone");
-  const popupAvatar = document.getElementById("popup-avatar");
 
   if (user) {
     // --- User is Logged In ---
     const displayName = user.displayName || user.email.split("@")[0];
     const avatarInitial = (displayName[0] || "U").toUpperCase();
 
-    // Ensure "Sign Up" / "Log In" triggers are HIDDEN
-    if (loginSignupBtn) loginSignupBtn.style.display = "none";
-    if (navLoginLink) navLoginLink.style.display = "none";
-    if (mobileSignupBtn) mobileSignupBtn.style.display = "none"; // Explicitly hide
+    // Hide Login/Signup buttons and divider
+    if (headerLoginBtn) headerLoginBtn.style.display = "none";
+    if (headerSignupBtn) headerSignupBtn.style.display = "none";
+    if (authDivider) authDivider.style.display = "none";
     if (guestBanner) guestBanner.style.display = "none";
 
-    // Explicitly SHOW Profile Elements (since they are hidden by default now)
-    if (topProfileBtn) {
-      topProfileBtn.style.display = "flex";
-      if (topProfileName) topProfileName.innerText = displayName;
-      if (topProfileAvatar) topProfileAvatar.innerText = avatarInitial;
+    // Show greeting with user name
+    if (headerGreeting) {
+      headerGreeting.style.display = "flex";
+      if (greetingName) greetingName.innerText = displayName;
     }
-    if (navProfileWrapper) {
-      navProfileWrapper.style.display = "flex";
-      if (navProfileName) navProfileName.innerText = displayName;
-      if (navProfileAvatar) navProfileAvatar.innerText = avatarInitial;
-    }
-    if (welcomeName) welcomeName.innerText = `Hello, ${displayName}`;
 
-    // Populate Popup Data
-    if (popupName) popupName.innerText = displayName;
-    if (popupEmail) popupEmail.innerText = user.email;
-    if (popupAvatar) popupAvatar.innerText = avatarInitial;
-    if (popupPhone) {
-      popupPhone.innerText = user.phoneNumber
-        ? user.phoneNumber
-        : "No phone linked";
-    }
+    if (welcomeName) welcomeName.innerText = `Hello, ${displayName}`;
 
     // Load user-specific data
     loadState(true);
   } else {
     // --- User is Logged Out (Guest) ---
-    // Explicitly SHOW Login/Signup triggers (since they are hidden by default now)
-    if (loginSignupBtn) loginSignupBtn.style.display = "flex";
-    if (navLoginLink) navLoginLink.style.display = "flex";
-
-    // For mobile btn, rely on CSS media queries but ensure display is not 'none' due to default
-    if (mobileSignupBtn) mobileSignupBtn.style.display = "";
-
+    // Show Login/Signup buttons and divider
+    if (headerLoginBtn) headerLoginBtn.style.display = "flex";
+    if (headerSignupBtn) headerSignupBtn.style.display = "flex";
+    if (authDivider) authDivider.style.display = "inline";
     if (guestBanner) guestBanner.style.display = "flex";
 
-    // Ensure Profile Elements are HIDDEN
-    if (topProfileBtn) topProfileBtn.style.display = "none";
-    if (navProfileWrapper) navProfileWrapper.style.display = "none";
+    // Hide greeting
+    if (headerGreeting) headerGreeting.style.display = "none";
+
     if (welcomeName) welcomeName.innerText = "Hello, Guest";
 
     // Clear user-specific data

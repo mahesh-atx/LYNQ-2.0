@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -285,25 +285,8 @@
       </nav>
 
       <div class="sidebar-footer">
+        <a href="profile.html" class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i> Profile</a>
         <a href="settings.html" class="nav-item" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
-        <a href="login.html?action=login" class="nav-item" id="nav-login-link" style="margin-top: 5px; display: none">
-          Log In
-        </a>
-        <a href="login.html?action=signup" class="nav-item" id="nav-signup-link" style="display: none">
-          Sign Up
-        </a>
-        <a href="#" onclick="toggleProfilePopup()" class="nav-item" id="nav-profile-wrapper"
-          style="margin-top: 5px; display: none">
-          <div class="avatar user" id="nav-profile-avatar" style="
-                width: 24px;
-                height: 24px;
-                font-size: 0.7rem;
-                margin-right: 0;
-              ">
-            U
-          </div>
-          <span id="nav-profile-name">User</span>
-        </a>
       </div>
     </aside>
 
@@ -317,20 +300,21 @@
         </div>
         <div style="flex: 1"></div>
         <div class="top-actions">
-          <button class="upgrade-btn" onclick="togglePricing()">
-            <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
+          <button class="auth-btn login-btn" onclick="location.href='login.html'" id="header-login-btn"
+            style="display: none;">
+            Login
           </button>
 
-          <button class="top-profile-btn" onclick="location.href='login.html?action=login'" id="login-signup-btn"
-            style="margin-right: 8px; display: none">
-            <i class="fa-solid fa-right-to-bracket"></i> <span>Log In</span>
+          <button class="auth-btn signup-btn" onclick="location.href='login.html?action=signup'" id="header-signup-btn"
+            style="display: none;">
+            Sign Up
           </button>
 
-          <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user"
-            style="display: none">
-            <div class="avatar user" id="top-profile-avatar">U</div>
-            <span id="top-profile-name">User</span>
-          </button>
+          <div class="header-greeting" id="header-greeting" style="display: none;">
+            <span>Hi,</span>
+            <span class="greeting-name" id="greeting-name">User</span>
+          </div>
+
         </div>
       </div>
 

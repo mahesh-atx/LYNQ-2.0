@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -200,18 +200,8 @@
         </nav>
 
         <div class="sidebar-footer">
+          <a href="profile.html" class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i> Profile</a>
           <a href="settings.html" class="nav-item" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
-          <a href="login.html" class="nav-item" id="nav-login-link" style="margin-top: 5px; display: none;">
-            <i class="fa-solid fa-right-to-bracket"></i> Login / Sign Up
-          </a>
-
-          <a href="#" onclick="toggleProfilePopup()" class="nav-item" id="nav-profile-wrapper"
-            style="margin-top: 5px; display: none;">
-            <div class="avatar user" id="nav-profile-avatar">
-              U
-            </div>
-            <span id="nav-profile-name">User</span>
-          </a>
         </div>
       </aside>
 
@@ -225,25 +215,21 @@
           </div>
           <div style="flex: 1"></div>
           <div class="top-actions">
-            <button class="upgrade-btn" onclick="togglePricing()">
-              <i class="fa-regular fa-gem"></i> <span>Upgrade to Pro</span>
-            </button>
-
-            <button class="top-profile-btn mobile-signup-btn" onclick="location.href='login.html?action=signup'"
-              style="margin-right: 8px; display: none;">
-              <span>Sign Up</span>
-            </button>
-
-            <button class="top-profile-btn" onclick="location.href='login.html'" id="login-signup-btn"
-              style="margin-right: 8px; display: none;">
-              <i class="fa-solid fa-right-to-bracket"></i> <span>Sign Up</span>
-            </button>
-
-            <button class="top-profile-btn" onclick="toggleProfilePopup()" id="top-profile-btn-user"
+            <button class="auth-btn login-btn" onclick="location.href='login.html'" id="header-login-btn"
               style="display: none;">
-              <div class="avatar user" id="top-profile-avatar">U</div>
-              <span id="top-profile-name">User</span>
+              Login
             </button>
+
+            <button class="auth-btn signup-btn" onclick="location.href='login.html?action=signup'" id="header-signup-btn"
+              style="display: none;">
+              Sign Up
+            </button>
+
+            <div class="header-greeting" id="header-greeting" style="display: none;">
+              <span>Hi,</span>
+              <span class="greeting-name" id="greeting-name">User</span>
+            </div>
+
           </div>
         </div>
 

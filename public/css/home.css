@@ -1,4 +1,4 @@
-/*
+﻿/*
   home/home.css
   Styles for the Chat Interface
 */
@@ -1171,44 +1171,9 @@ textarea#chat-input {
   background: var(--bg-primary);
 }
 
-/* 3. Top Bar (Sign Up Button) */
+/* 3. Top Bar (Auth Buttons on Mobile) */
 
-/* Hide all existing top-profile buttons and upgrade text on mobile */
-#login-signup-btn,
-.top-actions .upgrade-btn span {
-  display: none !important;
-}
-
-/* Show the new mobile-signup-btn */
-/* --- FIX: MOBILE SIGN UP BUTTON --- */
-.top-actions .mobile-signup-btn {
-  display: flex;
-  /* Force it to show */
-  background-color: var(--text-heading) !important;
-  /* High Contrast Background */
-  color: var(--bg-primary) !important;
-  /* High Contrast Text */
-  border: none !important;
-  /* Remove gray border */
-  padding: 8px 18px !important;
-  /* Comfortable touch area */
-  border-radius: 24px;
-  /* Pill shape */
-  font-weight: 600;
-  font-size: 0.85rem;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  /* Subtle shadow for pop */
-  margin-right: 5px;
-  transition: transform 0.2s;
-}
-
-.top-actions .mobile-signup-btn:active {
-  transform: scale(0.95);
-}
-
-/* Optional: Clean up profile button on mobile (Hide text "User" to save space) */
+/* Profile button compact on mobile */
 .top-actions #top-profile-btn-user span {
   display: none;
 }
@@ -1222,20 +1187,6 @@ textarea#chat-input {
 
 .top-actions #top-profile-btn-user .avatar {
   margin: 0;
-}
-
-/* Hide the desktop login button to prevent duplicates */
-#login-signup-btn {
-  display: none !important;
-}
-
-/* Optional: Hide Upgrade Text on small screens to make room */
-.upgrade-btn span {
-  display: none;
-}
-
-.upgrade-btn {
-  padding: 8px 10px;
 }
 
 .bubble {
@@ -1258,10 +1209,6 @@ textarea#chat-input {
   /* Explicitly hide all mobile-only elements on desktop */
   .input-area-wrapper {
     padding: 20px;
-  }
-
-  .mobile-signup-btn {
-    display: none !important;
   }
 
   /* Ensure desktop input wrapper is NOT fixed and uses auto margins */
