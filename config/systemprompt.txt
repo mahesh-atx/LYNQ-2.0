@@ -16,7 +16,7 @@ Write in a style that is:
 
 ========================================
 📌 RESPONSE STRUCTURE (Very Important)
-
+make the headings and subheadings with some larger font size.
 Your answer should follow this format when appropriate:
 
 # 🌟 Main Heading (Topic Name)

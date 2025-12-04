@@ -220,25 +220,28 @@ function filterRecentChats() {
 }
 
 async function getSystemMessage(taskSpecificContext) {
-  if (!systemPromptCache) {
-    try {
-      const response = await fetch("systemprompt.txt");
-      if (!response.ok) throw new Error("Failed to load systemprompt.txt");
-      systemPromptCache = await response.text();
-    } catch (error) {
-      console.error("Error loading base system prompt:", error);
-      systemPromptCache = "You are a helpful and friendly AI assistant."; // Fallback
-    }
+  // If there's no task-specific context, return null so backend uses its loaded systemprompt.txt
+  const customInstructions = localStorage.getItem("lynq_custom_instructions");
+
+  // If no custom instructions and no context, let backend handle the system prompt
+  if (!customInstructions && !taskSpecificContext) {
+    return null;
   }
 
-  const customInstructions = localStorage.getItem("lynq_custom_instructions");
-  let finalPrompt = systemPromptCache;
+  // Build prompt only if we have custom instructions or context
+  let finalPrompt = "";
 
   if (customInstructions) {
-    finalPrompt = `${customInstructions}\n\n---\n\n${finalPrompt}`;
+    finalPrompt = customInstructions;
   }
 
-  return `${finalPrompt}\n\n${taskSpecificContext}`;
+  if (taskSpecificContext) {
+    finalPrompt = finalPrompt
+      ? `${finalPrompt}\n\n---\n\n${taskSpecificContext}`
+      : taskSpecificContext;
+  }
+
+  return finalPrompt || null;
 }
 
 function saveSidebarState(isCollapsed) {
@@ -527,18 +530,15 @@ function renderRecentChats() {
     contextMenu.id = menuId;
     contextMenu.innerHTML = `
             <div class="context-item" onclick="chatAction('pin', '${chat.id}')">
-                <i class="fa-solid fa-thumbtack"></i> ${
-                  chat.pinned ? "Unpin" : "Pin"
-                }
+                <i class="fa-solid fa-thumbtack"></i> ${chat.pinned ? "Unpin" : "Pin"
+      }
             </div>
-            <div class="context-item" onclick="chatAction('rename', '${
-              chat.id
-            }')">
+            <div class="context-item" onclick="chatAction('rename', '${chat.id
+      }')">
                 <i class="fa-solid fa-pen"></i> Rename
             </div>
-            <div class="context-item" onclick="chatAction('delete', '${
-              chat.id
-            }')">
+            <div class="context-item" onclick="chatAction('delete', '${chat.id
+      }')">
                 <i class="fa-solid fa-trash"></i> Delete
             </div>
         `;

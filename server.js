@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 import mongoose from "mongoose";
 // --- NEW: Import Firebase Admin SDK ---
 import admin from "firebase-admin";
@@ -19,6 +20,16 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+// --- Load System Prompt from config file ---
+const systemPromptPath = path.join(__dirname, "config", "systemprompt.txt");
+let DEFAULT_SYSTEM_PROMPT = "You are a helpful AI assistant.";
+try {
+  DEFAULT_SYSTEM_PROMPT = fs.readFileSync(systemPromptPath, "utf-8");
+  console.log("✅ System prompt loaded from config/systemprompt.txt");
+} catch (err) {
+  console.warn("⚠️ Could not load systemprompt.txt, using default prompt.");
+}
 
 // --- Environment Variables ---
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -343,272 +354,84 @@ async function performWebSearch(query) {
 
 // --- MAIN GENERATION ENDPOINT ---
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
-  // 1. Get the original flag from the user (usually 'false' if button is off)
+  // Get request parameters
   let { prompt, systemMessage, history, model, max_tokens, webSearch } =
     req.body;
 
-  // 2. Define "Trigger Keywords" to FORCE Deep Research
-  const complexKeywords = [
-    // --- ORIGINAL & CODING ---
-    "roadmap",
-    "tutorial",
-    "code",
-    "coding",
-    "programming",
-    "development",
-    "framework",
-    "library",
-    "api",
-    "database",
-    "debug",
-    "fix",
-    "error",
-    "solve",
-    "issue",
-    "setup",
-    "installation",
-    "config",
-    "generate",
-    "write",
-    "draft",
-    "rewrite",
-
-    // --- EXPLANATION & LEARNING ---
-    "explain",
-    "describe",
-    "understand",
-    "comprehend",
-    "what is",
-    "who is",
-    "define",
-    "meaning",
-    "translate",
-    "difference",
-    "compare",
-    "vs",
-    "how to",
-    "guide",
-    "walkthrough",
-    "step-by-step",
-    "list",
-    "summary",
-    "best practice",
-    "example",
-    "sample",
-    "template",
-    "course",
-    "learning",
-    "lesson",
-    "curriculum",
-    "school",
-    "class",
-    "education",
-    "study",
-    "teach",
-    "training",
-    "instructor",
-    "beginner",
-    "advanced",
-
-    // --- SEARCH ENGINE: SHOPPING & REVIEWS (New) ---
-    "review", // High volume
-    "rating", // High volume
-    "best", // High volume (e.g., "best laptop")
-    "top", // High volume (e.g., "top 10 movies")
-    "cheap", // High volume
-    "affordable",
-    "discount",
-    "coupon",
-    "promo code",
-    "deal",
-    "price",
-    "cost",
-    "buy",
-    "shop",
-    "order",
-    "store",
-
-    // --- SEARCH ENGINE: LOCAL & LOGISTICS (New) ---
-    "near me", // Extremely high volume
-    "location",
-    "address",
-    "hours", // e.g., "opening hours"
-    "open now",
-    "map",
-    "direction",
-    "weather", // High volume
-    "forecast",
-    "flight",
-    "hotel",
-    "booking",
-    "ticket",
-    "travel",
-    "itinerary",
-    "visa",
-
-    // --- SEARCH ENGINE: HEALTH & LIFESTYLE (New) ---
-    "symptoms", // High volume
-    "treatment",
-    "cure",
-    "medicine",
-    "dosage",
-    "side effects",
-    "benefits", // e.g., "benefits of yoga"
-    "diet",
-    "nutrition",
-    "calories",
-    "workout",
-    "exercise",
-    "recipe",
-    "menu",
-
-    // --- SEARCH ENGINE: TECH, DOWNLOADS & ACCOUNTS (New) ---
-    "download", // High volume
-    "free",
-    "install",
-    "update",
-    "driver", // e.g., "audio driver"
-    "apk", // Mobile apps
-    "wallpaper",
-    "login",
-    "signup",
-    "register",
-    "password",
-    "account",
-    "delete account",
-
-    // --- SEARCH ENGINE: ENTERTAINMENT (New) ---
-    "video",
-    "image",
-    "photo",
-    "picture",
-    "movie",
-    "film",
-    "clip",
-    "trailer",
-    "youtube",
-    "vlog",
-    "documentary",
-    "lyrics", // High volume
-    "cast", // e.g., "cast of breaking bad"
-    "release date",
-    "season",
-    "episode",
-    "plot",
-    "ending explained",
-    "spoiler",
-
-    // --- SEARCH ENGINE: QUICK FACTS & FINANCE (New) ---
-    "news",
-    "latest",
-    "current",
-    "sports",
-    "score", // e.g., "cricket score"
-    "result",
-    "schedule",
-    "jobs",
-    "hiring",
-    "career",
-    "salary",
-    "interview",
-    "net worth", // High volume for celebs
-    "age",
-    "height",
-    "population",
-    "synonym",
-    "antonym",
-    "thesaurus",
-    "convert", // e.g., "convert usd to inr"
-  ];
-
-  // 3. Check if prompt contains any keywords
-  const hasTriggerKeyword = complexKeywords.some((keyword) =>
-    prompt.toLowerCase().includes(keyword)
-  );
-
-  // 4. AUTO-TRIGGER: Force Search ON if keyword found
-  if (hasTriggerKeyword) {
-    webSearch = true;
-    console.log(
-      `⚡ Auto-Trigger: Keyword detected in "${prompt}". Forcing Web Search ON.`
-    );
-  }
-
-  // 5. Determine Deep Research Mode
-  const isDeepResearchNeeded = hasTriggerKeyword;
-
-  let finalSystemMessage = systemMessage || "You are a helpful AI.";
+  let finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
   let searchResults = null;
 
   // --- WEB SEARCH LOGIC ---
+  // Only perform web search if user explicitly enabled it via toggle
   if (webSearch) {
-    console.log(
-      `🔎 Web Search ON. Query: "${prompt}" | Deep Mode: ${isDeepResearchNeeded}`
-    );
+    console.log(`🔎 Web Search ON. Query: "${prompt}"`);
 
     searchResults = await performWebSearch(prompt);
 
     if (searchResults) {
-      // SCENARIO A: Direct Mode (Simple Query)
-      if (!isDeepResearchNeeded) {
-        console.log(
-          "🚀 Fast Path: Returning Search Results directly (Skipping AI)."
-        );
-        return res.json({ text: searchResults });
-      }
+      // Always combine search results with AI for better response
+      console.log("🧠 Combining web search results with AI response.");
 
-      // SCENARIO B: Deep Mode (Complex Query)
-      console.log("🧠 Deep Path: Synthesizing results with AI.");
+      finalSystemMessage += `\n\n🌐 WEB SEARCH MODE ACTIVE - INSTRUCTIONS:
 
-      finalSystemMessage += `\n\nINSTRUCTIONS: You have access to the following real-time search results.
+You have access to the following REAL-TIME search results from Google:
 
 ${searchResults}
 
-IMPORTANT REQUEST:
-1. **COMPREHENSIVE ANSWER:** Synthesize the information to answer the user's question fully.
-2. **INTEGRATE VISUALS:** Do not list search results at the end. Instead, pick the most relevant images from the results and EMBED them directly into your response using Markdown (e.g., ![Image Title](url)).
-   - Place images naturally near the text they illustrate.
-   - Use the exact URLs provided in the search results.
-   - **Video Handling:** If a relevant video is found, provide the video title and link clearly. Do not embed static video thumbnails as images unless they link directly to the content.
+⚠️ CRITICAL REQUIREMENTS - YOU MUST FOLLOW THESE:
 
-3. **CONTENT-SPECIFIC FORMATTING:** Adjust your response style based on the user's intent:
+1. **EMBED EVERYTHING FROM SEARCH RESULTS:**
+   - EMBED ALL images from search results using Markdown: ![Description](image_url)
+   - EMBED ALL video links prominently with titles
+   - INCLUDE ALL relevant links as clickable Markdown links: [Title](url)
+   - Do NOT skip any useful content from the search results
 
-   - **IF PRODUCT/COURSE/SERVICE (Shopping, Buy, Price, Best):**
-     - Create a **Price Comparison and Provide best buy links with anchor text (e.g., [Buy on Amazon](url)) Table** if data exists from multiple platforms.
-     - List **Features, Pros, and Cons**.
-     - Must EMBED product images directly above or near the product description.
-     - Include user ratings if available.
-     - Suggest alternatives if applicable.
+2. **VISUAL-FIRST RESPONSE:**
+   - Place images at the TOP of your response or near relevant sections
+   - For videos, display them as: **▶ Watch:** [Video Title](youtube_url)
+   - Make the response visually rich and engaging
 
-   - **IF CODING/DEV (Code, Debug, Python, JS):**
-     - Use proper Markdown code blocks (e.g., \`\`\`javascript) for scripts.
-     - Explain the logic step-by-step.
-     - If the result contains code snippets, refine them into a complete, working example.
-     - Give videos for tutorials if available.
-     - Provide links to official documentation.
-     - Suggest best practices.
+3. **COMPREHENSIVE SYNTHESIS:**
+   - Combine information from ALL search results into a cohesive answer
+   - Cite sources with clickable links
+   - Include prices, ratings, dates if available in results
+   - Provide direct links for purchase/download/access
 
-   - **IF TUTORIAL/HOW-TO (Guide, Recipe, Install, Workout):**
-     - Use clear **Numbered Lists** (1., 2., 3.) for steps.
-     - Bold key actions or ingredients.
-     - Include images for specific steps if available in the results.
-     - If a video tutorial is found, provide the title and link prominently.
+4. **CONTENT-SPECIFIC FORMATTING:**
 
-   - **IF EXPLANATION/LEARNING (Explain, What is, Define):**
-      - Use **Headings and Subheadings** to organize content.
-      - Provide **Examples** to illustrate concepts.
-      - Include relevant images or diagrams from the search results.
-      - Link to further reading or resources.
+   📦 **FOR PRODUCTS/SHOPPING:**
+   - Show product images first
+   - Create comparison tables with prices
+   - Include buy links: [Buy on Amazon](url), [Buy on Flipkart](url)
+   - List features, pros, cons, ratings
 
-   - **IF NEWS/ENTERTAINMENT (Latest, News, Movie, Release Date):**
-     - Mention the **Date of the news** to ensure freshness.
-     - For movies/media, list Cast, Release Date, and Ratings.
-     - For news, summarize the headline and key facts clearly.**
+   💻 **FOR CODING/TECH:**
+   - Include code snippets in proper code blocks
+   - Link to documentation and tutorials
+   - Embed tutorial video links
 
-   - **IF LOCAL/QUICK FACTS (Weather, Near Me, Definition):**
-     - Provide the answer immediately (e.g., the temperature, the address, or the definition).
-     - Be concise and direct.
+   📰 **FOR NEWS/CURRENT EVENTS:**
+   - Mention dates for freshness
+   - Include news images
+   - Link to full articles
 
+   🎬 **FOR ENTERTAINMENT:**
+   - Embed movie/show posters
+   - Include trailers: **▶ Watch Trailer:** [Title](url)
+   - Show ratings, cast, release dates
+
+   📚 **FOR LEARNING/EXPLANATION:**
+   - Use diagrams and images from results
+   - Include educational video links
+   - Link to detailed resources
+
+5. **RESPONSE STRUCTURE:**
+   - Start with the most relevant image (if available)
+   - Give a clear, direct answer first
+   - Then provide detailed information with embedded media
+   - End with useful links for more information
+
+REMEMBER: Your goal is to make the response as visually rich and informative as possible by including EVERYTHING useful from the search results!
 `;
     } else {
       console.log("❌ Search returned no data. Falling back to standard AI.");
