@@ -22,85 +22,7 @@
 
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/home.css" />
-
-  <style>
-    /* projects/projects.css */
-
-    /* --- VIEW SECTION (SCROLL FIX) --- */
-    #projects-view {
-      overflow-y: auto;
-      padding-bottom: 40px;
-      height: 100%;
-    }
-
-    .status-badge {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .status-badge.completed {
-      background: rgba(16, 163, 127, 0.15);
-      color: #10a37f;
-    }
-
-    .status-badge.draft {
-      background: rgba(128, 128, 128, 0.15);
-      color: gray;
-    }
-
-    .status-badge.generating {
-      background: rgba(255, 215, 0, 0.2);
-      color: #b8860b;
-    }
-
-    /* --- MOBILE PROFILE BUTTON FIXES (Sync with Home/Settings) --- */
-    @media (max-width: 768px) {
-
-      /* Top Bar Profile */
-      .top-actions #top-profile-btn-user .avatar {
-        display: flex !important;
-        margin: 0 !important;
-        width: 28px;
-        height: 28px;
-        font-size: 0.85rem;
-      }
-
-      .top-actions #top-profile-btn-user {
-        display: flex !important;
-        padding: 0 !important;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .top-actions #top-profile-btn-user span {
-        display: none !important;
-      }
-
-      /* Sidebar Profile */
-      #sidebar #nav-profile-wrapper .avatar {
-        display: flex !important;
-        margin-right: 10px !important;
-        width: 24px !important;
-        height: 24px !important;
-        font-size: 0.75rem !important;
-      }
-
-      #sidebar #nav-profile-wrapper {
-        align-items: center;
-        gap: 0;
-      }
-
-    }
-  </style>
+  <link rel="stylesheet" href="css/projects.css" />
 </head>
 
 <body class="dark-mode">
@@ -118,79 +40,12 @@
   </script>
 
   <div id="app-container">
-    <aside id="sidebar" class="collapsed">
-      <div style="flex-shrink: 0">
-        <div class="sidebar-header">
-          <span style="display: flex; align-items: center; gap: 10px"><i class="fa-solid fa-bolt"></i> LYNQ AI</span>
-          <button class="action-btn mobile-only" onclick="toggleSidebar()">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-      </div>
-
-      <nav class="nav-menu">
-        <div class="nav-label">Menu</div>
-        <a href="index.html" class="nav-item" id="nav-new-chat"><i class="fa-solid fa-plus"></i> New Chat</a>
-        <a href="index.html" class="nav-item" id="nav-home"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="projects.html" class="nav-item active" id="nav-projects"><i class="fa-solid fa-layer-group"></i>
-          Projects</a>
-
-        <div class="nav-label" style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding-right: 5px;
-              position: relative;
-            ">
-          <span id="recent-chats-label">Recent Chats</span>
-          <input type="text" id="chat-search-input" placeholder="Search chats..." style="
-                display: none;
-                width: 100%;
-                background: var(--bg-primary);
-                border: 1px solid var(--border-primary);
-                border-radius: 6px;
-                padding: 4px 8px;
-                color: var(--text-primary);
-              " onkeyup="filterRecentChats()" onblur="toggleChatSearch(false)" />
-          <i class="fa-solid fa-magnifying-glass search-trigger" id="chat-search-trigger"
-            onclick="toggleChatSearch(true)"></i>
-        </div>
-        <div id="recent-chats-container"></div>
-      </nav>
-
-      <div class="sidebar-footer">
-        <a href="profile.html" class="nav-item" id="nav-profile"><i class="fa-solid fa-user"></i> Profile</a>
-        <a href="settings.html" class="nav-item" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
-      </div>
-    </aside>
+    <!-- Sidebar injected by components.js -->
+    <div id="sidebar-container"></div>
 
     <main id="main-content">
-      <div class="top-bar">
-        <button class="action-btn" onclick="toggleSidebar()">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <div class="top-logo-title">
-          <i class="fa-solid fa-bolt"></i> LYNQ AI
-        </div>
-        <div style="flex: 1"></div>
-        <div class="top-actions">
-          <button class="auth-btn login-btn" onclick="location.href='login.html'" id="header-login-btn"
-            style="display: none;">
-            Login
-          </button>
-
-          <button class="auth-btn signup-btn" onclick="location.href='login.html?action=signup'" id="header-signup-btn"
-            style="display: none;">
-            Sign Up
-          </button>
-
-          <div class="header-greeting" id="header-greeting" style="display: none;">
-            <span>Hi,</span>
-            <span class="greeting-name" id="greeting-name">User</span>
-          </div>
-
-        </div>
-      </div>
+      <!-- Top Bar injected by components.js -->
+      <div id="topbar-container"></div>
 
       <div id="projects-view" class="view-section active">
         <div class="hero-header">
@@ -224,90 +79,21 @@
     </main>
   </div>
 
-  <div id="toast">
-    <i class="fa-solid fa-circle-check"></i> Link copied to clipboard!
-  </div>
-
-  <div class="modal-overlay" id="pricing-modal">
-    <div class="pricing-modal">
-      <button class="close-modal" onclick="togglePricing()">&times;</button>
-      <div class="pricing-header">
-        <h2>Upgrade Your Plan</h2>
-        <p style="color: var(--text-secondary)">
-          Unlock the full power of AI with Pro features.
-        </p>
-      </div>
-      <div class="pricing-grid">
-        <div class="price-card">
-          <h3>Starter</h3>
-          <div class="price">
-            $0<span style="font-size: 1rem; font-weight: 400">/mo</span>
-          </div>
-          <ul class="features-list">
-            <li><i class="fa-solid fa-check"></i> Gemini Flash Model</li>
-            <li><i class="fa-solid fa-check"></i> Standard Speed</li>
-            <li><i class="fa-solid fa-check"></i> 5 Projects Limit</li>
-          </ul>
-          <button class="plan-btn free">Current Plan</button>
-        </div>
-        <div class="price-card pro">
-          <div class="popular-tag">MOST POPULAR</div>
-          <h3>Pro Member</h3>
-          <div class="price">
-            $19<span style="font-size: 1rem; font-weight: 400">/mo</span>
-          </div>
-          <ul class="features-list">
-            <li>
-              <i class="fa-solid fa-check"></i> <b>Gemini 1.5 Pro & GPT-4o</b>
-            </li>
-            <li><i class="fa-solid fa-check"></i> Unlimited Fast Projects</li>
-            <li><i class="fa-solid fa-check"></i> Priority Support</li>
-            <li><i class="fa-solid fa-check"></i> Code Execution</li>
-          </ul>
-          <button class="plan-btn pro">Upgrade Now</button>
-        </div>
-        <div class="price-card">
-          <h3>Team</h3>
-          <div class="price">
-            $49<span style="font-size: 1rem; font-weight: 400">/mo</span>
-          </div>
-          <ul class="features-list">
-            <li><i class="fa-solid fa-check"></i> Everything in Pro</li>
-            <li><i class="fa-solid fa-check"></i> Admin Dashboard</li>
-            <li><i class="fa-solid fa-check"></i> Shared Workspace</li>
-            <li><i class="fa-solid fa-check"></i> SSO Integration</li>
-          </ul>
-          <button class="plan-btn free">Contact Sales</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="profile-popup-overlay" id="profile-popup">
-    <div class="profile-popup">
-      <div class="profile-popup-avatar" id="popup-avatar">U</div>
-      <h2 class="profile-popup-name" id="popup-name">User</h2>
-      <p class="profile-popup-email" id="popup-email">user@example.com</p>
-      <p class="profile-popup-phone" id="popup-phone">No phone linked</p>
-
-      <div class="profile-popup-badge">
-        <i class="fa-solid fa-crown"></i> PRO MEMBER
-      </div>
-
-      <button class="profile-popup-logout" onclick="logoutUser()">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-      </button>
-    </div>
-  </div>
+  <!-- Shared Components Containers -->
+  <div id="toast-container"></div>
+  <div id="pricing-modal-container"></div>
+  <div id="profile-popup-container"></div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-
+  <script src="js/components.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/script.js"></script>
   <script src="js/home.js"></script>
   <script>
-    // Simple page init logger
+    // Initialize shared components
+    initSharedComponents('projects');
+
     document.addEventListener("DOMContentLoaded", () => {
       console.log("Projects page loaded");
     });

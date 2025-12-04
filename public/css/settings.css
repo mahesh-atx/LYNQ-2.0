@@ -1,0 +1,236 @@
+/* --- SETTINGS PAGE STYLES --- */
+#settings-view {
+    overflow-y: auto;
+    padding-bottom: 40px;
+    height: 100%;
+}
+
+.settings-container {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 40px 20px;
+}
+
+.settings-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-primary);
+    padding-bottom: 20px;
+}
+
+.settings-header h1 {
+    font-size: 2.2rem;
+    color: var(--text-heading);
+}
+
+.settings-group {
+    margin-bottom: 40px;
+}
+
+.settings-group h3 {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.setting-item {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    transition: 0.2s;
+    gap: 20px;
+}
+
+.setting-item:hover {
+    border-color: var(--border-secondary);
+}
+
+.setting-item.vertical {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.setting-info h4 {
+    color: var(--text-heading);
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+
+.setting-info p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Controls */
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-secondary);
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: var(--bg-gold);
+}
+
+input:checked+.slider:before {
+    transform: translateX(22px);
+}
+
+.custom-textarea {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 12px;
+    padding: 15px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+    margin-top: 5px;
+    font-family: inherit;
+}
+
+.custom-textarea:focus {
+    border-color: var(--text-heading);
+}
+
+.select-box {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    outline: none;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.input-field-styled {
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    outline: none;
+}
+
+.input-field-styled:focus {
+    border-color: var(--text-heading);
+}
+
+/* Buttons */
+.btn-danger {
+    color: var(--text-danger);
+    background: rgba(211, 47, 47, 0.1);
+    border: 1px solid transparent;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-danger:hover {
+    background: var(--bg-danger);
+    border-color: var(--text-danger);
+}
+
+.btn-secondary {
+    color: var(--text-heading);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--text-secondary);
+}
+
+/* Color Picker Dots */
+.accent-btn {
+    transition: transform 0.2s;
+}
+
+.accent-btn:hover {
+    transform: scale(1.2);
+}
+
+/* --- RESPONSIVE FIXES --- */
+@media (max-width: 600px) {
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .setting-item .toggle-switch,
+    .setting-item .select-box,
+    .setting-item .accent-btn-wrapper {
+        align-self: flex-end;
+    }
+
+    .settings-container {
+        padding: 20px;
+    }
+
+    .input-row-responsive {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .input-row-responsive label {
+        margin-bottom: 5px;
+    }
+}
