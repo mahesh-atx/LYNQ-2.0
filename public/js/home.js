@@ -72,8 +72,9 @@ function initMonacoEditor() {
         "editorLineNumber.foreground": "#858585",
         "editorCursor.foreground": "#AEAFAD",
         "editor.selectionBackground": "#264F78",
-        "editor.lineHighlightBackground": "#2A2D2E",
-        "editorIndentGuide.background": "#404040",
+        "editor.lineHighlightBackground": "#1e1e1e", // Same as background (invisible)
+        "editorIndentGuide.background": "#1e1e1e", // Hide indent guides
+        "editorIndentGuide.activeBackground": "#1e1e1e", // Hide active indent guides
         "scrollbarSlider.background": "#4E4E4E80",
       },
     });
@@ -91,11 +92,22 @@ function initMonacoEditor() {
       wordWrap: "on",
       scrollBeyondLastLine: false,
       readOnly: false,
-      renderWhitespace: "selection",
+      renderWhitespace: "none",
       tabSize: 2,
+      // Disable visual clutter
+      renderIndentGuides: false,
+      guides: {
+        indentation: false,
+        highlightActiveIndentation: false,
+        bracketPairs: false,
+      },
+      renderLineHighlight: "none",
+      occurrencesHighlight: false,
+      folding: false,
+      lineDecorationsWidth: 0,
       scrollbar: {
-        verticalScrollbarSize: 10,
-        horizontalScrollbarSize: 10,
+        verticalScrollbarSize: 8,
+        horizontalScrollbarSize: 8,
       },
       padding: { top: 16, bottom: 16 },
     });
@@ -581,6 +593,85 @@ function resetChat() {
   }
 }
 
+// --- NEW: Tool Welcome Messages ---
+const TOOL_WELCOME_MESSAGES = {
+  canvas: "🎨 **You are in Canvas mode!**\n\nI can generate code with a live preview. Try asking me to:\n- Create a landing page\n- Build a React component\n- Design a dashboard UI\n\nWhat would you like me to build?",
+  websearch: "🌐 **You are in Web Search mode!**\n\nI have access to real-time web data. Ask me about:\n- Latest news and events\n- Current trends and statistics\n- Recent developments\n\nWhat would you like to know?",
+  dataanalysis: "📊 **You are in Data Analysis mode!**\n\nI can help you analyze data and generate insights. Try:\n- Uploading a CSV or describing your data\n- Asking for statistical summaries\n- Requesting data visualizations\n\nWhat data would you like to analyze?",
+  webscraper: "🔍 **You are in Web Scraper mode!**\n\nI can help extract structured data from websites. Provide me with:\n- A URL to scrape\n- The type of data you need\n- Output format preference\n\nWhat would you like to scrape?",
+  imagegen: "🖼️ **You are in Image Generator mode!**\n\n*This feature is coming soon!*\n\nI'll be able to create AI-generated images from your descriptions. Stay tuned!",
+  codereviewer: "🔬 **You are in Code Review mode!**\n\nI can analyze your code and provide feedback on:\n- Best practices and patterns\n- Performance optimizations\n- Security vulnerabilities\n- Code quality improvements\n\nPaste your code and I'll review it!",
+  writer: "✍️ **You are in Writing Assistant mode!**\n\nI can help you with:\n- Drafting emails and documents\n- Editing and proofreading\n- Content creation\n- Improving clarity and style\n\nWhat would you like me to write or improve?",
+  pdfanalyzer: "📄 **You are in PDF Analyzer mode!**\n\nUpload a PDF document and I can:\n- Summarize the content\n- Answer questions about it\n- Extract key information\n\nAttach a PDF to get started!",
+  translator: "🌍 **You are in Translator mode!**\n\nI can translate text between languages with context-aware accuracy.\n\nProvide the text and target language, and I'll translate it for you!",
+  summarizer: "📝 **You are in Summarizer mode!**\n\nI can condense long content into:\n- Bullet points\n- Executive summaries\n- TL;DR versions\n\nPaste your text and I'll summarize it!"
+};
+
+/**
+ * Handles tool mode activation from URL parameters (when navigating from Tools page)
+ */
+function handleToolModeFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const toolParam = urlParams.get('tool');
+  const promptParam = urlParams.get('prompt');
+
+  if (!toolParam) return;
+
+  console.log("🔧 Tool mode detected:", toolParam);
+
+  // Enable the appropriate mode
+  switch (toolParam) {
+    case 'canvas':
+      toggleCanvasMode(true);
+      break;
+    case 'websearch':
+      isWebSearchActive = true;
+      const webSearchBtn = document.getElementById("web-search-toggle-btn");
+      if (webSearchBtn) webSearchBtn.classList.add("active");
+      break;
+    // Other tools don't have special toggle states yet, but we still show their welcome
+  }
+
+  // Show the welcome message as an AI response
+  const welcomeMessage = TOOL_WELCOME_MESSAGES[toolParam];
+  if (welcomeMessage && welcomeScreen) {
+    welcomeScreen.style.display = "none";
+    addMessage(welcomeMessage, "ai", true);
+  }
+
+  // If there's a pre-filled prompt, put it in the input
+  if (promptParam && chatInput) {
+    chatInput.value = decodeURIComponent(promptParam);
+    chatInput.style.height = "auto";
+    chatInput.style.height = chatInput.scrollHeight + "px";
+    chatInput.focus();
+  }
+
+  // Clean up URL to remove parameters (optional - keeps URL cleaner)
+  if (window.history && window.history.replaceState) {
+    const cleanUrl = window.location.pathname;
+    history.replaceState({}, document.title, cleanUrl);
+  }
+
+  // Show toast notification
+  const toolNames = {
+    canvas: 'Canvas',
+    websearch: 'Web Search',
+    dataanalysis: 'Data Analysis',
+    webscraper: 'Web Scraper',
+    imagegen: 'Image Generator',
+    codereviewer: 'Code Reviewer',
+    writer: 'Writing Assistant',
+    pdfanalyzer: 'PDF Analyzer',
+    translator: 'Translator',
+    summarizer: 'Summarizer'
+  };
+
+  if (typeof showToast === "function" && toolNames[toolParam]) {
+    showToast(`${toolNames[toolParam]} mode activated`);
+  }
+}
+
 /**
  * Loads an existing chat's history into the view.
  */
@@ -961,12 +1052,17 @@ async function streamResponse(fullText) {
       lang = "javascript";
     }
 
-    // Clear Monaco and prepare for streaming
+    // Show Monaco editor immediately (before streaming)
+    if (monacoEditorContainer) {
+      monacoEditorContainer.style.display = "block";
+    }
+    if (canvasPlaceholder) {
+      canvasPlaceholder.style.display = "none";
+    }
     if (monacoEditor) {
-      monacoEditor.setValue("");
+      monacoEditor.setValue("// Loading code...\n");
     }
     switchCanvasTab("code");
-    if (canvasPlaceholder) canvasPlaceholder.style.display = "none";
 
     const codeStreamPromise = streamCodeToCanvas(codeToCanvas, lang);
 
@@ -1048,7 +1144,7 @@ async function streamTextToBubble(textToStream, bubble) {
 }
 
 /**
- * Streams code to the Monaco editor.
+ * Streams code to the Monaco editor line-by-line in real-time.
  */
 async function streamCodeToCanvas(codeString, lang) {
   if (!monacoEditor) {
@@ -1071,7 +1167,7 @@ async function streamCodeToCanvas(codeString, lang) {
   };
   const monacoLang = langMap[lang] || "plaintext";
 
-  // Show and clear the editor
+  // Show editor immediately and clear
   if (monacoEditorContainer) {
     monacoEditorContainer.style.display = "block";
   }
@@ -1079,28 +1175,32 @@ async function streamCodeToCanvas(codeString, lang) {
     canvasPlaceholder.style.display = "none";
   }
 
-  // Set language
+  // Clear and set language
+  monacoEditor.setValue("");
   const model = monacoEditor.getModel();
   if (model) {
     monaco.editor.setModelLanguage(model, monacoLang);
   }
 
-  // Stream the code character by character for effect
-  const chunks = codeString.match(/.{1,50}/g) || []; // Stream in 50-char chunks
+  // Stream line-by-line for realistic typing effect
+  const lines = codeString.split('\n');
   let currentCode = "";
 
-  for (const chunk of chunks) {
+  for (let i = 0; i < lines.length; i++) {
     if (!isResponding) {
       break;
     }
-    currentCode += chunk;
+
+    // Add line (with newline if not the last line)
+    currentCode += lines[i] + (i < lines.length - 1 ? '\n' : '');
     monacoEditor.setValue(currentCode);
 
-    // Scroll to bottom
-    const lineCount = monacoEditor.getModel().getLineCount();
-    monacoEditor.revealLine(lineCount);
+    // Scroll to show current line
+    monacoEditor.revealLine(i + 1);
 
-    await new Promise((r) => setTimeout(r, 5));
+    // Variable delay based on line length for natural feel
+    const delay = Math.min(30, Math.max(5, lines[i].length / 3));
+    await new Promise((r) => setTimeout(r, delay));
   }
 
   // Final set to ensure complete code
@@ -1623,6 +1723,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (welcomeScreen && activeChatId) {
       welcomeScreen.style.display = "none";
     }
+
+    // --- NEW: Handle Tool Mode from URL Parameters ---
+    handleToolModeFromURL();
   }
 
   // Listen for clicks outside the tools dropdown

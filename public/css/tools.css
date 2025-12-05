@@ -1,0 +1,442 @@
+/*
+  tools.css
+  Premium styles for the Tools page with glassmorphism and modern design
+*/
+
+/* --- TOOLS PAGE CONTAINER --- */
+.tools-page-container {
+    padding: 0 var(--primary-padding) 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    overflow-y: auto;
+    height: 100%;
+    /* Hide scrollbar but allow scrolling */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari, Opera */
+.tools-page-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* --- HERO SECTION --- */
+.tools-hero {
+    text-align: center;
+    padding: 40px 20px 30px;
+    margin-bottom: 20px;
+}
+
+.tools-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-heading);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.tools-hero h1 i {
+    background: var(--bg-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2rem;
+}
+
+.tools-hero p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+/* --- SEARCH BAR --- */
+.tools-search-wrapper {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.tools-search-wrapper i {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.tools-search-wrapper input {
+    width: 100%;
+    padding: 14px 20px 14px 50px;
+    font-size: 1rem;
+    border: 1px solid var(--border-primary);
+    border-radius: 50px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.tools-search-wrapper input::placeholder {
+    color: var(--text-secondary);
+}
+
+.tools-search-wrapper input:focus {
+    border-color: var(--text-heading);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+/* --- CATEGORY FILTERS --- */
+.tools-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.category-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-pill:hover {
+    border-color: var(--text-heading);
+    color: var(--text-heading);
+    transform: translateY(-2px);
+}
+
+.category-pill.active {
+    background: var(--bg-accent);
+    color: var(--text-accent);
+    border-color: transparent;
+}
+
+.category-pill i {
+    font-size: 0.85rem;
+}
+
+/* --- TOOLS GRID --- */
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 10px;
+}
+
+/* --- TOOL CARD --- */
+.tool-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--bg-gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--border-secondary);
+    box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.15);
+}
+
+.tool-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* Hide tool cards that don't match filter */
+.tool-card.hidden {
+    display: none;
+}
+
+/* --- TOOL CARD HEADER --- */
+.tool-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.tool-icon-wrapper {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.tool-card:hover .tool-icon-wrapper {
+    transform: scale(1.1);
+}
+
+/* Category-specific colors */
+.tool-icon-wrapper.coding {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tool-icon-wrapper.research {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.tool-icon-wrapper.content {
+    background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+    color: white;
+}
+
+.tool-icon-wrapper.data {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+/* --- TOOL BADGE --- */
+.tool-badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(255, 215, 0, 0.15);
+    color: #ffd700;
+}
+
+.tool-badge.new {
+    background: rgba(56, 239, 125, 0.15);
+    color: #38ef7d;
+}
+
+.tool-badge.coming-soon {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+/* --- TOOL CARD CONTENT --- */
+.tool-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-heading);
+    margin-bottom: 6px;
+}
+
+.tool-card p {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+/* --- SUGGESTION CHIPS --- */
+.tool-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+}
+
+.suggestion-chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-chip:hover {
+    background: var(--bg-accent);
+    color: var(--text-accent);
+    border-color: transparent;
+    transform: translateY(-1px);
+}
+
+/* --- NO RESULTS MESSAGE --- */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.no-results i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.no-results h3 {
+    font-size: 1.3rem;
+    color: var(--text-heading);
+    margin-bottom: 10px;
+}
+
+.no-results p {
+    font-size: 0.95rem;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tool-card {
+    animation: cardFadeIn 0.4s ease backwards;
+}
+
+.tool-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.tool-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.tool-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.tool-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.tool-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.tool-card:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.tool-card:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+.tool-card:nth-child(8) {
+    animation-delay: 0.4s;
+}
+
+.tool-card:nth-child(9) {
+    animation-delay: 0.45s;
+}
+
+.tool-card:nth-child(10) {
+    animation-delay: 0.5s;
+}
+
+@media (max-width: 1024px) {
+    .tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 768px) {
+    .tools-hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .tools-hero p {
+        font-size: 1rem;
+    }
+
+    .tools-grid {
+        grid-template-columns: 1fr;
+        padding: 10px 0;
+    }
+
+    .tools-categories {
+        justify-content: flex-start;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .tools-categories::-webkit-scrollbar {
+        display: none;
+    }
+
+    .category-pill {
+        flex-shrink: 0;
+    }
+
+    .tool-card {
+        padding: 20px;
+    }
+
+    .tool-suggestions {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .suggestion-chip {
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .tools-hero {
+        padding: 30px 10px 20px;
+    }
+
+    .tools-search-wrapper input {
+        padding: 12px 16px 12px 45px;
+        font-size: 0.95rem;
+    }
+
+    .tool-icon-wrapper {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+
+    .tool-card h3 {
+        font-size: 1.1rem;
+    }
+}

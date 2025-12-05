@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Tools — LYNQ AI</title>
+
+    <script src="https://kit.fontawesome.com/ae8ff12b97.js" crossorigin="anonymous"></script>
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png">
+    <link rel="manifest" href="./favicons/site.webmanifest">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/tools.css" />
+</head>
+
+<body class="dark-mode">
+    <div id="global-loader" style="
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--bg-primary);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease;
+    ">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <i class="fa-solid fa-bolt"></i> LYNQ
+            </div>
+            <div class="seek-bar-wrapper">
+                <div class="seek-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <script>
+            (function () {
+                const savedTheme = localStorage.getItem("lynq-theme");
+                if (savedTheme === "light") {
+                    document.body.classList.remove("dark-mode");
+                }
+                const savedAccent = localStorage.getItem("lynq-accent-color");
+                if (savedAccent) {
+                    document.documentElement.style.setProperty("--bg-gold", savedAccent);
+                }
+            })();
+        </script>
+
+        <!-- Sidebar injected by components.js -->
+        <div id="sidebar-container"></div>
+
+        <main id="main-content">
+            <!-- Top Bar injected by components.js -->
+            <div id="topbar-container"></div>
+
+            <div id="tools-view" class="view-section active">
+                <div class="tools-page-container">
+                    <!-- Hero Section -->
+                    <div class="tools-hero">
+                        <h1><i class="fa-solid fa-toolbox"></i> AI Tools</h1>
+                        <p>Supercharge your workflow with powerful AI-powered tools</p>
+
+                        <!-- Search Bar -->
+                        <div class="tools-search-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="tools-search" placeholder="Search tools..." oninput="filterTools()">
+                        </div>
+                    </div>
+
+                    <!-- Category Filters -->
+                    <div class="tools-categories">
+                        <button class="category-pill active" data-category="all" onclick="filterByCategory('all')">
+                            <i class="fa-solid fa-grip"></i> All Tools
+                        </button>
+                        <button class="category-pill" data-category="coding" onclick="filterByCategory('coding')">
+                            <i class="fa-solid fa-code"></i> Coding
+                        </button>
+                        <button class="category-pill" data-category="research" onclick="filterByCategory('research')">
+                            <i class="fa-solid fa-flask"></i> Research
+                        </button>
+                        <button class="category-pill" data-category="content" onclick="filterByCategory('content')">
+                            <i class="fa-solid fa-pen-nib"></i> Content
+                        </button>
+                        <button class="category-pill" data-category="data" onclick="filterByCategory('data')">
+                            <i class="fa-solid fa-chart-pie"></i> Data
+                        </button>
+                    </div>
+
+                    <!-- Tools Grid -->
+                    <div class="tools-grid" id="tools-grid">
+
+                        <!-- Canvas Tool -->
+                        <div class="tool-card" data-category="coding" data-tool="canvas"
+                            onclick="activateTool('canvas')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper coding">
+                                    <i class="fa-solid fa-file-code"></i>
+                                </div>
+                                <span class="tool-badge">Popular</span>
+                            </div>
+                            <h3>Canvas</h3>
+                            <p>Open the code canvas with Monaco editor for interactive code generation and preview.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('canvas', 'Create a landing page for a SaaS product')">Landing
+                                    page</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('canvas', 'Build a responsive navbar with dropdown')">Navbar</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('canvas', 'Create a pricing table component')">Pricing
+                                    table</span>
+                            </div>
+                        </div>
+
+                        <!-- Web Search Tool -->
+                        <div class="tool-card" data-category="research" data-tool="websearch"
+                            onclick="activateTool('websearch')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper research">
+                                    <i class="fa-solid fa-globe"></i>
+                                </div>
+                                <span class="tool-badge new">Live</span>
+                            </div>
+                            <h3>Web Search</h3>
+                            <p>Access real-time web data for up-to-date information, news, and current events.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('websearch', 'Latest news about AI developments')">AI
+                                    news</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('websearch', 'Current stock market trends')">Stock
+                                    trends</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('websearch', 'Recent tech product launches')">Tech
+                                    launches</span>
+                            </div>
+                        </div>
+
+                        <!-- Data Analysis Tool -->
+                        <div class="tool-card" data-category="data" data-tool="dataanalysis"
+                            onclick="activateTool('dataanalysis')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper data">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </div>
+                                <span class="tool-badge new">New</span>
+                            </div>
+                            <h3>Data Analysis</h3>
+                            <p>Analyze datasets, generate insights, create visualizations and statistical reports.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('dataanalysis', 'Analyze sales data and find trends')">Sales
+                                    analysis</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('dataanalysis', 'Create a dashboard for key metrics')">Dashboard</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('dataanalysis', 'Statistical summary of my data')">Stats
+                                    summary</span>
+                            </div>
+                        </div>
+
+                        <!-- Web Scraper Tool -->
+                        <div class="tool-card" data-category="data" data-tool="webscraper"
+                            onclick="activateTool('webscraper')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper data">
+                                    <i class="fa-solid fa-spider"></i>
+                                </div>
+                                <span class="tool-badge new">New</span>
+                            </div>
+                            <h3>Web Scraper</h3>
+                            <p>Extract structured data from web pages and convert into usable formats.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('webscraper', 'Scrape product prices from an e-commerce site')">Product
+                                    prices</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('webscraper', 'Extract contact information from a directory')">Contacts</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('webscraper', 'Get article headlines from news site')">Headlines</span>
+                            </div>
+                        </div>
+
+                        <!-- Image Generator Tool -->
+                        <div class="tool-card" data-category="content" data-tool="imagegen"
+                            onclick="activateTool('imagegen')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper content">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+                                <span class="tool-badge coming-soon">Soon</span>
+                            </div>
+                            <h3>Image Generator</h3>
+                            <p>Create AI-generated images from text prompts for creative projects.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('imagegen', 'Generate a futuristic city landscape')">Cityscape</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('imagegen', 'Create a logo for a tech startup')">Logo
+                                    design</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('imagegen', 'Abstract art with vibrant colors')">Abstract
+                                    art</span>
+                            </div>
+                        </div>
+
+                        <!-- Code Reviewer Tool -->
+                        <div class="tool-card" data-category="coding" data-tool="codereviewer"
+                            onclick="activateTool('codereviewer')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper coding">
+                                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                                </div>
+                            </div>
+                            <h3>Code Reviewer</h3>
+                            <p>Get AI feedback on code quality, best practices, and potential improvements.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('codereviewer', 'Review my React component for best practices')">React
+                                    review</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('codereviewer', 'Check my Python code for performance issues')">Python
+                                    check</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('codereviewer', 'Find security vulnerabilities in my code')">Security
+                                    scan</span>
+                            </div>
+                        </div>
+
+                        <!-- Writing Assistant Tool -->
+                        <div class="tool-card" data-category="content" data-tool="writer"
+                            onclick="activateTool('writer')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper content">
+                                    <i class="fa-solid fa-feather-pointed"></i>
+                                </div>
+                            </div>
+                            <h3>Writing Assistant</h3>
+                            <p>Help with writing, editing, proofreading, and improving content quality.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('writer', 'Write a professional email to a client')">Email
+                                    draft</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('writer', 'Improve the clarity of my article')">Edit
+                                    article</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('writer', 'Create a blog post about AI trends')">Blog
+                                    post</span>
+                            </div>
+                        </div>
+
+                        <!-- PDF Analyzer Tool -->
+                        <div class="tool-card" data-category="research" data-tool="pdfanalyzer"
+                            onclick="activateTool('pdfanalyzer')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper research">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                </div>
+                            </div>
+                            <h3>PDF Analyzer</h3>
+                            <p>Extract, analyze, and summarize content from PDF documents.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('pdfanalyzer', 'Summarize this research paper')">Summarize
+                                    paper</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('pdfanalyzer', 'Extract key points from contract')">Extract
+                                    points</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('pdfanalyzer', 'Answer questions about this PDF')">Q&A</span>
+                            </div>
+                        </div>
+
+                        <!-- Translation Tool -->
+                        <div class="tool-card" data-category="content" data-tool="translator"
+                            onclick="activateTool('translator')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper content">
+                                    <i class="fa-solid fa-language"></i>
+                                </div>
+                            </div>
+                            <h3>Translator</h3>
+                            <p>Translate text between languages with context-aware accuracy.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('translator', 'Translate this document to Spanish')">To
+                                    Spanish</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('translator', 'Translate Japanese text to English')">Japanese→English</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('translator', 'Translate my email to French')">To
+                                    French</span>
+                            </div>
+                        </div>
+
+                        <!-- Summarizer Tool -->
+                        <div class="tool-card" data-category="research" data-tool="summarizer"
+                            onclick="activateTool('summarizer')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper research">
+                                    <i class="fa-solid fa-compress"></i>
+                                </div>
+                            </div>
+                            <h3>Summarizer</h3>
+                            <p>Summarize long documents, articles, or meetings into concise points.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('summarizer', 'Summarize this article in 3 bullet points')">3
+                                    bullets</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('summarizer', 'Create an executive summary')">Executive
+                                    summary</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('summarizer', 'TL;DR of this long text')">TL;DR</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- No Results Message -->
+                    <div class="no-results" id="no-results" style="display: none;">
+                        <i class="fa-solid fa-search"></i>
+                        <h3>No tools found</h3>
+                        <p>Try a different search term or category</p>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Shared Components Containers -->
+    <div id="toast-container"></div>
+    <div id="pricing-modal-container"></div>
+    <div id="profile-popup-container"></div>
+
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/tools.js"></script>
+    <script>
+        // Initialize shared components
+        initSharedComponents('tools');
+    </script>
+</body>
+
+</html>

@@ -8,13 +8,13 @@
  * @param {string} activePage - The current page ID (e.g., 'home', 'projects', 'settings', 'profile', 'help')
  */
 function injectSidebar(activePage = '') {
-    const container = document.getElementById('sidebar-container');
-    if (!container) return;
+  const container = document.getElementById('sidebar-container');
+  if (!container) return;
 
-    const isHome = activePage === 'home';
-    const newChatAction = isHome ? 'onclick="resetChat();"' : 'href="index.html"';
+  const isHome = activePage === 'home';
+  const newChatAction = isHome ? 'onclick="resetChat();"' : 'href="index.html"';
 
-    container.innerHTML = `
+  container.innerHTML = `
     <aside id="sidebar" class="collapsed">
       <div style="flex-shrink: 0">
         <div class="sidebar-header">
@@ -29,6 +29,7 @@ function injectSidebar(activePage = '') {
         <div class="nav-label">Menu</div>
         <a ${newChatAction} class="nav-item" id="nav-new-chat"><i class="fa-solid fa-plus"></i> New Chat</a>
         <a href="index.html" class="nav-item ${activePage === 'home' ? 'active' : ''}" id="nav-home"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="tools.html" class="nav-item ${activePage === 'tools' ? 'active' : ''}" id="nav-tools"><i class="fa-solid fa-toolbox"></i> Tools</a>
         <a href="projects.html" class="nav-item ${activePage === 'projects' ? 'active' : ''}" id="nav-projects"><i class="fa-solid fa-layer-group"></i> Projects</a>
 
         <div class="nav-label" style="
@@ -66,10 +67,10 @@ function injectSidebar(activePage = '') {
  * Injects the top bar HTML into the page
  */
 function injectTopBar() {
-    const container = document.getElementById('topbar-container');
-    if (!container) return;
+  const container = document.getElementById('topbar-container');
+  if (!container) return;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="top-bar">
       <button class="action-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
@@ -102,10 +103,10 @@ function injectTopBar() {
  * Injects the pricing modal HTML into the page
  */
 function injectPricingModal() {
-    const container = document.getElementById('pricing-modal-container');
-    if (!container) return;
+  const container = document.getElementById('pricing-modal-container');
+  if (!container) return;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="modal-overlay" id="pricing-modal">
       <div class="pricing-modal">
         <button class="close-modal" onclick="togglePricing()">&times;</button>
@@ -167,10 +168,10 @@ function injectPricingModal() {
  * Injects the toast notification HTML into the page
  */
 function injectToast() {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+  const container = document.getElementById('toast-container');
+  if (!container) return;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div id="toast">
       <i class="fa-solid fa-circle-check"></i> <span id="toast-message">Action successful</span>
     </div>
@@ -181,10 +182,10 @@ function injectToast() {
  * Injects the profile popup HTML into the page
  */
 function injectProfilePopup() {
-    const container = document.getElementById('profile-popup-container');
-    if (!container) return;
+  const container = document.getElementById('profile-popup-container');
+  if (!container) return;
 
-    container.innerHTML = `
+  container.innerHTML = `
     <div class="profile-popup-overlay" id="profile-popup">
       <div class="profile-popup">
         <button class="profile-popup-close" onclick="toggleProfilePopup()">
@@ -210,9 +211,9 @@ function injectProfilePopup() {
  * @param {string} activePage - The current page ID
  */
 function initSharedComponents(activePage = '') {
-    injectSidebar(activePage);
-    injectTopBar();
-    injectPricingModal();
-    injectToast();
-    injectProfilePopup();
+  injectSidebar(activePage);
+  injectTopBar();
+  injectPricingModal();
+  injectToast();
+  injectProfilePopup();
 }
