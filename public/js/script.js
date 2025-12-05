@@ -644,7 +644,6 @@ async function executeDelete(chatId) {
     }
 
     showToast("Chat deleted successfully!");
-    if (typeof hapticFeedback === 'function') hapticFeedback('success');
     renderRecentChats();
   } catch (error) {
     console.error("Error executing delete:", error);

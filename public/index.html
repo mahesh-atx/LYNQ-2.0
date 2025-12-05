@@ -377,19 +377,9 @@
   <script src="js/voice.js"></script>
   <script src="js/pdf.js"></script>
   <script src="js/chat.js"></script>
-  <script src="js/mobile.js"></script>
   <script>
     // Initialize shared components
     initSharedComponents('home');
-
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => console.log('Service Worker registered'))
-          .catch(err => console.log('Service Worker registration failed:', err));
-      });
-    }
   </script>
 </body>
 

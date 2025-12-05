@@ -566,9 +566,6 @@ async function handleSend() {
 
     if (!text && !currentAttachment) return;
 
-    // Haptic feedback on send
-    if (typeof hapticFeedback === 'function') hapticFeedback('light');
-
     if (welcomeScreen) welcomeScreen.style.display = "none";
     chatInput.value = "";
     chatInput.style.height = "auto";
