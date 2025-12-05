@@ -7,6 +7,10 @@
 .tools-page-container {
     padding: 0 var(--primary-padding) 30px;
     max-width: 1400px;
+    width: 100%;
+    /* Ensure it doesn't overflow */
+    box-sizing: border-box;
+    /* Explicitly set box-sizing */
     margin: 0 auto;
     overflow-y: auto;
     height: 100%;
@@ -27,6 +31,9 @@
     text-align: center;
     padding: 40px 20px 30px;
     margin-bottom: 20px;
+    width: 100%;
+    /* Ensure full width */
+    box-sizing: border-box;
 }
 
 .tools-hero h1 {
@@ -38,6 +45,8 @@
     align-items: center;
     justify-content: center;
     gap: 15px;
+    flex-wrap: wrap;
+    /* Allow wrapping on very small screens */
 }
 
 .tools-hero h1 i {
@@ -58,7 +67,10 @@
 .tools-search-wrapper {
     position: relative;
     max-width: 500px;
+    width: 100%;
+    /* Ensure it shrinks on mobile */
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .tools-search-wrapper i {
@@ -80,6 +92,7 @@
     color: var(--text-primary);
     outline: none;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .tools-search-wrapper input::placeholder {
@@ -99,6 +112,11 @@
     justify-content: center;
     margin-bottom: 30px;
     padding: 0 20px;
+    width: 100%;
+    /* Ensure it fits container */
+    max-width: 100%;
+    /* Prevent overflow */
+    box-sizing: border-box;
 }
 
 .category-pill {
@@ -138,6 +156,8 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* --- TOOL CARD --- */
@@ -150,6 +170,10 @@
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .tool-card::before {
@@ -186,6 +210,7 @@
     align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 10px;
+    width: 100%;
 }
 
 .tool-icon-wrapper {
@@ -367,13 +392,23 @@
     animation-delay: 0.5s;
 }
 
-@media (max-width: 1024px) {
+/* --- RESPONSIVE DESIGN --- */
+
+/* Large Screens (Laptops) */
+@media (max-width: 1200px) {
+    .tools-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Medium Screens (Tablets Landscape) */
+@media (max-width: 900px) {
     .tools-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* --- RESPONSIVE DESIGN --- */
+/* Small Screens (Tablets Portrait / Large Phones) */
 @media (max-width: 768px) {
     .tools-hero h1 {
         font-size: 1.8rem;
@@ -381,11 +416,6 @@
 
     .tools-hero p {
         font-size: 1rem;
-    }
-
-    .tools-grid {
-        grid-template-columns: 1fr;
-        padding: 10px 0;
     }
 
     .tools-categories {
@@ -405,10 +435,6 @@
         flex-shrink: 0;
     }
 
-    .tool-card {
-        padding: 20px;
-    }
-
     .tool-suggestions {
         overflow-x: auto;
         flex-wrap: nowrap;
@@ -420,6 +446,81 @@
     }
 }
 
+/* Mobile Screens */
+@media (max-width: 600px) {
+    .tools-page-container {
+        padding: 0 16px 30px;
+    }
+
+    .tools-grid {
+        grid-template-columns: 1fr;
+        padding: 10px 0;
+        gap: 12px;
+    }
+
+    .tools-categories {
+        padding: 0 5px;
+    }
+
+    /* Redesigned List View for Mobile */
+    .tool-card {
+        display: grid;
+        grid-template-columns: 60px 1fr;
+        grid-template-areas:
+            "icon title"
+            "icon desc";
+        align-items: center;
+        padding: 16px;
+        gap: 2px 15px;
+        height: auto;
+        box-sizing: border-box;
+    }
+
+    .tool-card-header {
+        grid-area: icon;
+        margin-bottom: 0;
+        width: auto;
+        justify-content: center;
+    }
+
+    .tool-icon-wrapper {
+        width: 54px;
+        height: 54px;
+        font-size: 1.4rem;
+        margin: 0;
+        border-radius: 50%;
+        /* Circular icons */
+    }
+
+    .tool-card h3 {
+        grid-area: title;
+        margin: 0;
+        font-size: 1.05rem;
+        align-self: end;
+        line-height: 1.2;
+    }
+
+    .tool-card p {
+        grid-area: desc;
+        margin: 0;
+        font-size: 0.85rem;
+        line-height: 1.3;
+        color: var(--text-secondary);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        align-self: start;
+    }
+
+    /* Hide elements not in the list design */
+    .tool-suggestions,
+    .tool-badge {
+        display: none;
+    }
+}
+
+/* Extra Small Screens */
 @media (max-width: 480px) {
     .tools-hero {
         padding: 30px 10px 20px;
@@ -431,12 +532,12 @@
     }
 
     .tool-icon-wrapper {
-        width: 45px;
-        height: 45px;
-        font-size: 1.1rem;
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
     }
 
     .tool-card h3 {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 }

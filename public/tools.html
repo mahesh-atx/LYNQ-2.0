@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Tools — LYNQ AI</title>
 
-    <script src="https://kit.fontawesome.com/ae8ff12b97.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png">
@@ -326,6 +328,183 @@
                                     summary</span>
                                 <span class="suggestion-chip"
                                     onclick="event.stopPropagation(); activateToolWithPrompt('summarizer', 'TL;DR of this long text')">TL;DR</span>
+                            </div>
+                        </div>
+
+                        <!-- Code Explainer Tool -->
+                        <div class="tool-card" data-category="coding" data-tool="codeexplainer"
+                            onclick="activateTool('codeexplainer')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper coding">
+                                    <i class="fa-solid fa-book"></i>
+                                </div>
+                            </div>
+                            <h3>Code Explainer</h3>
+                            <p>Explain code snippets in plain English to understand complex logic.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('codeexplainer', 'Explain this React useEffect hook')">Explain
+                                    hook</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('codeexplainer', 'What does this regex do?')">Regex
+                                    help</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('codeexplainer', 'Break down this SQL query')">SQL
+                                    breakdown</span>
+                            </div>
+                        </div>
+
+                        <!-- Regex Builder Tool -->
+                        <div class="tool-card" data-category="coding" data-tool="regexbuilder"
+                            onclick="activateTool('regexbuilder')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper coding">
+                                    <i class="fa-solid fa-puzzle-piece"></i>
+                                </div>
+                            </div>
+                            <h3>Regex Builder</h3>
+                            <p>Generate Regular Expressions by describing what you want to match.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('regexbuilder', 'Match email addresses')">Emails</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('regexbuilder', 'Match phone numbers with dashes')">Phone
+                                    nums</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('regexbuilder', 'Match dates in YYYY-MM-DD format')">Dates</span>
+                            </div>
+                        </div>
+
+                        <!-- SQL Generator Tool -->
+                        <div class="tool-card" data-category="data" data-tool="sqlgenerator"
+                            onclick="activateTool('sqlgenerator')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper data">
+                                    <i class="fa-solid fa-database"></i>
+                                </div>
+                            </div>
+                            <h3>SQL Generator</h3>
+                            <p>Generate SQL queries from plain English descriptions.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('sqlgenerator', 'Show users who signed up last week')">New
+                                    users</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('sqlgenerator', 'Count orders by product category')">Order
+                                    count</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('sqlgenerator', 'Find top spending customers')">Top
+                                    customers</span>
+                            </div>
+                        </div>
+
+                        <!-- API Tester Tool -->
+                        <div class="tool-card" data-category="coding" data-tool="apitester"
+                            onclick="activateTool('apitester')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper coding">
+                                    <i class="fa-solid fa-plug"></i>
+                                </div>
+                            </div>
+                            <h3>API Tester</h3>
+                            <p>Construct and test API requests with various methods and parameters.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('apitester', 'GET request to jsonplaceholder')">Test
+                                    GET</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('apitester', 'POST new user data')">Test
+                                    POST</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('apitester', 'Debug API authentication')">Debug
+                                    Auth</span>
+                            </div>
+                        </div>
+
+                        <!-- Color Palette Tool -->
+                        <div class="tool-card" data-category="content" data-tool="colorpalette"
+                            onclick="activateTool('colorpalette')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper content">
+                                    <i class="fa-solid fa-palette"></i>
+                                </div>
+                            </div>
+                            <h3>Color Palette</h3>
+                            <p>Generate beautiful color palettes based on moods, themes, or objects.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('colorpalette', 'Ocean sunset theme')">Sunset</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('colorpalette', 'Cyberpunk neon colors')">Cyberpunk</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('colorpalette', 'Pastel spring colors')">Pastel</span>
+                            </div>
+                        </div>
+
+                        <!-- Markdown Editor Tool -->
+                        <div class="tool-card" data-category="content" data-tool="markdown"
+                            onclick="activateTool('markdown')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper content">
+                                    <i class="fa-solid fa-file-pen"></i>
+                                </div>
+                            </div>
+                            <h3>Markdown Editor</h3>
+                            <p>Write, format, and preview Markdown content with AI assistance.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('markdown', 'Create a README for my project')">README</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('markdown', 'Format a blog post with tables')">Blog
+                                    post</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('markdown', 'Create a meeting agenda')">Agenda</span>
+                            </div>
+                        </div>
+
+                        <!-- Resume Builder Tool -->
+                        <div class="tool-card" data-category="content" data-tool="resumebuilder"
+                            onclick="activateTool('resumebuilder')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper content">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </div>
+                            </div>
+                            <h3>Resume Builder</h3>
+                            <p>Craft professional resumes and cover letters tailored to job descriptions.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('resumebuilder', 'Update my resume for a Software Engineer role')">Engineer
+                                    resume</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('resumebuilder', 'Write a cover letter for a startup')">Cover
+                                    letter</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('resumebuilder', 'Improve my resume summary')">Fix
+                                    summary</span>
+                            </div>
+                        </div>
+
+                        <!-- Email Templates Tool -->
+                        <div class="tool-card" data-category="content" data-tool="emailtemplates"
+                            onclick="activateTool('emailtemplates')">
+                            <div class="tool-card-header">
+                                <div class="tool-icon-wrapper content">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </div>
+                            </div>
+                            <h3>Email Templates</h3>
+                            <p>Generate professional emails for various situations and audiences.</p>
+                            <div class="tool-suggestions">
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('emailtemplates', 'Out of office auto-reply')">OOO
+                                    reply</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('emailtemplates', 'Cold outreach to potential client')">Cold
+                                    email</span>
+                                <span class="suggestion-chip"
+                                    onclick="event.stopPropagation(); activateToolWithPrompt('emailtemplates', 'Follow up after interview')">Follow
+                                    up</span>
                             </div>
                         </div>
 
