@@ -1,0 +1,1047 @@
+/*
+  animations.css
+  Comprehensive micro-animations and interactions for LYNQ AI
+  Makes the app feel alive, premium, and delightful to use
+*/
+
+/* ===========================================
+   BASE ANIMATION UTILITIES
+   =========================================== */
+
+/* Smooth transitions for all interactive elements */
+.animate-all {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Stagger animation delay classes */
+.delay-1 {
+    animation-delay: 0.1s;
+}
+
+.delay-2 {
+    animation-delay: 0.2s;
+}
+
+.delay-3 {
+    animation-delay: 0.3s;
+}
+
+.delay-4 {
+    animation-delay: 0.4s;
+}
+
+.delay-5 {
+    animation-delay: 0.5s;
+}
+
+/* ===========================================
+   KEYFRAME DEFINITIONS
+   =========================================== */
+
+/* Fade In Up - for page elements */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade In Scale - for modals and popups */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Slide In from Left */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Slide In from Right */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Bounce In */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    70% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Gentle Float */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Pulse glow for highlights */
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+    }
+}
+
+/* Subtle shake for errors/attention */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-5px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(5px);
+    }
+}
+
+/* Wiggle for fun elements */
+@keyframes wiggle {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-5deg);
+    }
+
+    75% {
+        transform: rotate(5deg);
+    }
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+
+    0%,
+    50% {
+        opacity: 1;
+    }
+
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Spin */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Ripple effect */
+@keyframes ripple {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ===========================================
+   BUTTON INTERACTIONS
+   =========================================== */
+
+/* Base button hover effect */
+button,
+.btn,
+[role="button"] {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+button:active,
+.btn:active {
+    transform: scale(0.97);
+}
+
+/* Ripple effect on click */
+button::after,
+.btn::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    transform: scale(10);
+    opacity: 0;
+    transition: transform 0.5s, opacity 0.5s;
+}
+
+button:active::after,
+.btn:active::after {
+    transform: scale(0);
+    opacity: 1;
+    transition: 0s;
+}
+
+/* Tool button hover lift */
+.tool-btn-round {
+    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tool-btn-round:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tool-btn-round:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* Send button special animation */
+#send-btn {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#send-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+#send-btn:active {
+    transform: scale(0.95);
+}
+
+/* ===========================================
+   NAV ITEM INTERACTIONS
+   =========================================== */
+
+/* Sidebar nav items */
+.nav-item {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: var(--bg-gold);
+    border-radius: 0 2px 2px 0;
+    transition: height 0.2s ease;
+}
+
+.nav-item:hover::before,
+.nav-item.active::before {
+    height: 60%;
+}
+
+.nav-item:hover {
+    padding-left: 20px;
+}
+
+/* Chat item hover effect */
+.chat-item-wrapper {
+    transition: transform 0.2s ease;
+}
+
+.chat-item-wrapper:hover {
+    transform: translateX(5px);
+}
+
+.chat-title {
+    transition: color 0.2s ease;
+}
+
+/* ===========================================
+   CARD ANIMATIONS
+   =========================================== */
+
+/* Tool cards on Tools page */
+.tool-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s ease backwards;
+}
+
+.tool-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.tool-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.tool-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.tool-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.tool-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.tool-card:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.tool-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.tool-card:hover .tool-icon-wrapper {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.tool-icon-wrapper {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Tool card suggestion chips */
+.suggestion-chip {
+    transition: all 0.2s ease;
+}
+
+.suggestion-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-chip:active {
+    transform: scale(0.95);
+}
+
+/* ===========================================
+   INPUT INTERACTIONS
+   =========================================== */
+
+/* Chat input focus effect */
+#chat-input {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#chat-input:focus {
+    border-color: var(--text-heading);
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+/* Input container glow effect */
+.input-container {
+    transition: box-shadow 0.3s ease;
+}
+
+.input-container:focus-within {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+}
+
+/* ===========================================
+   MESSAGE ANIMATIONS
+   =========================================== */
+
+/* Chat messages entrance */
+.message {
+    animation: fadeInUp 0.3s ease backwards;
+}
+
+.message.user {
+    animation: slideInRight 0.3s ease backwards;
+}
+
+.message.ai {
+    animation: slideInLeft 0.3s ease backwards;
+}
+
+/* Message bubble hover */
+.bubble {
+    transition: background-color 0.2s ease;
+}
+
+/* Message action buttons */
+.message-actions button {
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.message-actions button:hover {
+    opacity: 1;
+    transform: scale(1.15);
+    color: var(--text-heading);
+}
+
+/* Avatar animation */
+.avatar {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.message:hover .avatar {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Thinking dots animation enhancement */
+.thinking-dots .dot {
+    animation: bounce 1.4s ease-in-out infinite both;
+}
+
+.thinking-dots .dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.thinking-dots .dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.thinking-dots .dot:nth-child(3) {
+    animation-delay: 0s;
+}
+
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
+
+/* ===========================================
+   WELCOME SCREEN ANIMATIONS
+   =========================================== */
+
+.welcome-screen {
+    animation: fadeInUp 0.6s ease;
+}
+
+.welcome-text h1 {
+    animation: fadeInUp 0.6s ease backwards;
+    animation-delay: 0.1s;
+}
+
+.welcome-text p {
+    animation: fadeInUp 0.6s ease backwards;
+    animation-delay: 0.2s;
+}
+
+/* Suggestion pills */
+.pill-card {
+    animation: fadeInUp 0.5s ease backwards;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pill-card:nth-child(1) {
+    animation-delay: 0.3s;
+}
+
+.pill-card:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+.pill-card:nth-child(3) {
+    animation-delay: 0.5s;
+}
+
+.pill-card:nth-child(4) {
+    animation-delay: 0.6s;
+}
+
+.pill-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.pill-card:active {
+    transform: scale(0.97);
+}
+
+.pill-card i {
+    transition: transform 0.3s ease;
+}
+
+.pill-card:hover i {
+    transform: rotate(10deg) scale(1.2);
+}
+
+/* ===========================================
+   CANVAS ANIMATIONS
+   =========================================== */
+
+#canvas-pane {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#canvas-pane.active {
+    animation: slideInRight 0.4s ease;
+}
+
+/* Canvas tabs */
+.canvas-tab {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.canvas-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--bg-gold);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.canvas-tab:hover::after,
+.canvas-tab.active::after {
+    width: 80%;
+}
+
+.canvas-tab:hover {
+    color: var(--text-heading);
+}
+
+/* Canvas placeholder entrance */
+#canvas-placeholder {
+    animation: fadeInScale 0.4s ease;
+}
+
+#canvas-placeholder i {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* ===========================================
+   DROPDOWN & MENU ANIMATIONS
+   =========================================== */
+
+/* Tools dropdown */
+.tool-dropdown-menu {
+    transform-origin: top left;
+    animation: dropdownOpen 0.2s ease;
+}
+
+@keyframes dropdownOpen {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.tool-dropdown-item {
+    transition: all 0.15s ease;
+}
+
+.tool-dropdown-item:hover {
+    padding-left: 20px;
+    background: var(--bg-primary);
+}
+
+.tool-dropdown-item i {
+    transition: transform 0.2s ease;
+}
+
+.tool-dropdown-item:hover i {
+    transform: scale(1.2);
+}
+
+/* Model dropdown */
+.model-dropdown {
+    animation: dropdownOpen 0.2s ease;
+}
+
+.model-option {
+    transition: all 0.15s ease;
+}
+
+.model-option:hover {
+    padding-left: 15px;
+}
+
+/* Context menu */
+.chat-context-menu {
+    animation: fadeInScale 0.15s ease;
+}
+
+.context-item {
+    transition: all 0.15s ease;
+}
+
+.context-item:hover {
+    padding-left: 15px;
+}
+
+/* ===========================================
+   MODAL ANIMATIONS
+   =========================================== */
+
+.modal-overlay {
+    animation: fadeIn 0.3s ease;
+}
+
+.pricing-modal {
+    animation: fadeInScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.profile-popup {
+    animation: fadeInScale 0.2s ease;
+}
+
+/* Price cards stagger */
+.price-card {
+    animation: fadeInUp 0.4s ease backwards;
+}
+
+.price-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.price-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.price-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.price-card:hover {
+    transform: translateY(-10px);
+}
+
+.price-card.pro:hover {
+    transform: scale(1.08) translateY(-5px);
+}
+
+/* ===========================================
+   SETTINGS PAGE ANIMATIONS
+   =========================================== */
+
+.settings-container {
+    animation: fadeInUp 0.5s ease;
+}
+
+.settings-section {
+    animation: fadeInUp 0.5s ease backwards;
+}
+
+.settings-section:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.settings-section:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.settings-section:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.settings-section:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.settings-item {
+    transition: all 0.2s ease;
+}
+
+.settings-item:hover {
+    background: var(--bg-primary);
+    padding-left: 20px;
+}
+
+/* Toggle switch animation */
+.toggle-switch {
+    transition: background-color 0.3s ease;
+}
+
+.toggle-switch::before {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Color picker */
+.color-option {
+    transition: all 0.2s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.2);
+}
+
+.color-option:active {
+    transform: scale(0.95);
+}
+
+.color-option.active {
+    animation: pulseGlow 1s ease infinite;
+}
+
+/* ===========================================
+   PROFILE PAGE ANIMATIONS
+   =========================================== */
+
+.profile-container {
+    animation: fadeInUp 0.5s ease;
+}
+
+.profile-hero {
+    animation: fadeInScale 0.5s ease backwards;
+    animation-delay: 0.1s;
+}
+
+.profile-avatar-xl {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-avatar-xl:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.profile-section {
+    animation: fadeInUp 0.5s ease backwards;
+}
+
+.profile-section:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.profile-section:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.profile-action-btn {
+    transition: all 0.2s ease;
+}
+
+.profile-action-btn:hover {
+    transform: translateX(8px);
+    background: var(--bg-primary);
+}
+
+.profile-action-btn .action-arrow {
+    transition: transform 0.2s ease;
+}
+
+.profile-action-btn:hover .action-arrow {
+    transform: translateX(5px);
+}
+
+/* ===========================================
+   HELP PAGE ANIMATIONS
+   =========================================== */
+
+.help-container {
+    animation: fadeInUp 0.5s ease;
+}
+
+.help-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.help-card {
+    animation: fadeInUp 0.4s ease backwards;
+    transition: all 0.3s ease;
+}
+
+.help-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.help-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.help-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.help-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.help-card i {
+    transition: transform 0.3s ease;
+}
+
+.help-card:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* FAQ items */
+.faq-item {
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    background: var(--bg-primary);
+}
+
+.faq-question .fa-chevron-down {
+    transition: transform 0.3s ease;
+}
+
+.faq-item.open .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    transition: all 0.3s ease;
+}
+
+/* ===========================================
+   TOAST ANIMATION ENHANCEMENT
+   =========================================== */
+
+#toast {
+    animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#toast.show {
+    animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        toastSlideOut 0.4s ease 2.6s;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px) scale(0.9);
+    }
+}
+
+#toast i {
+    animation: bounceIn 0.5s ease backwards;
+    animation-delay: 0.2s;
+}
+
+/* ===========================================
+   ATTACHMENT PILL ANIMATIONS
+   =========================================== */
+
+.attachment-pill {
+    animation: fadeInScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.attachment-pill .close-btn {
+    transition: all 0.2s ease;
+}
+
+.attachment-pill .close-btn:hover {
+    transform: rotate(90deg) scale(1.2);
+    color: var(--text-danger);
+}
+
+/* ===========================================
+   LOADER ANIMATION IMPROVEMENTS
+   =========================================== */
+
+#global-loader .loader-logo {
+    animation: fadeInScale 0.5s ease backwards, float 2s ease-in-out infinite 0.5s;
+}
+
+.seek-bar-fill {
+    animation: shimmer 1.5s ease-in-out infinite;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 215, 0, 0.5),
+            transparent);
+    background-size: 200% 100%;
+}
+
+/* ===========================================
+   SCROLLBAR ANIMATIONS
+   =========================================== */
+
+::-webkit-scrollbar-thumb {
+    transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
+/* ===========================================
+   HOVER STATES FOR ICONS
+   =========================================== */
+
+i.fa-solid,
+i.fa-regular,
+i.fa-brands {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Icon bounce on hover for interactive elements */
+button:hover i,
+.nav-item:hover i,
+a:hover i {
+    transform: scale(1.1);
+}
+
+/* Special icon animations */
+.fa-bolt {
+    transition: all 0.3s ease;
+}
+
+.top-logo-title:hover .fa-bolt {
+    animation: wiggle 0.5s ease;
+    color: #ffd700;
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+}
+
+/* ===========================================
+   FOCUS STATES (ACCESSIBILITY)
+   =========================================== */
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--bg-gold);
+    outline-offset: 2px;
+    animation: focusPulse 1s ease infinite;
+}
+
+@keyframes focusPulse {
+
+    0%,
+    100% {
+        outline-offset: 2px;
+    }
+
+    50% {
+        outline-offset: 4px;
+    }
+}
+
+/* ===========================================
+   REDUCED MOTION SUPPORT
+   =========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

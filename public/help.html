@@ -21,23 +21,13 @@
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
   <link rel="stylesheet" href="css/home.css" />
   <link rel="stylesheet" href="css/help.css" />
 </head>
 
 <body class="dark-mode">
-  <script>
-    (function () {
-      const savedTheme = localStorage.getItem("lynq-theme");
-      if (savedTheme === "light") {
-        document.body.classList.remove("dark-mode");
-      }
-      const savedAccent = localStorage.getItem("lynq-accent-color");
-      if (savedAccent) {
-        document.documentElement.style.setProperty("--bg-gold", savedAccent);
-      }
-    })();
-  </script>
+  <script src="js/theme-init.js"></script>
 
   <div id="app-container">
     <!-- Sidebar injected by components.js -->

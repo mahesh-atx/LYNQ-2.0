@@ -17,6 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
   <style>
     /* --- RESET & BASE --- */
     body {
@@ -430,14 +431,7 @@
 </head>
 
 <body class="dark-mode">
-  <script>
-    (function () {
-      const savedTheme = localStorage.getItem("lynq-theme");
-      if (savedTheme === "light") {
-        document.body.classList.remove("dark-mode");
-      }
-    })();
-  </script>
+  <script src="js/theme-init.js"></script>
 
   <div id="auth-loader">
     <div class="loading-spinner" style="
@@ -608,18 +602,8 @@
     const githubBtn = document.getElementById("github-signin");
     const errorMessage = document.getElementById("error-message");
 
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyCdWjeOCLGTbW95_7Omn-aijRVMww8hdqk",
-      authDomain: "lynq-ai-20666.firebaseapp.com",
-      projectId: "lynq-ai-20666",
-      storageBucket: "lynq-ai-20666.firebasestorage.app",
-      messagingSenderId: "278937715698",
-      appId: "1:278937715698:web:4c913d5651cab6637be16b",
-      measurementId: "G-TGT7C31BDF",
-    };
-
-    initializeFirebase(firebaseConfig);
+    // Firebase config is now centralized in auth.js (FIREBASE_CONFIG)
+    initializeFirebase(); // Uses centralized config from auth.js
     setupRecaptcha("recaptcha-container");
 
     document.addEventListener("authStateReady", (e) => {

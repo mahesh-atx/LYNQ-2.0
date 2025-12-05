@@ -1,6 +1,17 @@
 // --- Firebase Authentication Logic ---
 // This file centralizes all Firebase auth code.
 
+// --- Firebase Configuration (Single Source of Truth) ---
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCdWjeOCLGTbW95_7Omn-aijRVMww8hdqk",
+  authDomain: "lynq-ai-20666.firebaseapp.com",
+  projectId: "lynq-ai-20666",
+  storageBucket: "lynq-ai-20666.firebasestorage.app",
+  messagingSenderId: "278937715698",
+  appId: "1:278937715698:web:4c913d5651cab6637be16b",
+  measurementId: "G-TGT7C31BDF",
+};
+
 // Global auth-related variables
 let app = null;
 let auth = null;
@@ -11,9 +22,11 @@ let phoneConfirmationResult = null;
 
 /**
  * Initializes the Firebase app and auth providers.
- * @param {object} firebaseConfig - Your Firebase project config object.
+ * Uses FIREBASE_CONFIG by default if no custom config is passed.
+ * @param {object} customConfig - Optional custom Firebase project config object.
  */
-function initializeFirebase(firebaseConfig) {
+function initializeFirebase(customConfig = null) {
+  const firebaseConfig = customConfig || FIREBASE_CONFIG;
   if (!window.firebase) {
     console.error("Firebase SDKs not loaded.");
     return;

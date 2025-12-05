@@ -450,6 +450,8 @@ ${searchResults}
    - End with useful links for more information
 
 REMEMBER: Your goal is to make the response as visually rich and informative as possible by including EVERYTHING useful from the search results!
+
+⚠️ IMPORTANT: Do NOT call any tools or functions. The web search has already been performed for you. Simply use the search results provided above to craft your response.
 `;
     } else {
       console.log("❌ Search returned no data. Falling back to standard AI.");
@@ -470,6 +472,13 @@ REMEMBER: Your goal is to make the response as visually rich and informative as 
   }
 
   try {
+    // Build request body
+    const requestBody = {
+      model: model || process.env.MODEL,
+      messages: messages,
+      ...(max_tokens && { max_tokens: parseInt(max_tokens, 10) }),
+    };
+
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -478,17 +487,25 @@ REMEMBER: Your goal is to make the response as visually rich and informative as 
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.API_KEY}`,
         },
-        body: JSON.stringify({
-          model: model || process.env.MODEL,
-          messages: messages,
-          ...(max_tokens && { max_tokens: parseInt(max_tokens, 10) }),
-        }),
+        body: JSON.stringify(requestBody),
       }
     );
 
     const data = await response.json();
     if (!response.ok) {
       console.error("Groq API error:", data);
+
+      // Handle specific Groq tool_use_failed error
+      if (data?.error?.code === "tool_use_failed") {
+        console.warn("⚠️ Model tried to use tools. Returning search results as fallback.");
+        // If we have search results, return them directly as the response
+        if (searchResults) {
+          return res.json({
+            text: `Here's what I found:\n\n${searchResults}\n\n*Note: The AI model encountered an issue. Showing raw search results instead.*`
+          });
+        }
+      }
+
       return res.status(response.status).json({ error: data });
     }
 

@@ -23,6 +23,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
     <link rel="stylesheet" href="css/tools.css" />
 </head>
 
@@ -48,18 +49,7 @@
     </div>
 
     <div id="app-container">
-        <script>
-            (function () {
-                const savedTheme = localStorage.getItem("lynq-theme");
-                if (savedTheme === "light") {
-                    document.body.classList.remove("dark-mode");
-                }
-                const savedAccent = localStorage.getItem("lynq-accent-color");
-                if (savedAccent) {
-                    document.documentElement.style.setProperty("--bg-gold", savedAccent);
-                }
-            })();
-        </script>
+        <script src="js/theme-init.js"></script>
 
         <!-- Sidebar injected by components.js -->
         <div id="sidebar-container"></div>

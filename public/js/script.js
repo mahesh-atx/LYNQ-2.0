@@ -8,17 +8,7 @@
 // --- GLOBAL STATE & API CONFIG ---
 let mainChatHistory = [];
 
-// !! IMPORTANT !!
-// You must replace this with your own Firebase project configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCdWjeOCLGTbW95_7Omn-aijRVMww8hdqk",
-  authDomain: "lynq-ai-20666.firebaseapp.com",
-  projectId: "lynq-ai-20666",
-  storageBucket: "lynq-ai-20666.firebasestorage.app",
-  messagingSenderId: "278937715698",
-  appId: "1:278937715698:web:4c913d5651cab6637be16b",
-  measurementId: "G-TGT7C31BDF",
-};
+// Firebase config is now centralized in auth.js (FIREBASE_CONFIG)
 
 let currentUser = null; // Store the logged-in Firebase user object
 
@@ -895,7 +885,7 @@ document.addEventListener("DOMContentLoaded", () => {
   confirmDeleteConfirmBtn = document.getElementById("confirm-delete-confirm");
 
   if (typeof initializeFirebase === "function") {
-    initializeFirebase(firebaseConfig);
+    initializeFirebase(); // Uses centralized FIREBASE_CONFIG from auth.js
   } else {
     console.error("auth.js not loaded correctly. Firebase auth will fail.");
   }
