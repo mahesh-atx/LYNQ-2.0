@@ -104,6 +104,12 @@ function filterTools() {
         }
     });
 
+    // Check each section visibility
+    document.querySelectorAll('.tool-section').forEach(section => {
+        const visibleCards = section.querySelectorAll('.tool-card:not(.hidden)').length;
+        section.style.display = visibleCards > 0 ? 'block' : 'none';
+    });
+
     // Show/hide no results message
     if (noResults) {
         noResults.style.display = visibleCount === 0 ? 'block' : 'none';
@@ -149,6 +155,12 @@ function filterByCategory(category) {
         } else {
             card.classList.add('hidden');
         }
+    });
+
+    // Check each section visibility
+    document.querySelectorAll('.tool-section').forEach(section => {
+        const visibleCards = section.querySelectorAll('.tool-card:not(.hidden)').length;
+        section.style.display = visibleCards > 0 ? 'block' : 'none';
     });
 
     // Show/hide no results message
