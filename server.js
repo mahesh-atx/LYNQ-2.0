@@ -31,6 +31,16 @@ try {
   console.warn("⚠️ Could not load systemprompt.txt, using default prompt.");
 }
 
+// --- Load Canvas Prompt from config file ---
+const canvasPromptPath = path.join(__dirname, "config", "canvasprompt.txt");
+let CANVAS_SYSTEM_PROMPT = "";
+try {
+  CANVAS_SYSTEM_PROMPT = fs.readFileSync(canvasPromptPath, "utf-8");
+  console.log("✅ Canvas prompt loaded from config/canvasprompt.txt");
+} catch (err) {
+  console.warn("⚠️ Could not load canvasprompt.txt, canvas mode will use default.");
+}
+
 // --- Environment Variables ---
 const MONGODB_URI = process.env.MONGODB_URI;
 // --- Firebase Admin Initialization using FIREBASE_ADMIN_KEY from .env ---
@@ -355,10 +365,18 @@ async function performWebSearch(query) {
 // --- MAIN GENERATION ENDPOINT ---
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
   // Get request parameters
-  let { prompt, systemMessage, history, model, max_tokens, webSearch } =
+  let { prompt, systemMessage, history, model, max_tokens, webSearch, canvasMode } =
     req.body;
 
-  let finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
+  // Determine the system message based on mode
+  let finalSystemMessage;
+  if (canvasMode && CANVAS_SYSTEM_PROMPT) {
+    // Use canvas-specific prompt when canvas mode is active
+    finalSystemMessage = CANVAS_SYSTEM_PROMPT;
+    console.log("🎨 Canvas Mode: Using canvasprompt.txt");
+  } else {
+    finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
+  }
   let searchResults = null;
 
   // --- WEB SEARCH LOGIC ---

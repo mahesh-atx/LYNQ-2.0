@@ -15,7 +15,8 @@ let stopBtn;
 let canvasToggleBtn;
 let canvasPane;
 let canvasCloseBtn;
-let canvasCodeBlock;
+let monacoEditorContainer; // Monaco editor container
+let monacoEditor = null; // Monaco editor instance
 let canvasPlaceholder;
 let canvasTabCode;
 let canvasTabPreview;
@@ -34,6 +35,142 @@ let isWebSearchActive = false;
 let isCanvasModeActive = false; // State for canvas mode toggle
 let currentAttachment = null; // Holds { name: "...", text: "...", type: "pdf" }
 const TOKEN_LIMIT = 2000; // Define context limit once
+let monacoLoaded = false; // Track if Monaco is loaded
+
+/**
+ * Initializes Monaco Editor
+ */
+function initMonacoEditor() {
+  if (typeof require === "undefined" || !monacoEditorContainer) {
+    console.warn("Monaco loader not available or container not found");
+    return;
+  }
+
+  require.config({
+    paths: {
+      vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs",
+    },
+  });
+
+  require(["vs/editor/editor.main"], function () {
+    // Define custom dark theme similar to VS Code
+    monaco.editor.defineTheme("lynq-dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [
+        { token: "comment", foreground: "6A9955" },
+        { token: "keyword", foreground: "569CD6" },
+        { token: "string", foreground: "CE9178" },
+        { token: "number", foreground: "B5CEA8" },
+        { token: "tag", foreground: "569CD6" },
+        { token: "attribute.name", foreground: "9CDCFE" },
+        { token: "attribute.value", foreground: "CE9178" },
+      ],
+      colors: {
+        "editor.background": "#1e1e1e",
+        "editor.foreground": "#D4D4D4",
+        "editorLineNumber.foreground": "#858585",
+        "editorCursor.foreground": "#AEAFAD",
+        "editor.selectionBackground": "#264F78",
+        "editor.lineHighlightBackground": "#2A2D2E",
+        "editorIndentGuide.background": "#404040",
+        "scrollbarSlider.background": "#4E4E4E80",
+      },
+    });
+
+    // Create the editor instance
+    monacoEditor = monaco.editor.create(monacoEditorContainer, {
+      value: "",
+      language: "html",
+      theme: "lynq-dark",
+      automaticLayout: true,
+      minimap: { enabled: false },
+      fontSize: 14,
+      fontFamily: "'Fira Code', 'Consolas', 'Courier New', monospace",
+      lineNumbers: "on",
+      wordWrap: "on",
+      scrollBeyondLastLine: false,
+      readOnly: false,
+      renderWhitespace: "selection",
+      tabSize: 2,
+      scrollbar: {
+        verticalScrollbarSize: 10,
+        horizontalScrollbarSize: 10,
+      },
+      padding: { top: 16, bottom: 16 },
+    });
+
+    monacoLoaded = true;
+    console.log("✅ Monaco Editor initialized");
+
+    // Listen for changes to update preview
+    monacoEditor.onDidChangeModelContent(() => {
+      if (canvasPreviewWrapper && canvasPreviewWrapper.style.display !== "none") {
+        updateCanvasPreview();
+      }
+    });
+  });
+}
+
+/**
+ * Gets the current code from Monaco editor
+ */
+function getMonacoCode() {
+  if (monacoEditor) {
+    return monacoEditor.getValue();
+  }
+  return "";
+}
+
+/**
+ * Sets the code in Monaco editor
+ */
+function setMonacoCode(code, language = "html") {
+  if (!monacoEditor) {
+    console.warn("Monaco editor not ready");
+    return;
+  }
+
+  // Set the language
+  const model = monacoEditor.getModel();
+  if (model) {
+    monaco.editor.setModelLanguage(model, language);
+  }
+
+  // Set the value
+  monacoEditor.setValue(code);
+
+  // Show the editor container
+  if (monacoEditorContainer) {
+    monacoEditorContainer.style.display = "block";
+  }
+}
+
+/**
+ * Clears the Monaco editor content
+ */
+function clearMonacoEditor() {
+  if (monacoEditor) {
+    monacoEditor.setValue("");
+  }
+  if (monacoEditorContainer) {
+    monacoEditorContainer.style.display = "none";
+  }
+}
+
+/**
+ * Updates the canvas preview with current Monaco editor content
+ * (Debounced to prevent excessive updates)
+ */
+let previewUpdateTimeout = null;
+function updateCanvasPreview() {
+  if (previewUpdateTimeout) {
+    clearTimeout(previewUpdateTimeout);
+  }
+  previewUpdateTimeout = setTimeout(() => {
+    generatePreview();
+  }, 300);
+}
 
 /**
  * Initializes voice recognition functionality.
@@ -170,13 +307,13 @@ function switchCanvasTab(tabName) {
 }
 
 /**
- * Renders the code from the code block into the preview iframe.
+ * Renders the code from the Monaco editor into the preview iframe.
  */
 function generatePreview() {
-  if (!canvasCodeBlock || !canvasPreviewIframe || !canvasPreviewPlaceholder)
+  if (!canvasPreviewIframe || !canvasPreviewPlaceholder)
     return;
 
-  const code = canvasCodeBlock.textContent;
+  const code = getMonacoCode();
 
   if (!code || code.trim() === "") {
     canvasPreviewIframe.style.display = "none";
@@ -267,12 +404,10 @@ ${baseHtmlEnd}`;
 }
 
 /**
- * Downloads the content of the canvas code block as a file.
+ * Downloads the content of the Monaco editor as a file.
  */
 function downloadCanvasCode() {
-  if (!canvasCodeBlock) return;
-
-  const code = canvasCodeBlock.textContent;
+  const code = getMonacoCode();
   if (!code || code.trim() === "") {
     if (typeof showToast === "function") showToast("No code to download.");
     return;
@@ -399,7 +534,7 @@ function sendSuggestion(text) {
  */
 function resetCanvasUI() {
   if (canvasPlaceholder) canvasPlaceholder.style.display = "flex";
-  if (canvasCodeBlock) canvasCodeBlock.textContent = "";
+  clearMonacoEditor();
   if (canvasPreviewIframe) canvasPreviewIframe.srcdoc = "";
   if (canvasPreviewPlaceholder) canvasPreviewPlaceholder.style.display = "flex";
   switchCanvasTab("code");
@@ -522,8 +657,9 @@ async function loadChat(chatId) {
 /**
  * CLEANS UP: Centralized logic for building the system prompt with context.
  * This is used by both handleSend and regenerateResponseAfterEdit.
+ * Note: Canvas mode prompt is now handled server-side via canvasprompt.txt
  */
-async function buildContextualSystemMessage(attachment, isCanvasActive) {
+async function buildContextualSystemMessage(attachment) {
   let contextAddon = "";
 
   if (attachment && attachment.text) {
@@ -545,117 +681,6 @@ PDF CONTENT:
 ${pdfContext}
 --- END PDF CONTEXT ---
 `;
-} else if (isCanvasActive) {
-    contextAddon = `You are an Expert Software Engineer, Full-Stack Developer, and UI/UX Specialist. Your goal is to generate "Canvas-ready" artifacts—complete, self-contained, and visually stunning code that renders immediately.
-
-========================
-   CORE BEHAVIOR RULES
-========================
-- **Single-File Priority:** For any UI/Web request, prioritize generating a single 'index.html' file.
-- **Modern Aesthetics:** Default to 2025 design trends (Bento grids, Glassmorphism, Neubrutalism if fitting, large typography, Inter/system fonts).
-- **No Conversation Fluff:** Do not explain "Here is the code." Just provide the summary and the code.
-- **Complete Solutions:** Never use comments like "// ...rest of code". Write every line.
-
-========================
-      RESPONSE FORMAT
-========================
-1) **Artifact Title:** (e.g., "SaaS Dashboard - Dark Mode")
-2) **The Code:** (Full, functional, copy-paste ready)
-3) **Implementation Details:** (Brief bullet points on libraries used, trade-offs, or keyboard shortcuts)
-
-========================
-        MODES
-========================
-
-(1) FRONTEND / WEB CANVAS MODE ⭐ HIGH PRIORITY
-Triggered by: "website", "UI", "landing page", "dashboard", "component", "html"
-
-🚨 CRITICAL: OUTPUT A SINGLE, RUNNABLE HTML FILE.
-- **Styling:** Tailwind CSS (CDN).
-- **Icons:** FontAwesome or Phosphor Icons (CDN).
-- **Fonts:** Google Fonts (Inter, Roboto, or Poppins).
-- **Data Viz:** Use Chart.js (CDN) if a dashboard or graph is requested.
-- **3D/Fun:** Use Three.js or GSAP (CDN) if animations are requested.
-
-**INTERACTIVITY & LOGIC (CRITICAL):**
-- **Never Static:** Buttons must click, forms must validate, modals must open/close.
-- **Mocking:** If an API is needed, simulate it using \`setTimeout\` and mock JSON data inside the JS. Show "Loading..." states.
-- **Toast Notifications:** If a user submits a form, show a visual success message (e.g., a toast notification) instead of \`console.log\`.
-
-**RESPONSIVENESS (MOBILE FIRST):**
-- Use Tailwind responsive prefixes (\`md:flex\`, \`lg:w-1/2\`).
-- Ensure Hamburger Menus work on mobile (JavaScript toggle logic required).
-- Prevent horizontal scrolling on mobile devices.
-
-**ACCESSIBILITY (A11Y):**
-- Use semantic HTML tags (\`<main>\`, \`<nav>\`, \`<section>\`, \`<button>\`).
-- Add \`aria-label\` to icon-only buttons.
-- Ensure proper color contrast ratios.
-
-Structure:
-\`\`\`html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas Preview</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        /* Glassmorphism Utilities */
-        .glass { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
-        /* Mobile Overrides */
-        @media (max-width: 768px) {
-            .mobile-hide { display: none; }
-        }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-900 antialiased selection:bg-blue-500 selection:text-white">
-    <script>
-        // DOM LOGIC & MOCK DATA
-        // Ensure strictly no external .js file references
-        document.addEventListener('DOMContentLoaded', () => {
-             // Initialization code
-        });
-    </script>
-</body>
-</html>
-\`\`\`
-
-**Visual Guidelines:**
-- Use **https://placehold.co/600x400?text=Description** for placeholders.
-- Use subtle gradients and shadows (\`shadow-lg\`, \`shadow-indigo-500/20\`) to add depth.
-
-(2) REACT / PREVIEW MODE
-Triggered by: "React", "hook", "app"
-- **Single File Pattern:** Use Babel standalone to run JSX in the browser.
-- **Imports:** \`<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>\`
-- **Structure:**
-  \`<script type="text/babel">
-     const { useState, useEffect } = React;
-     function App() { ... }
-     const root = ReactDOM.createRoot(document.getElementById('root'));
-     root.render(<App />);
-   </script>\`
-
-(3) BACKEND / LOGIC MODE
-Triggered by: "Node", "Python", "SQL", "Algorithm"
-- Provide clean, secure, and idiomatic code.
-- Use async/await for asynchronous operations.
-- Explain Time/Space complexity (Big O) if relevant to algorithms.
-
-========================
-      SAFETY & QUALITY
-========================
-- **Security:** Sanitize inputs in examples (XSS prevention).
-- **Stability:** Avoid \`alert()\` loops or infinite recursion.
-- **Privacy:** Do not generate PII.
-
---- END CANVAS CONTEXT ---`;
   }
 
   // getSystemMessage is global in script.js
@@ -791,10 +816,7 @@ async function handleSend() {
   }
 
   // 2. Build the final system message using the centralized function
-  const finalSystemMessage = await buildContextualSystemMessage(
-    contextAttachment,
-    isCanvasModeActive
-  );
+  const finalSystemMessage = await buildContextualSystemMessage(contextAttachment);
 
   try {
     // getApiResponse is global in script.js
@@ -803,7 +825,8 @@ async function handleSend() {
       finalSystemMessage,
       historyForApi,
       signal,
-      isWebSearchActive
+      isWebSearchActive,
+      isCanvasModeActive // Pass canvas mode flag to server
     );
 
     if (!response || typeof response !== "string" || response.trim() === "") {
@@ -937,9 +960,11 @@ async function streamResponse(fullText) {
     } else if (newCode.includes("function") || newCode.includes("const")) {
       lang = "javascript";
     }
-    canvasCodeBlock.className = `language-${lang}`;
 
-    canvasCodeBlock.textContent = "";
+    // Clear Monaco and prepare for streaming
+    if (monacoEditor) {
+      monacoEditor.setValue("");
+    }
     switchCanvasTab("code");
     if (canvasPlaceholder) canvasPlaceholder.style.display = "none";
 
@@ -1023,32 +1048,63 @@ async function streamTextToBubble(textToStream, bubble) {
 }
 
 /**
- * Streams code to the canvas code block.
+ * Streams code to the Monaco editor.
  */
 async function streamCodeToCanvas(codeString, lang) {
-  const chunks = codeString.match(/(\s+|\S+)/g) || [];
-  const editorPane = canvasCodeBlock.parentElement;
+  if (!monacoEditor) {
+    console.warn("Monaco editor not ready, falling back to direct set");
+    setMonacoCode(codeString, lang);
+    return;
+  }
+
+  // Map language to Monaco language ID
+  const langMap = {
+    html: "html",
+    javascript: "javascript",
+    js: "javascript",
+    css: "css",
+    python: "python",
+    json: "json",
+    typescript: "typescript",
+    ts: "typescript",
+    plaintext: "plaintext",
+  };
+  const monacoLang = langMap[lang] || "plaintext";
+
+  // Show and clear the editor
+  if (monacoEditorContainer) {
+    monacoEditorContainer.style.display = "block";
+  }
+  if (canvasPlaceholder) {
+    canvasPlaceholder.style.display = "none";
+  }
+
+  // Set language
+  const model = monacoEditor.getModel();
+  if (model) {
+    monaco.editor.setModelLanguage(model, monacoLang);
+  }
+
+  // Stream the code character by character for effect
+  const chunks = codeString.match(/.{1,50}/g) || []; // Stream in 50-char chunks
+  let currentCode = "";
 
   for (const chunk of chunks) {
     if (!isResponding) {
       break;
     }
-    canvasCodeBlock.textContent += chunk;
+    currentCode += chunk;
+    monacoEditor.setValue(currentCode);
 
-    if (
-      editorPane.scrollTop + editorPane.clientHeight >=
-      editorPane.scrollHeight - 50
-    ) {
-      editorPane.scrollTop = editorPane.scrollHeight;
-    }
+    // Scroll to bottom
+    const lineCount = monacoEditor.getModel().getLineCount();
+    monacoEditor.revealLine(lineCount);
 
-    await new Promise((r) => setTimeout(r, 1));
+    await new Promise((r) => setTimeout(r, 5));
   }
 
-  canvasCodeBlock.textContent = codeString;
-  if (typeof hljs !== "undefined") {
-    hljs.highlightElement(canvasCodeBlock);
-  }
+  // Final set to ensure complete code
+  monacoEditor.setValue(codeString);
 }
 
 /**
@@ -1248,10 +1304,7 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
   }));
 
   // --- DYNAMIC SYSTEM PROMPT CONSTRUCTION ---
-  const finalSystemMessage = await buildContextualSystemMessage(
-    attachment,
-    isCanvasModeActive
-  );
+  const finalSystemMessage = await buildContextualSystemMessage(attachment);
 
   try {
     // getApiResponse is global in script.js
@@ -1259,7 +1312,9 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
       newPrompt,
       finalSystemMessage,
       historyForApi,
-      signal
+      signal,
+      false, // webSearchActive
+      isCanvasModeActive // Pass canvas mode flag to server
     );
 
     if (!response || typeof response !== "string" || response.trim() === "") {
@@ -1477,7 +1532,7 @@ document.addEventListener("DOMContentLoaded", () => {
   canvasToggleBtn = document.getElementById("canvas-toggle-btn");
   canvasPane = document.getElementById("canvas-pane");
   canvasCloseBtn = document.getElementById("canvas-close-btn");
-  canvasCodeBlock = document.getElementById("canvas-code-block");
+  monacoEditorContainer = document.getElementById("monaco-editor-container");
   canvasPlaceholder = document.getElementById("canvas-placeholder");
   canvasTabCode = document.getElementById("canvas-tab-code");
   canvasTabPreview = document.getElementById("canvas-tab-preview");
@@ -1488,6 +1543,9 @@ document.addEventListener("DOMContentLoaded", () => {
   canvasPreviewPlaceholder = document.getElementById(
     "canvas-preview-placeholder"
   );
+
+  // Initialize Monaco Editor
+  initMonacoEditor();
 
   toolsToggleBtn = document.getElementById("tools-toggle-btn");
   toolsDropdown = document.getElementById("tools-dropdown");

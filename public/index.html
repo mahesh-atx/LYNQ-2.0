@@ -26,6 +26,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
+
+
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
@@ -189,8 +192,8 @@
               </div>
 
               <div class="suggestion-pills-mobile" id="suggestion-pills-mobile">
-                <button class="pill-card" onclick="sendSuggestion('Review my portfolio code for SEO best practices.')">
-                  <i class="fa-solid fa-code"></i> Code Review
+                <button class="pill-card" onclick="sendSuggestion('Make a website digital agency with all sctions.')">
+                  <i class="fa-solid fa-code"></i> website
                 </button>
                 <button class="pill-card"
                   onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')">
@@ -311,7 +314,8 @@
             </div>
           </div>
           <div id="canvas-content">
-            <pre><code id="canvas-code-block" class="language-plaintext"></code></pre>
+            <!-- Monaco Editor Container -->
+            <div id="monaco-editor-container"></div>
             <div id="canvas-placeholder">
               <i class="fa-solid fa-code"></i>
               <p>Code from the conversation will appear here when Canvas Mode is active.</p>
@@ -355,6 +359,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+  <!-- Monaco Editor -->
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 
   <script src="js/components.js"></script>
   <script src="js/auth.js"></script>

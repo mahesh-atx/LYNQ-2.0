@@ -998,10 +998,18 @@ textarea#chat-input {
 #canvas-content {
   flex: 1;
   /* Takes up available space */
-  overflow-y: auto;
+  overflow: hidden;
   position: relative;
-  background: #2e2e2e;
+  background: #1e1e1e;
   /* Match content bg */
+}
+
+/* Monaco Editor Container */
+#monaco-editor-container {
+  width: 100%;
+  height: 100%;
+  display: none;
+  /* Hidden by default, shown when code is loaded */
 }
 
 #canvas-content pre {

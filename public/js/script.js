@@ -323,7 +323,8 @@ async function getApiResponse(
   systemMessage = null,
   history = [],
   signal = null,
-  webSearchActive = false // <--- NEW: Accept button state
+  webSearchActive = false,
+  canvasMode = false // NEW: Canvas mode flag
 ) {
   // --- MODIFIED: Auth is now optional ---
   let headers = { "Content-Type": "application/json" };
@@ -366,6 +367,7 @@ async function getApiResponse(
         model: currentSelectedModel,
         // Use the button state instead of the keyword guess
         webSearch: webSearchActive,
+        canvasMode: canvasMode, // NEW: Pass canvas mode flag
       }),
       signal: signal,
     });
