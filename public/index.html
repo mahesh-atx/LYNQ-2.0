@@ -28,9 +28,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
-
-
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
@@ -128,23 +125,40 @@
 </head>
 
 <body class="dark-mode">
-  <div id="global-loader" style="
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--bg-primary);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.5s ease;
-    ">
-    <div class="loader-content">
-      <div class="loader-logo">
-        <i class="fa-solid fa-bolt"></i> LYNQ
+  <!-- Skeleton Loader - matches exact layout of actual content -->
+  <div id="skeleton-loader">
+    <!-- Skeleton Topbar - matches .top-bar -->
+    <div class="skeleton-topbar">
+      <div class="skeleton-topbar-left">
+        <div class="skeleton-bone skeleton-menu-btn"></div>
+        <div class="skeleton-bone skeleton-logo"></div>
       </div>
-      <div class="seek-bar-wrapper">
-        <div class="seek-bar-fill"></div>
+      <div class="skeleton-topbar-right">
+        <div class="skeleton-bone skeleton-avatar"></div>
       </div>
+    </div>
+
+    <!-- Skeleton Main Area -->
+    <div class="skeleton-main-area">
+      <!-- Skeleton Welcome - matches .welcome-screen -->
+      <div class="skeleton-welcome">
+        <div class="skeleton-bone skeleton-welcome-title"></div>
+        <div class="skeleton-bone skeleton-welcome-subtitle"></div>
+        <div class="skeleton-pills">
+          <div class="skeleton-bone skeleton-pill"></div>
+          <div class="skeleton-bone skeleton-pill"></div>
+          <div class="skeleton-bone skeleton-pill"></div>
+          <div class="skeleton-bone skeleton-pill"></div>
+        </div>
+      </div>
+
+      <!-- Skeleton Input - matches .input-area-wrapper -->
+      <div class="skeleton-input-wrapper">
+        <div class="skeleton-bone skeleton-input-container"></div>
+      </div>
+
+      <!-- Skeleton Footer -->
+      <div class="skeleton-bone skeleton-footer"></div>
     </div>
   </div>
 
@@ -363,9 +377,19 @@
   <script src="js/voice.js"></script>
   <script src="js/pdf.js"></script>
   <script src="js/chat.js"></script>
+  <script src="js/mobile.js"></script>
   <script>
     // Initialize shared components
     initSharedComponents('home');
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('Service Worker registered'))
+          .catch(err => console.log('Service Worker registration failed:', err));
+      });
+    }
   </script>
 </body>
 

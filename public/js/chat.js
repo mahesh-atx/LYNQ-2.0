@@ -566,6 +566,9 @@ async function handleSend() {
 
     if (!text && !currentAttachment) return;
 
+    // Haptic feedback on send
+    if (typeof hapticFeedback === 'function') hapticFeedback('light');
+
     if (welcomeScreen) welcomeScreen.style.display = "none";
     chatInput.value = "";
     chatInput.style.height = "auto";
@@ -880,6 +883,7 @@ async function streamResponse(fullText) {
 async function streamTextToBubble(textToStream, bubble) {
     const words = textToStream.split(" ");
     let currentText = "";
+    let lastCodeBlockCount = 0;
 
     for (let i = 0; i < words.length; i++) {
         if (!isResponding) {
@@ -892,6 +896,21 @@ async function streamTextToBubble(textToStream, bubble) {
         let displayHtml = marked.parse(currentText);
 
         bubble.innerHTML = displayHtml;
+
+        // Check if a new code block was completed (look for closing ```)
+        // We detect completed code blocks by counting <pre> tags
+        const currentCodeBlocks = bubble.querySelectorAll("pre code");
+
+        if (currentCodeBlocks.length > lastCodeBlockCount) {
+            // New code block detected! Highlight and enhance it immediately
+            currentCodeBlocks.forEach((block, index) => {
+                if (index >= lastCodeBlockCount) {
+                    hljs.highlightElement(block);
+                }
+            });
+            enhanceCodeBlocks(bubble);
+            lastCodeBlockCount = currentCodeBlocks.length;
+        }
 
         const chatContainer = document.getElementById("chat-container");
         if (chatContainer) {
@@ -913,10 +932,142 @@ async function streamTextToBubble(textToStream, bubble) {
         );
     }
 
+    // Final pass to catch any remaining code blocks
     bubble.innerHTML = marked.parse(currentText.trim());
     bubble
         .querySelectorAll("pre code")
         .forEach((block) => hljs.highlightElement(block));
+
+    // Enhance any remaining code blocks
+    enhanceCodeBlocks(bubble);
+}
+
+/**
+ * Enhances code blocks with a header containing language name and copy button.
+ * Wraps each <pre><code> block in a styled container.
+ */
+function enhanceCodeBlocks(container) {
+    const codeBlocks = container.querySelectorAll("pre");
+
+    codeBlocks.forEach((pre) => {
+        // Skip if already enhanced
+        if (pre.parentElement.classList.contains("code-block-wrapper")) return;
+
+        const code = pre.querySelector("code");
+        if (!code) return;
+
+        // Detect language from class (highlight.js adds language-xxx)
+        let language = "plaintext";
+        const classNames = code.className.split(" ");
+        for (const cls of classNames) {
+            if (cls.startsWith("language-")) {
+                language = cls.replace("language-", "");
+                break;
+            } else if (cls.startsWith("hljs-")) {
+                continue; // Skip hljs theme classes
+            } else if (cls && cls !== "hljs") {
+                language = cls;
+                break;
+            }
+        }
+
+        // Capitalize and clean language name
+        const displayLang = formatLanguageName(language);
+
+        // Create wrapper
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block-wrapper";
+
+        // Create header
+        const header = document.createElement("div");
+        header.className = "code-block-header";
+
+        // Language label
+        const langLabel = document.createElement("span");
+        langLabel.className = "code-language";
+        langLabel.textContent = displayLang;
+
+        // Copy button
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "code-copy-btn";
+        copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+        copyBtn.onclick = () => {
+            const textToCopy = code.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                copyBtn.classList.add("copied");
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                    copyBtn.classList.remove("copied");
+                }, 2000);
+            }).catch(() => {
+                if (typeof showToast === "function") showToast("Failed to copy code");
+            });
+        };
+
+        header.appendChild(langLabel);
+        header.appendChild(copyBtn);
+
+        // Wrap the pre element
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+    });
+}
+
+/**
+ * Formats language name for display (e.g., 'javascript' -> 'JavaScript')
+ */
+function formatLanguageName(lang) {
+    const languageMap = {
+        'javascript': 'JavaScript',
+        'js': 'JavaScript',
+        'typescript': 'TypeScript',
+        'ts': 'TypeScript',
+        'python': 'Python',
+        'py': 'Python',
+        'java': 'Java',
+        'cpp': 'C++',
+        'c': 'C',
+        'csharp': 'C#',
+        'cs': 'C#',
+        'html': 'HTML',
+        'css': 'CSS',
+        'scss': 'SCSS',
+        'sass': 'Sass',
+        'json': 'JSON',
+        'xml': 'XML',
+        'yaml': 'YAML',
+        'yml': 'YAML',
+        'markdown': 'Markdown',
+        'md': 'Markdown',
+        'bash': 'Bash',
+        'sh': 'Shell',
+        'shell': 'Shell',
+        'powershell': 'PowerShell',
+        'sql': 'SQL',
+        'php': 'PHP',
+        'ruby': 'Ruby',
+        'rb': 'Ruby',
+        'go': 'Go',
+        'rust': 'Rust',
+        'swift': 'Swift',
+        'kotlin': 'Kotlin',
+        'dart': 'Dart',
+        'r': 'R',
+        'plaintext': 'Code',
+        'text': 'Text',
+        'jsx': 'JSX',
+        'tsx': 'TSX',
+        'vue': 'Vue',
+        'svelte': 'Svelte',
+        'graphql': 'GraphQL',
+        'dockerfile': 'Dockerfile',
+        'nginx': 'Nginx',
+        'apache': 'Apache',
+    };
+
+    return languageMap[lang.toLowerCase()] || lang.charAt(0).toUpperCase() + lang.slice(1);
 }
 
 /**
@@ -1249,6 +1400,8 @@ function addMessage(text, sender, skipHistory = false, attachment = null) {
         bubble.querySelectorAll("pre code").forEach((block) => {
             hljs.highlightElement(block);
         });
+        // Enhance code blocks with headers (language + copy button)
+        enhanceCodeBlocks(bubble);
     }
 
     const chatContainer = document.getElementById("chat-container");

@@ -644,6 +644,7 @@ async function executeDelete(chatId) {
     }
 
     showToast("Chat deleted successfully!");
+    if (typeof hapticFeedback === 'function') hapticFeedback('success');
     renderRecentChats();
   } catch (error) {
     console.error("Error executing delete:", error);
@@ -842,7 +843,7 @@ function updateUIAfterAuth(user) {
     // Load non-chat state (theme, etc.)
     loadState(false);
   }
-  const loader = document.getElementById("global-loader");
+  const loader = document.getElementById("skeleton-loader");
   if (loader) {
     loader.style.opacity = "0";
     setTimeout(() => {

@@ -28,22 +28,40 @@
 </head>
 
 <body class="dark-mode">
-    <div id="global-loader" style="
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--bg-primary);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: opacity 0.5s ease;
-    ">
-        <div class="loader-content">
-            <div class="loader-logo">
-                <i class="fa-solid fa-bolt"></i> LYNQ
+    <!-- Skeleton Loader for Tools Page -->
+    <div id="skeleton-loader">
+        <!-- Skeleton Topbar -->
+        <div class="skeleton-topbar">
+            <div class="skeleton-topbar-left">
+                <div class="skeleton-bone skeleton-menu-btn"></div>
+                <div class="skeleton-bone skeleton-logo"></div>
             </div>
-            <div class="seek-bar-wrapper">
-                <div class="seek-bar-fill"></div>
+            <div class="skeleton-topbar-right">
+                <div class="skeleton-bone skeleton-avatar"></div>
+            </div>
+        </div>
+
+        <!-- Skeleton Tools Content -->
+        <div class="skeleton-tools-content">
+            <div class="skeleton-tools-hero">
+                <div class="skeleton-bone skeleton-tools-title"></div>
+                <div class="skeleton-bone skeleton-tools-subtitle"></div>
+                <div class="skeleton-bone skeleton-tools-search"></div>
+            </div>
+            <div class="skeleton-tools-categories">
+                <div class="skeleton-bone skeleton-category-pill"></div>
+                <div class="skeleton-bone skeleton-category-pill"></div>
+                <div class="skeleton-bone skeleton-category-pill"></div>
+                <div class="skeleton-bone skeleton-category-pill"></div>
+                <div class="skeleton-bone skeleton-category-pill"></div>
+            </div>
+            <div class="skeleton-tools-grid">
+                <div class="skeleton-bone skeleton-tool-card"></div>
+                <div class="skeleton-bone skeleton-tool-card"></div>
+                <div class="skeleton-bone skeleton-tool-card"></div>
+                <div class="skeleton-bone skeleton-tool-card"></div>
+                <div class="skeleton-bone skeleton-tool-card"></div>
+                <div class="skeleton-bone skeleton-tool-card"></div>
             </div>
         </div>
     </div>
@@ -545,9 +563,19 @@
     <script src="js/auth.js"></script>
     <script src="js/script.js"></script>
     <script src="js/tools.js"></script>
+    <script src="js/mobile.js"></script>
     <script>
         // Initialize shared components
         initSharedComponents('tools');
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
     </script>
 </body>
 

@@ -1,1 +1,41 @@
-{"name":"","short_name":"","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}
+{
+    "name": "LYNQ AI - Intelligent Chat Assistant",
+    "short_name": "LYNQ AI",
+    "description": "Your AI-powered chat assistant with canvas, tools, and web search",
+    "start_url": "/index.html",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "theme_color": "#1a1a1a",
+    "background_color": "#0d0d0d",
+    "icons": [
+        {
+            "src": "/favicons/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicons/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "productivity",
+        "utilities"
+    ],
+    "shortcuts": [
+        {
+            "name": "New Chat",
+            "url": "/index.html",
+            "description": "Start a new conversation"
+        },
+        {
+            "name": "Tools",
+            "url": "/tools.html",
+            "description": "Access AI tools"
+        }
+    ]
+}

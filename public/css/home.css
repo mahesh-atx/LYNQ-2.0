@@ -228,6 +228,73 @@
   border-top-right-radius: 4px;
 }
 
+/* --- ENHANCED CODE BLOCK STYLES --- */
+.code-block-wrapper {
+  margin: 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #282c34;
+  border: 1px solid #3e4451;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #21252b;
+  border-bottom: 1px solid #3e4451;
+}
+
+.code-language {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #abb2bf;
+  font-family: 'Outfit', sans-serif;
+}
+
+.code-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #7f848e;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-family: 'Outfit', sans-serif;
+}
+
+.code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #abb2bf;
+}
+
+.code-copy-btn.copied {
+  color: #98c379;
+}
+
+.code-copy-btn i {
+  font-size: 0.85rem;
+}
+
+/* Override pre styles when inside wrapper */
+.code-block-wrapper pre {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: #282c34 !important;
+  padding: 16px !important;
+  border: none !important;
+}
+
+.code-block-wrapper pre code {
+  background: transparent !important;
+}
+
+/* Fallback for unwrapped code blocks */
 .bubble pre {
   background: #282c34;
   color: #abb2bf;
