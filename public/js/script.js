@@ -170,22 +170,17 @@ function toggleProfilePopup(forceState) {
 }
 
 function toggleChatSearch(show) {
-  const label = document.getElementById("recent-chats-label");
-  const input = document.getElementById("chat-search-input");
-  const trigger = document.getElementById("chat-search-trigger");
+  const searchWrapper = document.getElementById("chat-search-wrapper");
+  const searchInput = document.getElementById("chat-search-input");
 
-  if (!label || !input || !trigger) return;
+  if (!searchWrapper || !searchInput) return;
 
   if (show) {
-    label.style.display = "none";
-    trigger.style.display = "none";
-    input.style.display = "block";
-    input.focus();
+    searchWrapper.style.display = "flex";
+    searchInput.focus();
   } else {
-    label.style.display = "block";
-    trigger.style.display = "block";
-    input.style.display = "none";
-    input.value = "";
+    searchWrapper.style.display = "none";
+    searchInput.value = "";
     filterRecentChats();
   }
 }
@@ -818,6 +813,9 @@ function updateUIAfterAuth(user) {
 
     if (welcomeName) welcomeName.innerText = `Hello, ${displayName}`;
 
+    // Update sidebar user info
+    updateSidebarUserInfo(user);
+
     // Load user-specific data
     loadState(true);
   } else {
@@ -851,10 +849,145 @@ function updateUIAfterAuth(user) {
   }
 }
 
+// --- NEW: Sidebar Profile Menu Functions ---
+function toggleSidebarProfileMenu() {
+  const menu = document.getElementById("sidebar-profile-menu");
+  if (menu) {
+    const isVisible = menu.style.display === "flex";
+    menu.style.display = isVisible ? "none" : "flex";
+  }
+}
+
+function closeSidebarProfileMenu() {
+  const menu = document.getElementById("sidebar-profile-menu");
+  if (menu) {
+    menu.style.display = "none";
+  }
+}
+
+// --- NEW: Header Model Dropdown Functions ---
+// --- NEW: Header Model Dropdown Functions ---
+// 1. Tier Dropdown (LYNQ / LYNQ Pro)
+function toggleHeaderModelDropdown() {
+  const dropdown = document.getElementById("header-model-dropdown");
+  const btn = document.getElementById("header-model-btn");
+
+  // Close other dropdown if open
+  document.getElementById("model-list-dropdown")?.style.setProperty("display", "none");
+  document.getElementById("model-list-btn")?.classList.remove("active");
+
+  if (dropdown) {
+    const isVisible = dropdown.style.display === "flex";
+    dropdown.style.display = isVisible ? "none" : "flex";
+    btn?.classList.toggle("active", !isVisible);
+  }
+}
+
+// 2. Specific Model Dropdown (llama / gpt)
+function toggleModelListDropdown() {
+  const dropdown = document.getElementById("model-list-dropdown");
+  const btn = document.getElementById("model-list-btn");
+
+  // Close other dropdown if open
+  document.getElementById("header-model-dropdown")?.style.setProperty("display", "none");
+  document.getElementById("header-model-btn")?.classList.remove("active");
+
+  if (dropdown) {
+    const isVisible = dropdown.style.display === "flex";
+    dropdown.style.display = isVisible ? "none" : "flex";
+    btn?.classList.toggle("active", !isVisible);
+  }
+}
+
+// Select Tier (LYNQ / Pro)
+function selectHeaderTier(element, displayName, description) {
+  const headerModelName = document.getElementById("header-model-name");
+  if (headerModelName) {
+    headerModelName.textContent = displayName;
+  }
+
+  // Update selected state in tier list
+  const tierItems = document.querySelectorAll("#header-model-dropdown .model-dropdown-item");
+  tierItems.forEach(item => item.classList.remove("selected"));
+  element.classList.add("selected");
+
+  // Close dropdown
+  document.getElementById("header-model-dropdown").style.display = "none";
+  document.getElementById("header-model-btn")?.classList.remove("active");
+}
+
+// Select Specific Model
+function selectSpecificModel(element, modelName, displayName, description) {
+  currentSelectedModel = modelName;
+
+  // Update button text
+  const listBtnName = document.getElementById("model-list-name");
+  if (listBtnName) {
+    listBtnName.textContent = displayName;
+  }
+
+  // Update active state in model list
+  const modelItems = document.querySelectorAll("#model-list-dropdown .model-dropdown-item");
+  modelItems.forEach(item => item.classList.remove("selected"));
+  element.classList.add("selected");
+
+  // Close dropdown
+  document.getElementById("model-list-dropdown").style.display = "none";
+  document.getElementById("model-list-btn")?.classList.remove("active");
+}
+
+/* Original selectHeaderModel preserved for backward compat if needed, 
+   but we are switching to split functions. */
+function selectHeaderModel(element, modelName, displayName, description) {
+  selectSpecificModel(element, modelName, displayName, description);
+}
+
+
+// --- NEW: Update Sidebar User Info ---
+function updateSidebarUserInfo(user) {
+  const avatar = document.getElementById("sidebar-user-avatar");
+  const name = document.getElementById("sidebar-user-name");
+  const plan = document.getElementById("sidebar-user-plan");
+
+  if (user) {
+    const displayName = user.displayName || user.email?.split("@")[0] || "User";
+    const initial = displayName.charAt(0).toUpperCase();
+
+    if (avatar) avatar.textContent = initial;
+    if (name) name.textContent = displayName;
+    if (plan) plan.textContent = "Free"; // Could be dynamic based on subscription
+  } else {
+    if (avatar) avatar.textContent = "U";
+    if (name) name.textContent = "User";
+    if (plan) plan.textContent = "Free";
+  }
+}
+
 window.onclick = function (event) {
+  // Close old model dropdown (input toolbar - if it exists)
   if (!event.target.closest(".model-selector-wrapper")) {
     document.getElementById("model-dropdown")?.classList.remove("show");
   }
+
+  // Close header TIER dropdown
+  if (!event.target.closest("#header-model-btn") && !event.target.closest("#header-model-dropdown")) {
+    const headerDropdown = document.getElementById("header-model-dropdown");
+    if (headerDropdown) headerDropdown.style.display = "none";
+    document.getElementById("header-model-btn")?.classList.remove("active");
+  }
+
+  // Close header MODEL LIST dropdown
+  if (!event.target.closest("#model-list-btn") && !event.target.closest("#model-list-dropdown")) {
+    const listDropdown = document.getElementById("model-list-dropdown");
+    if (listDropdown) listDropdown.style.display = "none";
+    document.getElementById("model-list-btn")?.classList.remove("active");
+  }
+
+  // Close sidebar profile menu
+  if (!event.target.closest(".sidebar-footer-profile")) {
+    closeSidebarProfileMenu();
+  }
+
   if (event.target === document.getElementById("pricing-modal")) {
     togglePricing();
   }
@@ -869,7 +1002,199 @@ window.onclick = function (event) {
   if (event.target === document.getElementById("confirm-delete-modal")) {
     document.getElementById("confirm-delete-modal").classList.remove("active");
   }
+
+  // Close input model dropdown
+  if (!event.target.closest(".input-model-selector")) {
+    const inputModelDropdown = document.getElementById("input-model-dropdown");
+    if (inputModelDropdown) inputModelDropdown.classList.remove("active");
+    document.getElementById("input-model-btn")?.classList.remove("active");
+  }
+
+  // Close tools dropdown
+  if (!event.target.closest(".tool-dropdown-wrapper")) {
+    const toolsDropdown = document.getElementById("tools-dropdown");
+    if (toolsDropdown) toolsDropdown.classList.remove("active");
+  }
 };
+
+/* --- INPUT MODEL SELECTOR FUNCTIONS --- */
+function toggleInputModelDropdown() {
+  const dropdown = document.getElementById("input-model-dropdown");
+  const btn = document.getElementById("input-model-btn");
+
+  if (dropdown) {
+    dropdown.classList.toggle("active");
+    btn?.classList.toggle("active", dropdown.classList.contains("active"));
+  }
+}
+
+function selectInputModel(element, modelId, displayName) {
+  // Update global model
+  currentSelectedModel = modelId;
+
+  // Update button text to show selected model
+  const modelNameEl = document.getElementById("input-model-name");
+  if (modelNameEl) {
+    modelNameEl.textContent = displayName;
+  }
+
+  // Update selected state
+  const options = document.querySelectorAll(".input-model-option");
+  options.forEach(opt => opt.classList.remove("selected"));
+  element.classList.add("selected");
+
+  // Close dropdown
+  document.getElementById("input-model-dropdown")?.classList.remove("active");
+  document.getElementById("input-model-btn")?.classList.remove("active");
+
+  // Get icon class from the element
+  const iconEl = element.querySelector("i:first-child");
+  const iconClass = iconEl ? iconEl.className : "fa-solid fa-bolt";
+
+  // Show model indicator pill
+  showSelectedModelIndicator(modelId, displayName, iconClass);
+
+  // Show confirmation
+  if (typeof showToast === "function") showToast(`Model: ${displayName}`);
+}
+
+/* --- SELECTED MODEL INDICATOR FUNCTIONS --- */
+function showSelectedModelIndicator(modelId, displayName, iconClass) {
+  const indicator = document.getElementById("selected-model-indicator");
+  const iconEl = document.getElementById("selected-model-icon");
+  const labelEl = document.getElementById("selected-model-label");
+
+  if (indicator && iconEl && labelEl) {
+    iconEl.className = iconClass;
+    labelEl.textContent = displayName;
+    indicator.style.display = "flex";
+  }
+}
+
+function deselectModel() {
+  const indicator = document.getElementById("selected-model-indicator");
+  if (indicator) {
+    indicator.style.display = "none";
+  }
+
+  // Reset to default model
+  currentSelectedModel = "llama-3.1-8b-instant";
+  const modelNameEl = document.getElementById("input-model-name");
+  if (modelNameEl) {
+    modelNameEl.textContent = "llama-3.1";
+  }
+
+  // Reset selected state in dropdown
+  const options = document.querySelectorAll(".input-model-option");
+  options.forEach((opt, idx) => {
+    if (idx === 0) {
+      opt.classList.add("selected");
+    } else {
+      opt.classList.remove("selected");
+    }
+  });
+
+  if (typeof showToast === "function") showToast("Model reset to default");
+}
+
+/* --- SELECTED TOOL INDICATOR FUNCTIONS --- */
+let currentSelectedTool = null;
+
+function showSelectedToolIndicator(toolId, iconClass, toolName) {
+  const indicator = document.getElementById("selected-tool-indicator");
+  const iconEl = document.getElementById("selected-tool-icon");
+  const labelEl = document.getElementById("selected-tool-label");
+
+  if (indicator && iconEl) {
+    iconEl.className = iconClass;
+    if (labelEl && toolName) {
+      labelEl.textContent = toolName;
+    }
+    indicator.style.display = "flex";
+    currentSelectedTool = toolId;
+  }
+}
+
+function deselectTool() {
+  const indicator = document.getElementById("selected-tool-indicator");
+  if (indicator) {
+    indicator.style.display = "none";
+  }
+
+  currentSelectedTool = null;
+
+  // Deselect canvas mode if active
+  if (typeof isCanvasModeActive !== "undefined" && isCanvasModeActive) {
+    if (typeof toggleCanvasMode === "function") toggleCanvasMode(false);
+  }
+
+  // Deselect web search if active
+  if (typeof isWebSearchActive !== "undefined" && isWebSearchActive) {
+    isWebSearchActive = false;
+    const btn = document.getElementById("web-search-toggle-btn");
+    if (btn) btn.classList.remove("active");
+  }
+
+  if (typeof showToast === "function") showToast("Tool deselected");
+}
+
+/* --- DESKTOP TOOL HANDLERS --- */
+function handleDesktopTool(action) {
+  // Close dropdown
+  const dropdown = document.getElementById("tools-dropdown");
+  if (dropdown) dropdown.classList.remove("active");
+
+  // Handle tool selection
+  switch (action) {
+    case 'image':
+      showSelectedToolIndicator('imagegen', 'fa-solid fa-paintbrush', 'Create Image');
+      if (typeof showToast === 'function') showToast("Create Image mode enabled");
+      break;
+    case 'deep-research':
+      showSelectedToolIndicator('deepresearch', 'fa-solid fa-microscope', 'Deep Research');
+      if (typeof showToast === 'function') showToast("Deep Research mode enabled");
+      break;
+    case 'shopping':
+      showSelectedToolIndicator('shoppingresearch', 'fa-solid fa-bag-shopping', 'Shopping');
+      if (typeof showToast === 'function') showToast("Shopping Research mode enabled");
+      break;
+    case 'thinking':
+      showSelectedToolIndicator('thinking', 'fa-solid fa-brain', 'Thinking');
+      if (typeof showToast === 'function') showToast("Thinking mode enabled");
+      break;
+  }
+}
+
+function handleDesktopAttach(action) {
+  // Close dropdown
+  const dropdown = document.getElementById("tools-dropdown");
+  if (dropdown) dropdown.classList.remove("active");
+
+  const fileInput = document.getElementById('file-upload');
+  if (!fileInput) return;
+
+  switch (action) {
+    case 'camera':
+      fileInput.setAttribute('accept', 'image/*');
+      fileInput.setAttribute('capture', 'environment');
+      fileInput.click();
+      setTimeout(() => {
+        fileInput.removeAttribute('capture');
+        fileInput.setAttribute('accept', 'application/pdf');
+      }, 1000);
+      break;
+    case 'photos':
+      fileInput.setAttribute('accept', 'image/*');
+      fileInput.click();
+      setTimeout(() => fileInput.setAttribute('accept', 'application/pdf'), 1000);
+      break;
+    case 'files':
+      fileInput.setAttribute('accept', '*/*');
+      fileInput.click();
+      setTimeout(() => fileInput.setAttribute('accept', 'application/pdf'), 1000);
+      break;
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   // Get shared elements
@@ -905,3 +1230,128 @@ document.addEventListener("DOMContentLoaded", () => {
     mobileOverlay.addEventListener("click", closeSidebar);
   }
 });
+
+/* --- MOBILE ACTION SHEET LOGIC --- */
+function toggleMobileActionSheet(show) {
+  const sheet = document.getElementById("mobile-action-sheet");
+  const overlay = document.getElementById("mobile-sheet-overlay");
+
+  if (show) {
+    sheet.classList.add("active");
+    overlay.classList.add("active");
+  } else {
+    sheet.classList.remove("active");
+    overlay.classList.remove("active");
+  }
+}
+
+function handleMobileAction(action) {
+  toggleMobileActionSheet(false);
+
+  setTimeout(() => {
+    switch (action) {
+      case 'camera':
+        const fileInputC = document.getElementById('file-upload');
+        if (fileInputC) {
+          fileInputC.setAttribute('accept', 'image/*');
+          fileInputC.setAttribute('capture', 'environment');
+          fileInputC.click();
+          setTimeout(() => {
+            fileInputC.removeAttribute('capture');
+            fileInputC.setAttribute('accept', 'application/pdf');
+          }, 1000);
+        }
+        break;
+      case 'photos':
+        const fileInputP = document.getElementById('file-upload');
+        if (fileInputP) {
+          fileInputP.setAttribute('accept', 'image/*');
+          fileInputP.click();
+          setTimeout(() => fileInputP.setAttribute('accept', 'application/pdf'), 1000);
+        }
+        break;
+      case 'files':
+        const fileInputF = document.getElementById('file-upload');
+        if (fileInputF) {
+          fileInputF.setAttribute('accept', '*/*');
+          fileInputF.click();
+          setTimeout(() => fileInputF.setAttribute('accept', 'application/pdf'), 1000);
+        }
+        break;
+      case 'model':
+      case 'image':
+      case 'deep-research':
+      case 'shopping':
+      case 'thinking':
+        // For now, simple toast
+        if (typeof showToast === 'function') showToast(action.charAt(0).toUpperCase() + action.slice(1) + " coming soon!");
+        break;
+      case 'web-search':
+        const webBtn = document.getElementById('web-search-toggle-btn');
+        if (webBtn) {
+          webBtn.click();
+        }
+        // Show tool indicator
+        if (typeof isWebSearchActive !== "undefined") {
+          if (!isWebSearchActive) {
+            isWebSearchActive = true;
+            showSelectedToolIndicator('websearch', 'fa-solid fa-earth-americas', 'Web Search');
+            if (typeof showToast === 'function') showToast("Web Search Enabled");
+          } else {
+            deselectTool();
+          }
+        }
+        break;
+      case 'canvas':
+        const canvasBtn = document.getElementById('canvas-toggle-btn');
+        if (canvasBtn) {
+          canvasBtn.click();
+        }
+        // Show tool indicator
+        if (typeof isCanvasModeActive !== "undefined" && !isCanvasModeActive) {
+          showSelectedToolIndicator('canvas', 'fa-solid fa-file-invoice', 'Canvas');
+        }
+        break;
+    }
+  }, 300);
+}
+
+/* Toggle Models Section in Sheet */
+function toggleSheetModels() {
+  const list = document.getElementById('sheet-models-list');
+  const chevron = document.getElementById('sheet-models-chevron');
+
+  if (list) {
+    list.classList.toggle('expanded');
+  }
+  if (chevron) {
+    chevron.classList.toggle('rotated');
+  }
+}
+
+/* Select Model from Sheet */
+function selectMobileModel(modelId, displayName) {
+  // Update selected state
+  const options = document.querySelectorAll('.sheet-model-option');
+  options.forEach(opt => opt.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  // Update header model name if exists
+  const headerModelName = document.getElementById('header-model-name');
+  if (headerModelName) {
+    headerModelName.textContent = displayName;
+  }
+
+  // Store selected model
+  if (typeof selectedModel !== 'undefined') {
+    selectedModel = modelId;
+  }
+
+  // Show confirmation
+  if (typeof showToast === 'function') {
+    showToast(`Model: ${displayName}`);
+  }
+
+  // Close sheet after selection
+  setTimeout(() => toggleMobileActionSheet(false), 200);
+}

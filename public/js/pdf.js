@@ -150,7 +150,16 @@ function initPdfElements() {
 function initPdfListeners() {
     if (attachFileBtn) {
         attachFileBtn.addEventListener("click", () => {
-            fileUploadInput.click();
+            // Mobile: Open Action Sheet
+            if (window.innerWidth <= 768 && typeof toggleMobileActionSheet === 'function') {
+                toggleMobileActionSheet(true);
+                return;
+            }
+            // Desktop: Toggle Tools Dropdown
+            const toolsDropdown = document.getElementById("tools-dropdown");
+            if (toolsDropdown) {
+                toolsDropdown.classList.toggle("active");
+            }
         });
     }
     if (fileUploadInput) {

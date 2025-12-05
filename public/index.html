@@ -226,13 +226,14 @@
               <textarea id="chat-input" rows="1" placeholder="Ask LYNQ anything..."></textarea>
               <div class="input-toolbar">
                 <div class="toolbar-left">
-                  <button class="tool-btn-round" id="attach-file-btn" title="Attach PDF File">
-                    <i class="fa-solid fa-plus"></i>
-                  </button>
+                  <!-- + Button with Tools Dropdown -->
                   <div class="tool-dropdown-wrapper">
-                    <button class="tool-btn-round" id="tools-toggle-btn" title="Toggle Tools">
-                      <i class="fa-solid fa-tools"></i> </button>
+                    <button class="tool-btn-round" id="attach-file-btn" title="Tools & Attach">
+                      <i class="fa-solid fa-plus"></i>
+                    </button>
                     <div class="tool-dropdown-menu" id="tools-dropdown">
+                      <!-- Tools Section -->
+                      <div class="tool-dropdown-section-label">Tools</div>
                       <button class="tool-dropdown-item" id="canvas-toggle-btn">
                         <i class="fa-solid fa-file-invoice"></i>
                         <div>
@@ -244,42 +245,103 @@
                         <i class="fa-solid fa-earth-americas"></i>
                         <div>
                           <span>Web Search</span>
-                          <span class="tool-desc">Access real-time data</span>
+                          <span class="tool-desc">Find real-time news and info</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('image')">
+                        <i class="fa-solid fa-paintbrush"></i>
+                        <div>
+                          <span>Create Image</span>
+                          <span class="tool-desc">Visualize anything</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('deep-research')">
+                        <i class="fa-solid fa-microscope"></i>
+                        <div>
+                          <span>Deep Research</span>
+                          <span class="tool-desc">Get a detailed report</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('shopping')">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <div>
+                          <span>Shopping Research</span>
+                          <span class="tool-desc">Get an in-depth guide</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('thinking')">
+                        <i class="fa-solid fa-brain"></i>
+                        <div>
+                          <span>Thinking</span>
+                          <span class="tool-desc">Learn a new concept</span>
+                        </div>
+                      </button>
+
+                      <div class="tool-dropdown-divider"></div>
+
+                      <!-- Attach Section -->
+                      <div class="tool-dropdown-section-label">Attach</div>
+                      <button class="tool-dropdown-item" onclick="handleDesktopAttach('camera')">
+                        <i class="fa-solid fa-camera"></i>
+                        <div>
+                          <span>Camera</span>
+                          <span class="tool-desc">Take a photo</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopAttach('photos')">
+                        <i class="fa-solid fa-image"></i>
+                        <div>
+                          <span>Photos</span>
+                          <span class="tool-desc">Upload from gallery</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopAttach('files')">
+                        <i class="fa-solid fa-paperclip"></i>
+                        <div>
+                          <span>Files</span>
+                          <span class="tool-desc">Upload PDF or document</span>
                         </div>
                       </button>
                     </div>
                   </div>
-                  <div class="model-selector-wrapper">
-                    <button class="model-btn" onclick="toggleModelDropdown()" id="current-model-btn">
-                      <i class="fa-solid fa-bolt" style="color: #ffd700"></i>
-                      llama-3.1<i class="fa-solid fa-chevron-down chevron"></i>
+                  <!-- Selected Tool Indicator (shows when a tool is selected) -->
+                  <div class="selected-tool-indicator" id="selected-tool-indicator" style="display: none;">
+                    <i class="fa-solid fa-earth-americas" id="selected-tool-icon"></i>
+                    <span id="selected-tool-label">Web Search</span>
+                    <button class="deselect-tool-btn" onclick="deselectTool()" title="Deselect tool">
+                      <i class="fa-solid fa-xmark"></i>
                     </button>
-                    <div class="model-dropdown" id="model-dropdown">
-                      <div class="model-option selected"
-                        onclick="selectModel(this, 'llama-3.1-8b-instant', 'fa-bolt', '#FFD700')">
-                        <span><i class="fa-solid fa-bolt" style="color: #ffd700; margin-right: 8px"></i>
-                          llama-3.1</span>
-                        <span class="pro-badge">Pro</span>
-                        <i class="fa-solid fa-check check-icon"></i>
-                      </div>
-                      <div class="model-option"
-                        onclick="selectModel(this, 'openai/gpt-oss-20b', 'fa-robot', '#10a37f')">
-                        <span><i class="fa-solid fa-robot" style="color: #10a37f; margin-right: 8px"></i>
-                          GPT-OSS-20B</span>
-                        <span class="pro-badge">Pro</span>
-                        <i class="fa-solid fa-check check-icon" style="display: none"></i>
-                      </div>
-                      <div class="model-option"
-                        onclick="selectModel(this, 'openai/gpt-oss-120b', 'fa-bolt-lightning', '#FF4500')">
-                        <span><i class="fa-solid fa-bolt-lightning" style="color: #ff4500; margin-right: 8px"></i>
-                          gpt-oss-120b</span>
-                        <i class="fa-solid fa-check check-icon" style="display: none"></i>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div class="toolbar-right">
-                  <button class="tool-btn-round">
+                  <!-- Model Selector Dropdown (showing selected model) -->
+                  <div class="input-model-selector">
+                    <button class="input-model-btn" id="input-model-btn" onclick="toggleInputModelDropdown()">
+                      <span id="input-model-name">llama-3.1</span>
+                      <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="input-model-dropdown" id="input-model-dropdown">
+                      <div class="input-model-option selected"
+                        onclick="selectInputModel(this, 'llama-3.1-8b-instant', 'llama-3.1')">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>llama-3.1</span>
+                        <i class="fa-solid fa-check model-check"></i>
+                      </div>
+                      <div class="input-model-option"
+                        onclick="selectInputModel(this, 'openai/gpt-oss-20b', 'GPT-OSS-20B')">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>GPT-OSS-20B</span>
+                        <i class="fa-solid fa-check model-check"></i>
+                      </div>
+                      <div class="input-model-option"
+                        onclick="selectInputModel(this, 'openai/gpt-oss-120b', 'gpt-oss-120b')">
+                        <i class="fa-solid fa-bolt-lightning"></i>
+                        <span>gpt-oss-120b</span>
+                        <i class="fa-solid fa-check model-check"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="tool-btn-round" id="voice-btn">
                     <i class="fa-solid fa-microphone-lines"></i>
                   </button>
                   <button class="tool-btn-round send-btn" id="send-btn" onclick="handleSend()">
@@ -381,6 +443,131 @@
     // Initialize shared components
     initSharedComponents('home');
   </script>
+
+  <!-- Mobile Action Sheet -->
+  <div id="mobile-action-sheet" class="mobile-action-sheet">
+    <div class="sheet-handle"></div>
+
+    <!-- Top Grid Actions -->
+    <div class="sheet-grid-actions">
+      <button class="sheet-action-card" onclick="handleMobileAction('camera')">
+        <div class="sheet-card-icon"><i class="fa-solid fa-camera"></i></div>
+        <span>Camera</span>
+      </button>
+      <button class="sheet-action-card" onclick="handleMobileAction('photos')">
+        <div class="sheet-card-icon"><i class="fa-solid fa-image"></i></div>
+        <span>Photos</span>
+      </button>
+      <button class="sheet-action-card" onclick="handleMobileAction('files')">
+        <div class="sheet-card-icon"><i class="fa-solid fa-paperclip"></i></div>
+        <span>Files</span>
+      </button>
+    </div>
+
+    <!-- Divider -->
+    <div class="sheet-divider"></div>
+
+    <!-- List Actions -->
+    <div class="sheet-list-actions">
+      <!-- Models Section (Expandable) -->
+      <div class="sheet-models-section">
+        <div class="sheet-section-header" onclick="toggleSheetModels()">
+          <div class="sheet-item-left">
+            <i class="fa-solid fa-cube"></i>
+            <span class="sheet-item-title">Models</span>
+          </div>
+          <i class="fa-solid fa-chevron-down sheet-arrow" id="sheet-models-chevron"></i>
+        </div>
+        <div class="sheet-models-list" id="sheet-models-list">
+          <button class="sheet-model-option selected" onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ')">
+            <span>LYNQ</span>
+            <span class="model-desc">Fast & efficient</span>
+          </button>
+          <button class="sheet-model-option" onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ Pro')">
+            <span>LYNQ Pro</span>
+            <span class="model-desc">Smartest model</span>
+          </button>
+          <button class="sheet-model-option" onclick="selectMobileModel('llama-3.1-8b-instant', 'llama-3.1')">
+            <span>llama-3.1</span>
+            <span class="model-desc">8B params</span>
+          </button>
+          <button class="sheet-model-option" onclick="selectMobileModel('openai/gpt-oss-20b', 'GPT-OSS-20B')">
+            <span>GPT-OSS-20B</span>
+            <span class="model-desc">Balanced</span>
+          </button>
+          <button class="sheet-model-option" onclick="selectMobileModel('openai/gpt-oss-120b', 'gpt-oss-120b')">
+            <span>gpt-oss-120b</span>
+            <span class="model-desc">Most powerful</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="sheet-list-item" onclick="handleMobileAction('image')">
+        <div class="sheet-item-left">
+          <i class="fa-solid fa-paintbrush"></i>
+          <div class="sheet-item-text">
+            <span class="sheet-item-title">Create image</span>
+            <span class="sheet-item-subtitle">Visualize anything</span>
+          </div>
+        </div>
+      </button>
+
+      <button class="sheet-list-item" onclick="handleMobileAction('deep-research')">
+        <div class="sheet-item-left">
+          <i class="fa-solid fa-microscope"></i>
+          <div class="sheet-item-text">
+            <span class="sheet-item-title">Deep research</span>
+            <span class="sheet-item-subtitle">Get a detailed report</span>
+          </div>
+        </div>
+      </button>
+
+      <button class="sheet-list-item" onclick="handleMobileAction('shopping')">
+        <div class="sheet-item-left">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <div class="sheet-item-text">
+            <span class="sheet-item-title">Shopping research</span>
+            <span class="sheet-item-subtitle">Get an in-depth guide</span>
+          </div>
+        </div>
+      </button>
+
+      <button class="sheet-list-item" onclick="handleMobileAction('web-search')">
+        <div class="sheet-item-left">
+          <i class="fa-solid fa-earth-americas"></i>
+          <div class="sheet-item-text">
+            <span class="sheet-item-title">Web search</span>
+            <span class="sheet-item-subtitle">Find real-time news and info</span>
+          </div>
+        </div>
+      </button>
+
+      <button class="sheet-list-item" onclick="handleMobileAction('thinking')">
+        <div class="sheet-item-left">
+          <i class="fa-solid fa-brain"></i>
+          <div class="sheet-item-text">
+            <span class="sheet-item-title">Thinking</span>
+            <span class="sheet-item-subtitle">Learn a new concept</span>
+          </div>
+        </div>
+      </button>
+
+      <button class="sheet-list-item" onclick="handleMobileAction('canvas')">
+        <div class="sheet-item-left">
+          <i class="fa-solid fa-file-invoice"></i>
+          <div class="sheet-item-text">
+            <span class="sheet-item-title">Canvas</span>
+            <span class="sheet-item-subtitle">Open code editor</span>
+          </div>
+        </div>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div id="mobile-sheet-overlay" class="mobile-sheet-overlay" onclick="toggleMobileActionSheet(false)"></div>
+
 </body>
 
 </html>

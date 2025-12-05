@@ -292,9 +292,21 @@ function toggleWebSearch() {
     // Update UI
     if (isWebSearchActive) {
         btn.classList.add("active");
+        // Show tool indicator
+        if (typeof showSelectedToolIndicator === "function") {
+            showSelectedToolIndicator('websearch', 'fa-solid fa-earth-americas', 'Web Search');
+        }
         if (typeof showToast === "function") showToast("Web Search Enabled");
     } else {
         btn.classList.remove("active");
+        // Hide tool indicator
+        const indicator = document.getElementById("selected-tool-indicator");
+        if (indicator && indicator.style.display !== "none") {
+            const labelEl = document.getElementById("selected-tool-label");
+            if (labelEl && labelEl.textContent === "Web Search") {
+                indicator.style.display = "none";
+            }
+        }
         if (typeof showToast === "function") showToast("Web Search Disabled");
     }
 }

@@ -16,48 +16,96 @@ function injectSidebar(activePage = '') {
 
   container.innerHTML = `
     <aside id="sidebar" class="collapsed">
-      <div style="flex-shrink: 0">
-        <div class="sidebar-header">
-          <span style="display: flex; align-items: center; gap: 10px"><i class="fa-solid fa-bolt"></i> LYNQ AI</span>
-          <button class="action-btn mobile-only" onclick="toggleSidebar()">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+      <!-- Header: Logo + Toggle -->
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fa-solid fa-bolt"></i>
         </div>
+        <!-- Only Sidebar Close Button -->
+        <button class="sidebar-close-btn" onclick="toggleSidebar()" title="Close Sidebar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
 
+      <!-- Navigation Menu -->
       <nav class="nav-menu">
-        <div class="nav-label">Menu</div>
-        <a ${newChatAction} class="nav-item" id="nav-new-chat"><i class="fa-solid fa-plus"></i> New Chat</a>
-        <a href="index.html" class="nav-item ${activePage === 'home' ? 'active' : ''}" id="nav-home"><i class="fa-solid fa-house"></i> Home</a>
-        <a href="tools.html" class="nav-item ${activePage === 'tools' ? 'active' : ''}" id="nav-tools"><i class="fa-solid fa-toolbox"></i> Tools</a>
-        <a href="projects.html" class="nav-item ${activePage === 'projects' ? 'active' : ''}" id="nav-projects"><i class="fa-solid fa-layer-group"></i> Projects</a>
+        <!-- Fixed Navigation Items -->
+        <div class="nav-fixed-group">
+          <!-- New Chat -->
+          <a ${newChatAction} class="nav-item nav-item-primary" id="nav-new-chat">
+            <i class="fa-solid fa-pen-to-square"></i> New chat
+          </a>
+          
+          <!-- Search Chats -->
+          <button class="nav-item" id="nav-search-chats" onclick="toggleChatSearch(true)">
+            <i class="fa-solid fa-magnifying-glass"></i> Search chats
+          </button>
+          
+          <!-- Library (Tools) -->
+          <a href="tools.html" class="nav-item ${activePage === 'tools' ? 'active' : ''}" id="nav-tools">
+            <i class="fa-solid fa-bookmark"></i> Library
+          </a>
+          
+          <!-- Projects -->
+          <a href="projects.html" class="nav-item ${activePage === 'projects' ? 'active' : ''}" id="nav-projects">
+            <i class="fa-solid fa-folder"></i> Projects
+          </a>
 
-        <div class="nav-label" style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding-right: 5px;
-          position: relative;
-        ">
-          <span id="recent-chats-label">Recent Chats</span>
-          <input type="text" id="chat-search-input" placeholder="Search chats..." style="
-            display: none;
-            width: 100%;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-primary);
-            border-radius: 6px;
-            padding: 4px 8px;
-            color: var(--text-primary);
-          " onkeyup="filterRecentChats()" onblur="toggleChatSearch(false)" />
-          <i class="fa-solid fa-magnifying-glass search-trigger" id="chat-search-trigger"
-            onclick="toggleChatSearch(true)"></i>
+          <!-- Your Chats Section -->
+          <div class="nav-label">
+            <span>Your chats</span>
+          </div>
+          
+          <!-- Hidden Search Input -->
+          <div class="chat-search-wrapper" id="chat-search-wrapper" style="display: none;">
+            <input type="text" id="chat-search-input" placeholder="Search chats..." 
+              onkeyup="filterRecentChats()" />
+            <button class="chat-search-close" onclick="toggleChatSearch(false)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
         </div>
+        
+        <!-- Scrollable Recent Chats -->
         <div id="recent-chats-container"></div>
       </nav>
 
-      <div class="sidebar-footer">
-        <a href="profile.html" class="nav-item ${activePage === 'profile' ? 'active' : ''}" id="nav-profile"><i class="fa-solid fa-user"></i> Profile</a>
-        <a href="settings.html" class="nav-item ${activePage === 'settings' ? 'active' : ''}" id="nav-settings"><i class="fa-solid fa-gear"></i> Settings</a>
+      <!-- Footer: User Profile Section -->
+      <div class="sidebar-footer-profile">
+        <button class="sidebar-user-btn" id="sidebar-user-btn" onclick="toggleSidebarProfileMenu()">
+          <div class="sidebar-user-avatar" id="sidebar-user-avatar">U</div>
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebar-user-name">User</span>
+            <span class="sidebar-user-plan" id="sidebar-user-plan">Free</span>
+          </div>
+        </button>
+        <button class="sidebar-upgrade-btn" onclick="togglePricing()">
+          Upgrade
+        </button>
+      </div>
+      
+      <!-- User Profile Popup Menu (ChatGPT Style) -->
+      <div class="sidebar-profile-menu" id="sidebar-profile-menu" style="display: none;">
+        <a href="profile.html" class="profile-menu-item">
+          <i class="fa-solid fa-user-pen"></i> Edit profile
+        </a>
+        <button class="profile-menu-item" onclick="togglePricing(); closeSidebarProfileMenu();">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Upgrade plan
+        </button>
+        <a href="settings.html" class="profile-menu-item">
+          <i class="fa-solid fa-sliders"></i> Personalization
+        </a>
+        <a href="settings.html" class="profile-menu-item">
+          <i class="fa-solid fa-gear"></i> Settings
+        </a>
+        <a href="help.html" class="profile-menu-item profile-menu-item-with-arrow">
+          <i class="fa-solid fa-circle-question"></i> Help
+          <i class="fa-solid fa-chevron-right menu-arrow"></i>
+        </a>
+        <div class="profile-menu-divider"></div>
+        <button class="profile-menu-item profile-menu-item-logout" onclick="logoutUser()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Log out
+        </button>
       </div>
     </aside>
   `;
@@ -72,14 +120,57 @@ function injectTopBar() {
 
   container.innerHTML = `
     <div class="top-bar">
-      <button class="action-btn" onclick="toggleSidebar()">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-      <div class="top-logo-title">
-        <i class="fa-solid fa-bolt"></i> LYNQ AI
+      <div class="top-bar-left">
+        <!-- Bolt Logo Sidebar Toggle -->
+        <div class="top-logo-container" onclick="toggleSidebar()" title="Toggle Sidebar">
+          <i class="fa-solid fa-bolt top-logo-bolt"></i>
+          <i class="fa-solid fa-sidebar top-logo-sidebar-icon"></i>
+        </div>
+        
+        <!-- LYNQ Tier Selector (Restored) -->
+        <div class="header-model-selector">
+          <div class="model-selector-group">
+            <button class="header-model-btn" id="header-model-btn" onclick="toggleHeaderModelDropdown()">
+              <span class="header-model-name" id="header-model-name">LYNQ</span>
+              <i class="fa-solid fa-chevron-down header-model-chevron"></i>
+            </button>
+            
+            <div class="header-model-dropdown" id="header-model-dropdown" style="display: none;">
+              <div class="model-dropdown-item" onclick="selectHeaderTier(this, 'LYNQ Pro', 'Upgrade for advanced reasoning')">
+                <div class="model-dropdown-icon">
+                  <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <div class="model-dropdown-info">
+                  <span class="model-dropdown-title">LYNQ Pro</span>
+                  <span class="model-dropdown-desc">Our smartest model & more</span>
+                </div>
+                <button class="model-upgrade-badge" onclick="event.stopPropagation(); togglePricing();">Upgrade</button>
+              </div>
+              
+              <div class="model-dropdown-item selected" onclick="selectHeaderTier(this, 'LYNQ', 'Great for everyday tasks')">
+                <div class="model-dropdown-icon">
+                  <i class="fa-solid fa-message"></i>
+                </div>
+                <div class="model-dropdown-info">
+                  <span class="model-dropdown-title">LYNQ</span>
+                  <span class="model-dropdown-desc">Great for everyday tasks</span>
+                </div>
+                <i class="fa-solid fa-check model-check-icon"></i>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      
       <div style="flex: 1"></div>
+      
       <div class="top-actions">
+        <!-- New Chat Button -->
+        <button class="new-chat-btn" onclick="resetChat()" title="New Chat">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span>New Chat</span>
+        </button>
+
         <button class="auth-btn login-btn" onclick="location.href='login.html'" id="header-login-btn"
           style="display: none;">
           Login

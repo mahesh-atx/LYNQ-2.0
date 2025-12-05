@@ -617,15 +617,15 @@ textarea#chat-input {
   display: none;
   /* Hidden by default */
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 8px);
   /* Position above the button */
   left: 0;
-  width: 300px;
+  width: 240px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: var(--shadow-strong);
-  padding: 8px;
+  padding: 4px;
   z-index: 100;
   animation: dropdownFadeIn 0.2s ease-out;
 }
@@ -651,10 +651,10 @@ textarea#chat-input {
 .tool-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
   background: none;
   border: 1px solid transparent;
   /* For active state alignment */
@@ -669,9 +669,9 @@ textarea#chat-input {
 }
 
 .tool-dropdown-item i {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  width: 20px;
+  width: 18px;
   /* Align icons */
   text-align: center;
 }
@@ -679,15 +679,26 @@ textarea#chat-input {
 .tool-dropdown-item span {
   display: block;
   font-weight: 500;
-  font-size: 0.9rem;
-  line-height: 1.3;
+  font-size: 0.85rem;
+  line-height: 1.2;
 }
 
 .tool-dropdown-item .tool-desc {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   font-weight: 400;
-  margin-top: 2px;
+  margin-top: 1px;
+}
+
+/* Section Labels */
+.tool-dropdown-section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  padding: 4px 10px 2px;
+  opacity: 0.7;
 }
 
 /* --- END: TOOLS DROPDOWN STYLES --- */
@@ -1481,4 +1492,248 @@ textarea#chat-input {
 
 .bubble a:hover {
   opacity: 0.8;
+}
+
+/* --- TOP BAR TITLE & NEW CHAT BUTTON --- */
+.top-bar-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-left: 8px;
+}
+
+.new-chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.new-chat-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--text-heading);
+  color: var(--text-heading);
+}
+
+.new-chat-btn i {
+  font-size: 0.85rem;
+}
+
+/* Hide text on mobile, show only icon */
+@media (max-width: 768px) {
+  .new-chat-btn span {
+    display: none;
+  }
+
+  .new-chat-btn {
+    padding: 10px;
+    width: 38px;
+    height: 38px;
+    justify-content: center;
+  }
+}
+
+/* --- SELECTED TOOL INDICATOR (Light Blue) --- */
+.selected-tool-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease;
+}
+
+.selected-tool-indicator>i {
+  font-size: 0.85rem;
+}
+
+.selected-tool-indicator span {
+  font-size: 0.8rem;
+}
+
+.deselect-tool-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: white;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  transition: background 0.2s;
+  margin-left: 2px;
+}
+
+.deselect-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* --- SELECTED MODEL INDICATOR (Light Blue) --- */
+.selected-model-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  animation: fadeIn 0.2s ease;
+}
+
+.selected-model-indicator>i {
+  font-size: 0.85rem;
+}
+
+.selected-model-indicator span {
+  font-size: 0.8rem;
+}
+
+.deselect-model-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: white;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  transition: background 0.2s;
+  margin-left: 2px;
+}
+
+.deselect-model-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* --- INPUT MODEL SELECTOR --- */
+.input-model-selector {
+  position: relative;
+}
+
+.input-model-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.input-model-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--text-heading);
+}
+
+.input-model-btn.active {
+  background: var(--bg-secondary);
+  border-color: var(--text-heading);
+}
+
+.input-model-btn i {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.input-model-dropdown {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  box-shadow: var(--shadow-strong);
+  padding: 6px;
+  z-index: 100;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+.input-model-dropdown.active {
+  display: block;
+}
+
+.input-model-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.input-model-option:hover {
+  background: var(--bg-tertiary);
+}
+
+.input-model-option i:first-child {
+  width: 18px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.input-model-option span {
+  flex: 1;
+  font-weight: 500;
+}
+
+.input-model-option .model-check {
+  display: none;
+  color: var(--text-heading);
+  font-size: 0.8rem;
+}
+
+.input-model-option.selected .model-check {
+  display: block;
+}
+
+.input-model-option.selected {
+  background: var(--bg-primary);
+}
+
+/* Tool Dropdown Divider */
+.tool-dropdown-divider {
+  height: 1px;
+  background: var(--border-secondary);
+  margin: 6px 0;
+}
+
+/* --- FADE IN ANIMATION --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

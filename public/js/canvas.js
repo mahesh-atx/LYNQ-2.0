@@ -180,10 +180,22 @@ function toggleCanvasMode(forceState) {
         isCanvasModeActive = false;
         if (canvasToggleBtn) canvasToggleBtn.classList.remove("active");
         if (canvasPane) canvasPane.classList.remove("active");
+        // Hide tool indicator
+        const indicator = document.getElementById("selected-tool-indicator");
+        if (indicator && indicator.style.display !== "none") {
+            const labelEl = document.getElementById("selected-tool-label");
+            if (labelEl && labelEl.textContent === "Canvas") {
+                indicator.style.display = "none";
+            }
+        }
         if (typeof showToast === "function") showToast("Canvas Mode Disabled");
     } else {
         isCanvasModeActive = true;
         if (canvasToggleBtn) canvasToggleBtn.classList.add("active");
+        // Show tool indicator
+        if (typeof showSelectedToolIndicator === "function") {
+            showSelectedToolIndicator('canvas', 'fa-solid fa-file-invoice', 'Canvas');
+        }
         if (typeof showToast === "function") showToast("Canvas Mode Enabled");
     }
 }
