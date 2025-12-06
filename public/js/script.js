@@ -1010,8 +1010,14 @@ window.onclick = function (event) {
     document.getElementById("input-model-btn")?.classList.remove("active");
   }
 
+  // Close attach dropdown
+  if (!event.target.closest(".attach-dropdown-wrapper")) {
+    const attachDropdown = document.getElementById("attach-dropdown");
+    if (attachDropdown) attachDropdown.classList.remove("active");
+  }
+
   // Close tools dropdown
-  if (!event.target.closest(".tool-dropdown-wrapper")) {
+  if (!event.target.closest(".tools-dropdown-wrapper")) {
     const toolsDropdown = document.getElementById("tools-dropdown");
     if (toolsDropdown) toolsDropdown.classList.remove("active");
   }
@@ -1047,68 +1053,27 @@ function selectInputModel(element, modelId, displayName) {
   document.getElementById("input-model-dropdown")?.classList.remove("active");
   document.getElementById("input-model-btn")?.classList.remove("active");
 
-  // Get icon class from the element
-  const iconEl = element.querySelector("i:first-child");
-  const iconClass = iconEl ? iconEl.className : "fa-solid fa-bolt";
-
-  // Show model indicator pill
-  showSelectedModelIndicator(modelId, displayName, iconClass);
-
   // Show confirmation
-  if (typeof showToast === "function") showToast(`Model: ${displayName}`);
-}
-
-/* --- SELECTED MODEL INDICATOR FUNCTIONS --- */
-function showSelectedModelIndicator(modelId, displayName, iconClass) {
-  const indicator = document.getElementById("selected-model-indicator");
-  const iconEl = document.getElementById("selected-model-icon");
-  const labelEl = document.getElementById("selected-model-label");
-
-  if (indicator && iconEl && labelEl) {
-    iconEl.className = iconClass;
-    labelEl.textContent = displayName;
-    indicator.style.display = "flex";
-  }
-}
-
-function deselectModel() {
-  const indicator = document.getElementById("selected-model-indicator");
-  if (indicator) {
-    indicator.style.display = "none";
-  }
-
-  // Reset to default model
-  currentSelectedModel = "llama-3.1-8b-instant";
-  const modelNameEl = document.getElementById("input-model-name");
-  if (modelNameEl) {
-    modelNameEl.textContent = "llama-3.1";
-  }
-
-  // Reset selected state in dropdown
-  const options = document.querySelectorAll(".input-model-option");
-  options.forEach((opt, idx) => {
-    if (idx === 0) {
-      opt.classList.add("selected");
-    } else {
-      opt.classList.remove("selected");
-    }
-  });
-
-  if (typeof showToast === "function") showToast("Model reset to default");
+  // Toast removed for cleaner UX
 }
 
 /* --- SELECTED TOOL INDICATOR FUNCTIONS --- */
 let currentSelectedTool = null;
 
-function showSelectedToolIndicator(toolId, iconClass, toolName) {
+function showSelectedToolIndicator(toolId, iconClass, toolName, hideXButton = false) {
   const indicator = document.getElementById("selected-tool-indicator");
   const iconEl = document.getElementById("selected-tool-icon");
   const labelEl = document.getElementById("selected-tool-label");
+  const xBtn = document.querySelector(".deselect-tool-btn");
 
   if (indicator && iconEl) {
     iconEl.className = iconClass;
     if (labelEl && toolName) {
       labelEl.textContent = toolName;
+    }
+    // Hide or show X button based on parameter
+    if (xBtn) {
+      xBtn.style.display = hideXButton ? "none" : "flex";
     }
     indicator.style.display = "flex";
     currentSelectedTool = toolId;
@@ -1123,6 +1088,17 @@ function deselectTool() {
 
   currentSelectedTool = null;
 
+  // Reset currentToolId (for library tools)
+  if (typeof currentToolId !== "undefined") {
+    currentToolId = null;
+  }
+
+  // Restore Tools button if it was hidden
+  const toolsWrapper = document.querySelector(".tools-dropdown-wrapper");
+  if (toolsWrapper) {
+    toolsWrapper.style.display = "flex";
+  }
+
   // Deselect canvas mode if active
   if (typeof isCanvasModeActive !== "undefined" && isCanvasModeActive) {
     if (typeof toggleCanvasMode === "function") toggleCanvasMode(false);
@@ -1135,7 +1111,7 @@ function deselectTool() {
     if (btn) btn.classList.remove("active");
   }
 
-  if (typeof showToast === "function") showToast("Tool deselected");
+  // Toast removed for cleaner UX
 }
 
 /* --- DESKTOP TOOL HANDLERS --- */
@@ -1148,26 +1124,26 @@ function handleDesktopTool(action) {
   switch (action) {
     case 'image':
       showSelectedToolIndicator('imagegen', 'fa-solid fa-paintbrush', 'Create Image');
-      if (typeof showToast === 'function') showToast("Create Image mode enabled");
+      // Toast removed
       break;
     case 'deep-research':
       showSelectedToolIndicator('deepresearch', 'fa-solid fa-microscope', 'Deep Research');
-      if (typeof showToast === 'function') showToast("Deep Research mode enabled");
+      // Toast removed
       break;
     case 'shopping':
       showSelectedToolIndicator('shoppingresearch', 'fa-solid fa-bag-shopping', 'Shopping');
-      if (typeof showToast === 'function') showToast("Shopping Research mode enabled");
+      // Toast removed
       break;
     case 'thinking':
       showSelectedToolIndicator('thinking', 'fa-solid fa-brain', 'Thinking');
-      if (typeof showToast === 'function') showToast("Thinking mode enabled");
+      // Toast removed
       break;
   }
 }
 
 function handleDesktopAttach(action) {
-  // Close dropdown
-  const dropdown = document.getElementById("tools-dropdown");
+  // Close attach dropdown
+  const dropdown = document.getElementById("attach-dropdown");
   if (dropdown) dropdown.classList.remove("active");
 
   const fileInput = document.getElementById('file-upload');
@@ -1278,13 +1254,17 @@ function handleMobileAction(action) {
           setTimeout(() => fileInputF.setAttribute('accept', 'application/pdf'), 1000);
         }
         break;
-      case 'model':
       case 'image':
+        showSelectedToolIndicator('imagegen', 'fa-solid fa-paintbrush', 'Create Image');
+        break;
       case 'deep-research':
+        showSelectedToolIndicator('deepresearch', 'fa-solid fa-microscope', 'Deep Research');
+        break;
       case 'shopping':
+        showSelectedToolIndicator('shoppingresearch', 'fa-solid fa-bag-shopping', 'Shopping');
+        break;
       case 'thinking':
-        // For now, simple toast
-        if (typeof showToast === 'function') showToast(action.charAt(0).toUpperCase() + action.slice(1) + " coming soon!");
+        showSelectedToolIndicator('thinking', 'fa-solid fa-brain', 'Thinking');
         break;
       case 'web-search':
         const webBtn = document.getElementById('web-search-toggle-btn');
@@ -1296,7 +1276,7 @@ function handleMobileAction(action) {
           if (!isWebSearchActive) {
             isWebSearchActive = true;
             showSelectedToolIndicator('websearch', 'fa-solid fa-earth-americas', 'Web Search');
-            if (typeof showToast === 'function') showToast("Web Search Enabled");
+            // Toast removed for cleaner UX
           } else {
             deselectTool();
           }
@@ -1342,15 +1322,14 @@ function selectMobileModel(modelId, displayName) {
     headerModelName.textContent = displayName;
   }
 
-  // Store selected model
-  if (typeof selectedModel !== 'undefined') {
-    selectedModel = modelId;
+  // Update input model name button (for mobile display)
+  const inputModelName = document.getElementById('input-model-name');
+  if (inputModelName) {
+    inputModelName.textContent = displayName;
   }
 
-  // Show confirmation
-  if (typeof showToast === 'function') {
-    showToast(`Model: ${displayName}`);
-  }
+  // Store selected model
+  currentSelectedModel = modelId;
 
   // Close sheet after selection
   setTimeout(() => toggleMobileActionSheet(false), 200);

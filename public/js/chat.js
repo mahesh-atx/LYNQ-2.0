@@ -296,7 +296,7 @@ function toggleWebSearch() {
         if (typeof showSelectedToolIndicator === "function") {
             showSelectedToolIndicator('websearch', 'fa-solid fa-earth-americas', 'Web Search');
         }
-        if (typeof showToast === "function") showToast("Web Search Enabled");
+        // Toast removed for cleaner UX
     } else {
         btn.classList.remove("active");
         // Hide tool indicator
@@ -307,7 +307,7 @@ function toggleWebSearch() {
                 indicator.style.display = "none";
             }
         }
-        if (typeof showToast === "function") showToast("Web Search Disabled");
+        // Toast removed for cleaner UX
     }
 }
 
@@ -373,6 +373,28 @@ function handleToolModeFromURL() {
 
     console.log("🔧 Tool mode detected:", toolParam);
 
+    // Tool display names and icons
+    const toolInfo = {
+        canvas: { name: 'Canvas', icon: 'fa-solid fa-file-invoice' },
+        websearch: { name: 'Web Search', icon: 'fa-solid fa-earth-americas' },
+        dataanalysis: { name: 'Data Analysis', icon: 'fa-solid fa-chart-line' },
+        webscraper: { name: 'Web Scraper', icon: 'fa-solid fa-spider' },
+        imagegen: { name: 'Image Gen', icon: 'fa-solid fa-image' },
+        codereviewer: { name: 'Code Review', icon: 'fa-solid fa-magnifying-glass-chart' },
+        writer: { name: 'Writer', icon: 'fa-solid fa-pen-nib' },
+        pdfanalyzer: { name: 'PDF Analyzer', icon: 'fa-solid fa-file-pdf' },
+        translator: { name: 'Translator', icon: 'fa-solid fa-language' },
+        summarizer: { name: 'Summarizer', icon: 'fa-solid fa-compress' },
+        codeexplainer: { name: 'Code Explainer', icon: 'fa-solid fa-code' },
+        regexbuilder: { name: 'Regex', icon: 'fa-solid fa-asterisk' },
+        sqlgenerator: { name: 'SQL', icon: 'fa-solid fa-database' },
+        apitester: { name: 'API Tester', icon: 'fa-solid fa-plug' },
+        colorpalette: { name: 'Color Palette', icon: 'fa-solid fa-palette' },
+        markdown: { name: 'Markdown', icon: 'fa-solid fa-hashtag' },
+        resumebuilder: { name: 'Resume', icon: 'fa-solid fa-file-lines' },
+        emailtemplates: { name: 'Email', icon: 'fa-solid fa-envelope' }
+    };
+
     // Enable the appropriate mode
     switch (toolParam) {
         case 'canvas':
@@ -388,6 +410,18 @@ function handleToolModeFromURL() {
 
     // --- NEW: Set the active tool ---
     currentToolId = toolParam;
+
+    // --- NEW: Hide Tools button and show tool indicator ---
+    const toolsBtn = document.getElementById("tools-btn");
+    const toolsWrapper = document.querySelector(".tools-dropdown-wrapper");
+    if (toolsWrapper) {
+        toolsWrapper.style.display = "none";
+    }
+
+    // Show the selected tool indicator (hide X button for library tools)
+    if (toolInfo[toolParam] && typeof showSelectedToolIndicator === "function") {
+        showSelectedToolIndicator(toolParam, toolInfo[toolParam].icon, toolInfo[toolParam].name, true);
+    }
 
     // Show the welcome message as an AI response
     const welcomeMessage = TOOL_WELCOME_MESSAGES[toolParam];
@@ -408,32 +442,6 @@ function handleToolModeFromURL() {
     if (window.history && window.history.replaceState) {
         const cleanUrl = window.location.pathname;
         history.replaceState({}, document.title, cleanUrl);
-    }
-
-    // Show toast notification
-    const toolNames = {
-        canvas: 'Canvas',
-        websearch: 'Web Search',
-        dataanalysis: 'Data Analysis',
-        webscraper: 'Web Scraper',
-        imagegen: 'Image Generator',
-        codereviewer: 'Code Reviewer',
-        writer: 'Writing Assistant',
-        pdfanalyzer: 'PDF Analyzer',
-        translator: 'Translator',
-        summarizer: 'Summarizer',
-        codeexplainer: 'Code Explainer',
-        regexbuilder: 'Regex Builder',
-        sqlgenerator: 'SQL Generator',
-        apitester: 'API Tester',
-        colorpalette: 'Color Palette',
-        markdown: 'Markdown Editor',
-        resumebuilder: 'Resume Builder',
-        emailtemplates: 'Email Templates'
-    };
-
-    if (typeof showToast === "function" && toolNames[toolParam]) {
-        showToast(`${toolNames[toolParam]} mode activated`);
     }
 }
 
@@ -666,7 +674,13 @@ async function handleSend() {
 
     isResponding = true;
     if (sendBtn) sendBtn.style.display = "none";
-    if (stopBtn) stopBtn.style.display = "flex";
+    if (stopBtn) {
+        stopBtn.style.display = "flex";
+        stopBtn.classList.add("generating");
+        // Add generating class to parent for mobile CSS swap
+        const toolbarRight = stopBtn.closest('.toolbar-right');
+        if (toolbarRight) toolbarRight.classList.add("generating");
+    }
 
     if (currentController) currentController.abort();
     currentController = new AbortController();
@@ -707,7 +721,12 @@ async function handleSend() {
                     thinkingBubble
                 );
             if (sendBtn) sendBtn.style.display = "flex";
-            if (stopBtn) stopBtn.style.display = "none";
+            if (stopBtn) {
+                stopBtn.style.display = "none";
+                stopBtn.classList.remove("generating");
+                const toolbarRight = stopBtn.closest('.toolbar-right');
+                if (toolbarRight) toolbarRight.classList.remove("generating");
+            }
             isResponding = false;
             return;
         }
@@ -744,7 +763,12 @@ async function handleSend() {
                 thinkingBubble
             );
         if (sendBtn) sendBtn.style.display = "flex";
-        if (stopBtn) stopBtn.style.display = "none";
+        if (stopBtn) {
+            stopBtn.style.display = "none";
+            stopBtn.classList.remove("generating");
+            const toolbarRight = stopBtn.closest('.toolbar-right');
+            if (toolbarRight) toolbarRight.classList.remove("generating");
+        }
         isResponding = false;
     } finally {
         currentController = null;
@@ -761,7 +785,12 @@ function stopResponse() {
     }
     isResponding = false;
     if (sendBtn) sendBtn.style.display = "flex";
-    if (stopBtn) stopBtn.style.display = "none";
+    if (stopBtn) {
+        stopBtn.style.display = "none";
+        stopBtn.classList.remove("generating");
+        const toolbarRight = stopBtn.closest('.toolbar-right');
+        if (toolbarRight) toolbarRight.classList.remove("generating");
+    }
 }
 
 /**
@@ -869,7 +898,12 @@ async function streamResponse(fullText) {
     embedYouTubeVideos(bubble);
 
     if (sendBtn) sendBtn.style.display = "flex";
-    if (stopBtn) stopBtn.style.display = "none";
+    if (stopBtn) {
+        stopBtn.style.display = "none";
+        stopBtn.classList.remove("generating");
+        const toolbarRight = stopBtn.closest('.toolbar-right');
+        if (toolbarRight) toolbarRight.classList.remove("generating");
+    }
     isResponding = false;
 
     // 4. Set final message actions
@@ -1234,7 +1268,13 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
 
     isResponding = true;
     if (sendBtn) sendBtn.style.display = "none";
-    if (stopBtn) stopBtn.style.display = "flex";
+    if (stopBtn) {
+        stopBtn.style.display = "flex";
+        stopBtn.classList.add("generating");
+        // Add generating class to parent for mobile CSS swap
+        const toolbarRight = stopBtn.closest('.toolbar-right');
+        if (toolbarRight) toolbarRight.classList.add("generating");
+    }
 
     const thinking = showThinking();
 
@@ -1270,7 +1310,12 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
                     thinking
                 );
             if (sendBtn) sendBtn.style.display = "flex";
-            if (stopBtn) stopBtn.style.display = "none";
+            if (stopBtn) {
+                stopBtn.style.display = "none";
+                stopBtn.classList.remove("generating");
+                const toolbarRight = stopBtn.closest('.toolbar-right');
+                if (toolbarRight) toolbarRight.classList.remove("generating");
+            }
             isResponding = false;
             return;
         }
@@ -1304,7 +1349,12 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
         if (typeof showApiError === "function")
             showApiError(error.message || "An unknown API error occurred.", thinking);
         if (sendBtn) sendBtn.style.display = "flex";
-        if (stopBtn) stopBtn.style.display = "none";
+        if (stopBtn) {
+            stopBtn.style.display = "none";
+            stopBtn.classList.remove("generating");
+            const toolbarRight = stopBtn.closest('.toolbar-right');
+            if (toolbarRight) toolbarRight.classList.remove("generating");
+        }
         isResponding = false;
     } finally {
         currentController = null;

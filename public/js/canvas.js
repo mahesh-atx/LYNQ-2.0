@@ -188,7 +188,7 @@ function toggleCanvasMode(forceState) {
                 indicator.style.display = "none";
             }
         }
-        if (typeof showToast === "function") showToast("Canvas Mode Disabled");
+        // Toast removed for cleaner UX
     } else {
         isCanvasModeActive = true;
         if (canvasToggleBtn) canvasToggleBtn.classList.add("active");
@@ -196,7 +196,7 @@ function toggleCanvasMode(forceState) {
         if (typeof showSelectedToolIndicator === "function") {
             showSelectedToolIndicator('canvas', 'fa-solid fa-file-invoice', 'Canvas');
         }
-        if (typeof showToast === "function") showToast("Canvas Mode Enabled");
+        // Toast removed for cleaner UX
     }
 }
 

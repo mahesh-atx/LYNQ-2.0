@@ -226,61 +226,12 @@
               <textarea id="chat-input" rows="1" placeholder="Ask LYNQ anything..."></textarea>
               <div class="input-toolbar">
                 <div class="toolbar-left">
-                  <!-- + Button with Tools Dropdown -->
-                  <div class="tool-dropdown-wrapper">
-                    <button class="tool-btn-round" id="attach-file-btn" title="Tools & Attach">
+                  <!-- + Button (Attach Only) -->
+                  <div class="attach-dropdown-wrapper">
+                    <button class="tool-btn-round" id="attach-file-btn" title="Attach">
                       <i class="fa-solid fa-plus"></i>
                     </button>
-                    <div class="tool-dropdown-menu" id="tools-dropdown">
-                      <!-- Tools Section -->
-                      <div class="tool-dropdown-section-label">Tools</div>
-                      <button class="tool-dropdown-item" id="canvas-toggle-btn">
-                        <i class="fa-solid fa-file-invoice"></i>
-                        <div>
-                          <span>Canvas</span>
-                          <span class="tool-desc">Open the code canvas</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" id="web-search-toggle-btn">
-                        <i class="fa-solid fa-earth-americas"></i>
-                        <div>
-                          <span>Web Search</span>
-                          <span class="tool-desc">Find real-time news and info</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('image')">
-                        <i class="fa-solid fa-paintbrush"></i>
-                        <div>
-                          <span>Create Image</span>
-                          <span class="tool-desc">Visualize anything</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('deep-research')">
-                        <i class="fa-solid fa-microscope"></i>
-                        <div>
-                          <span>Deep Research</span>
-                          <span class="tool-desc">Get a detailed report</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('shopping')">
-                        <i class="fa-solid fa-bag-shopping"></i>
-                        <div>
-                          <span>Shopping Research</span>
-                          <span class="tool-desc">Get an in-depth guide</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('thinking')">
-                        <i class="fa-solid fa-brain"></i>
-                        <div>
-                          <span>Thinking</span>
-                          <span class="tool-desc">Learn a new concept</span>
-                        </div>
-                      </button>
-
-                      <div class="tool-dropdown-divider"></div>
-
-                      <!-- Attach Section -->
-                      <div class="tool-dropdown-section-label">Attach</div>
+                    <div class="tool-dropdown-menu" id="attach-dropdown">
                       <button class="tool-dropdown-item" onclick="handleDesktopAttach('camera')">
                         <i class="fa-solid fa-camera"></i>
                         <div>
@@ -304,7 +255,60 @@
                       </button>
                     </div>
                   </div>
-                  <!-- Selected Tool Indicator (shows when a tool is selected) -->
+
+                  <!-- Tools Button with Dropdown -->
+                  <div class="tools-dropdown-wrapper">
+                    <button class="tools-btn" id="tools-btn" title="Tools">
+                      <i class="fa-solid fa-wand-magic-sparkles"></i>
+                      <span>Tools</span>
+                    </button>
+                    <div class="tool-dropdown-menu" id="tools-dropdown">
+                      <button class="tool-dropdown-item" id="canvas-toggle-btn">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <div>
+                          <span>Canvas</span>
+                          <span class="tool-desc">Open the code canvas</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" id="web-search-toggle-btn">
+                        <i class="fa-solid fa-earth-americas"></i>
+                        <div>
+                          <span>Web Search</span>
+                          <span class="tool-desc">Find real-time info</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('image')">
+                        <i class="fa-solid fa-paintbrush"></i>
+                        <div>
+                          <span>Create Image</span>
+                          <span class="tool-desc">Visualize anything</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('deep-research')">
+                        <i class="fa-solid fa-microscope"></i>
+                        <div>
+                          <span>Deep Research</span>
+                          <span class="tool-desc">Get detailed report</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('shopping')">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <div>
+                          <span>Shopping</span>
+                          <span class="tool-desc">Product research</span>
+                        </div>
+                      </button>
+                      <button class="tool-dropdown-item" onclick="handleDesktopTool('thinking')">
+                        <i class="fa-solid fa-brain"></i>
+                        <div>
+                          <span>Thinking</span>
+                          <span class="tool-desc">Learn concepts</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Selected Tool Indicator -->
                   <div class="selected-tool-indicator" id="selected-tool-indicator" style="display: none;">
                     <i class="fa-solid fa-earth-americas" id="selected-tool-icon"></i>
                     <span id="selected-tool-label">Web Search</span>

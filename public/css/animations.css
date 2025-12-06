@@ -413,10 +413,6 @@ button:active::after,
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-#chat-input:focus {
-    border-color: var(--text-heading);
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
-}
 
 /* Input container glow effect */
 .input-container {

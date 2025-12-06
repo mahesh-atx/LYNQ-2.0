@@ -155,10 +155,25 @@ function initPdfListeners() {
                 toggleMobileActionSheet(true);
                 return;
             }
-            // Desktop: Toggle Tools Dropdown
+            // Desktop: Toggle Attach Dropdown
+            const attachDropdown = document.getElementById("attach-dropdown");
+            if (attachDropdown) {
+                attachDropdown.classList.toggle("active");
+                // Close tools dropdown if open
+                document.getElementById("tools-dropdown")?.classList.remove("active");
+            }
+        });
+    }
+
+    // Tools button click handler
+    const toolsBtn = document.getElementById("tools-btn");
+    if (toolsBtn) {
+        toolsBtn.addEventListener("click", () => {
             const toolsDropdown = document.getElementById("tools-dropdown");
             if (toolsDropdown) {
                 toolsDropdown.classList.toggle("active");
+                // Close attach dropdown if open
+                document.getElementById("attach-dropdown")?.classList.remove("active");
             }
         });
     }

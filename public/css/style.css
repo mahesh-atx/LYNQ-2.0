@@ -2360,143 +2360,6 @@ body.dark-mode .pro-badge {
   }
 }
 
-/* --- FIX: SIDEBAR SCROLLING BEHAVIOR --- */
-.nav-menu {
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  flex: 1 !important;
-  min-height: 0 !important;
-  gap: 0 !important;
-  padding-top: 5px !important;
-}
-
-/* Fixed Navigation Group */
-.nav-fixed-group {
-  flex-shrink: 0 !important;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 10px;
-}
-
-/* Static items inside fixed group adjustments */
-.nav-fixed-group>.nav-item {
-  padding: 8px 10px !important;
-  font-size: 0.9rem !important;
-}
-
-/* Make ONLY the recent chats list scrollable */
-#recent-chats-container {
-  flex: 1 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  min-height: 0 !important;
-  padding-right: 2px;
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-#recent-chats-container::-webkit-scrollbar {
-  display: none;
-}
-
-/* --- SMALLER FONT/ICON FOR RECENT CHATS --- */
-#recent-chats-container .nav-item {
-  font-size: 0.85rem !important;
-  padding: 6px 10px !important;
-  min-height: 28px;
-}
-
-#recent-chats-container .nav-item i {
-  font-size: 0.8rem !important;
-  width: 16px;
-  text-align: center;
-}
-
-#recent-chats-container .chat-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Reduce Sidebar Header Spacing */
-.sidebar-header {
-  margin-bottom: 10px !important;
-}
-
-/* Adjust Your Chats Label Spacing */
-.nav-label {
-  margin-top: 10px !important;
-  margin-bottom: 5px !important;
-  padding-left: 10px !important;
-  font-size: 0.75rem !important;
-}
-
-/* --- NEW: BOLT LOGO HOVER TOGGLE --- */
-.top-logo-container {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.2s;
-  position: relative;
-}
-
-.top-logo-container:hover {
-  background: var(--bg-tertiary);
-}
-
-.top-logo-bolt {
-  font-size: 1.2rem;
-  color: #ffd700;
-  transition: opacity 0.2s, transform 0.2s;
-  position: absolute;
-}
-
-.top-logo-sidebar-icon {
-  font-size: 1rem;
-  color: var(--text-heading);
-  opacity: 0;
-  transform: scale(0.8);
-  transition: opacity 0.2s, transform 0.2s;
-  position: absolute;
-}
-
-.top-logo-container:hover .top-logo-bolt {
-  opacity: 0;
-  transform: scale(0.8);
-}
-
-.top-logo-container:hover .top-logo-sidebar-icon {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* --- NEW: VISIBLE CLOSE BUTTON IN SIDEBAR --- */
-.sidebar-close-btn {
-  display: flex !important;
-  /* Force visible on desktop */
-  background: transparent;
-  color: var(--text-secondary);
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-}
-
-.sidebar-close-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-heading);
-}
-
 /* --- NEW: SIDE-BY-SIDE MODEL SELECTORS --- */
 .header-model-selector {
   display: flex !important;
@@ -2563,65 +2426,142 @@ body.dark-mode .pro-badge {
 
   /* 2. Input Area Pill Refactor */
   .input-toolbar {
-    display: contents !important;
-    /* Flatten structure */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
   }
 
   .input-container {
-    flex-direction: row !important;
-    align-items: center !important;
-    border-radius: 9999px !important;
-    /* PILL Shape */
-    padding: 8px 12px !important;
+    flex-direction: column !important;
+    border-radius: 24px !important;
+    padding: 10px 14px !important;
     gap: 8px !important;
   }
 
-  /* ORDER: Left(+), Input, Right(Mic/Send) */
+  /* ORDER: Left(+, tool indicator), Input, Right(Model, Mic/Send) */
   .toolbar-left {
     order: 1 !important;
     margin-right: 0 !important;
-    gap: 0 !important;
+    gap: 8px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   textarea#chat-input {
-    order: 2 !important;
+    order: 0 !important;
     padding: 6px 0 !important;
     margin: 0 !important;
     min-height: 24px !important;
-    height: 24px !important;
-    /* Single line initially */
     flex: 1 !important;
-    /* Grow to fill space */
+    width: 100% !important;
   }
 
   .toolbar-right {
-    order: 3 !important;
+    order: 2 !important;
     gap: 8px !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
-  /* Hide Desktop Tools Dropdown ONLY (keep the + button visible) */
-  .tool-dropdown-wrapper .tool-dropdown-menu {
+  /* Hide Desktop Tools Dropdown wrapper entirely (we have action sheet) */
+  .tools-dropdown-wrapper {
     display: none !important;
   }
 
-  /* Hide model selector dropdown button on mobile (keep LYNQ dropdown visible) */
+  /* Hide Attach dropdown menu ONLY (keep + button for action sheet) */
+  .attach-dropdown-wrapper .tool-dropdown-menu {
+    display: none !important;
+  }
+
+  /* Show model selector button on mobile (displaying selected model name) */
   .input-model-selector {
+    display: flex !important;
+  }
+
+  /* Smaller model button on mobile */
+  .input-model-btn {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+    gap: 4px !important;
+  }
+
+  .input-model-btn i {
+    font-size: 0.7rem !important;
+  }
+
+  /* Hide input model dropdown on mobile (model selection is in action sheet) */
+  .input-model-dropdown {
     display: none !important;
   }
 
-  /* Styling Buttons to fit Pill */
-  .tool-btn-round {
-    width: 36px !important;
-    height: 36px !important;
-    border: none !important;
-    background: transparent !important;
+  /* Selected tool indicator styling for mobile (visibility controlled by JS inline style) */
+  .selected-tool-indicator {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+    gap: 4px !important;
   }
 
-  /* Send button specific */
-  .send-btn {
+  .selected-tool-indicator>i {
+    font-size: 0.8rem !important;
+  }
+
+  .selected-tool-indicator span {
+    font-size: 0.75rem !important;
+  }
+
+  .deselect-tool-btn {
+    width: 14px !important;
+    height: 14px !important;
+    font-size: 0.5rem !important;
+  }
+
+  /* Styling Buttons - Circular with background (strong selectors for mobile) */
+  .input-toolbar .tool-btn-round,
+  .toolbar-left .tool-btn-round,
+  .toolbar-right .tool-btn-round,
+  button#attach-file-btn,
+  button#voice-btn,
+  button#send-btn,
+  button#stop-btn {
     width: 36px !important;
     height: 36px !important;
     min-width: 36px !important;
+    border: none !important;
+    background: var(--bg-tertiary) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--text-primary) !important;
+  }
+
+  .input-toolbar .tool-btn-round:hover,
+  button#attach-file-btn:hover,
+  button#voice-btn:hover {
+    background: var(--bg-secondary) !important;
+  }
+
+  /* Send button specific - keep accent color */
+  button#send-btn.send-btn {
+    background: var(--bg-accent) !important;
+    color: var(--text-accent) !important;
+  }
+
+  /* Mobile button swap behavior - Stop hidden by default, Send shown */
+  button#stop-btn {
+    display: none !important;
+  }
+
+  /* When toolbar-right has .generating class, swap the buttons */
+  .toolbar-right.generating button#send-btn {
+    display: none !important;
+  }
+
+  .toolbar-right.generating button#stop-btn {
+    display: flex !important;
+    background: #ef4444 !important;
+    color: white !important;
   }
 
   /* Attach Button icon */
