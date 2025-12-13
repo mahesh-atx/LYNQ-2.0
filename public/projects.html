@@ -1,94 +1,134 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"
+    />
+    <title>Projects — LYNQ AI</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
-  <title>Projects — LYNQ AI</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png" />
-  <link rel="manifest" href="./favicons/site.webmanifest" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
-    rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
 
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/home.css" />
+    <link rel="stylesheet" href="css/projects.css" />
+  </head>
 
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/animations.css" />
-  <link rel="stylesheet" href="css/home.css" />
-  <link rel="stylesheet" href="css/projects.css" />
-</head>
+  <body class="dark-mode">
+    <script src="js/theme-init.js"></script>
 
-<body class="dark-mode">
-  <script src="js/theme-init.js"></script>
+    <div id="app-container">
+      <!-- Sidebar injected by components.js -->
+      <div id="sidebar-container"></div>
 
-  <div id="app-container">
-    <!-- Sidebar injected by components.js -->
-    <div id="sidebar-container"></div>
+      <main id="main-content">
+        <!-- Top Bar injected by components.js -->
+        <div id="topbar-container"></div>
 
-    <main id="main-content">
-      <!-- Top Bar injected by components.js -->
-      <div id="topbar-container"></div>
+        <div id="projects-view" class="view-section active">
+          <div class="hero-header">
+            <h1>My Workspace</h1>
+            <p>Your generated apps, scripts, and history.</p>
+          </div>
+          <div class="grid-layout">
+            <!-- Data Scraper Script -->
+            <div class="tool-card" onclick="window.location.href='#'">
+              <div class="tool-card-header">
+                <div class="tool-icon-wrapper coding">
+                  <i class="fa-brands fa-python"></i>
+                </div>
+                <span class="tool-badge generating">Generating</span>
+              </div>
+              <h3>Data Scraper Script</h3>
+              <p>Python script for e-commerce pricing. Generating...</p>
+              <div class="tool-arrow">View Progress &rarr;</div>
+            </div>
 
-      <div id="projects-view" class="view-section active">
-        <div class="hero-header">
-          <h1>My Workspace</h1>
-          <p>Your generated apps, scripts, and history.</p>
+            <!-- E-commerce Dashboard -->
+            <div class="tool-card" onclick="window.location.href='#'">
+              <div class="tool-card-header">
+                <div class="tool-icon-wrapper content">
+                  <i class="fa-brands fa-react"></i>
+                </div>
+                <span class="tool-badge new">Completed</span>
+              </div>
+              <h3>E-commerce Dashboard</h3>
+              <p>React Admin Dashboard component.</p>
+              <div class="tool-arrow">View Code &rarr;</div>
+            </div>
+
+            <!-- Blog Post -->
+            <div class="tool-card" onclick="window.location.href='#'">
+              <div class="tool-card-header">
+                <div class="tool-icon-wrapper research">
+                  <i class="fa-solid fa-file-pen"></i>
+                </div>
+                <span class="tool-badge draft">Draft</span>
+              </div>
+              <h3>Blog Post: AI Trends</h3>
+              <p>Draft content for 2025 tech blog.</p>
+              <div class="tool-arrow">Resume Editing &rarr;</div>
+            </div>
+          </div>
         </div>
-        <div class="grid-layout">
-          <div class="tool-card">
-            <span class="status-badge generating">Generating</span>
-            <div class="tool-icon"><i class="fa-brands fa-python"></i></div>
-            <h3>Data Scraper Script</h3>
-            <p>Python script for e-commerce pricing. Generating...</p>
-            <div class="tool-arrow">View Progress &rarr;</div>
-          </div>
-          <div class="tool-card">
-            <span class="status-badge completed">Completed</span>
-            <div class="tool-icon"><i class="fa-brands fa-react"></i></div>
-            <h3>E-commerce Dashboard</h3>
-            <p>React Admin Dashboard component.</p>
-            <div class="tool-arrow">View Code &rarr;</div>
-          </div>
-          <div class="tool-card">
-            <span class="status-badge draft">Draft</span>
-            <div class="tool-icon"><i class="fa-solid fa-file-pen"></i></div>
-            <h3>Blog Post: AI Trends</h3>
-            <p>Draft content for 2025 tech blog.</p>
-            <div class="tool-arrow">Resume Editing &rarr;</div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+      </main>
+    </div>
 
-  <!-- Shared Components Containers -->
-  <div id="toast-container"></div>
-  <div id="pricing-modal-container"></div>
-  <div id="profile-popup-container"></div>
+    <!-- Shared Components Containers -->
+    <div id="toast-container"></div>
+    <div id="pricing-modal-container"></div>
+    <div id="profile-popup-container"></div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="js/components.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/script.js"></script>
-  <script>
-    // Initialize shared components
-    initSharedComponents('projects');
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      // Initialize shared components
+      initSharedComponents("projects");
 
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log("Projects page loaded");
-    });
-  </script>
-</body>
-
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("Projects page loaded");
+      });
+    </script>
+  </body>
 </html>

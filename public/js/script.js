@@ -309,7 +309,8 @@ async function getApiResponse(
   history = [],
   signal = null,
   webSearchActive = false,
-  canvasMode = false // NEW: Canvas mode flag
+  canvasMode = false, // NEW: Canvas mode flag
+  toolId = null // NEW: Tool ID for backend prompt injection
 ) {
   // --- MODIFIED: Auth is now optional ---
   let headers = { "Content-Type": "application/json" };
@@ -324,22 +325,6 @@ async function getApiResponse(
     }
   }
 
-  /* --- PRESERVED KEYWORD GUESSING LOGIC (COMMENTED OUT) ---
-  const searchTriggers = [
-    "search",
-    "find",
-    "google",
-    "latest",
-    "news",
-    "current",
-    "price",
-    "who is",
-    "what is",
-  ];
-  const shouldSearch = searchTriggers.some((keyword) =>
-    prompt.toLowerCase().includes(keyword)
-  );
-  */
 
   try {
     const response = await fetch(API_URL, {
@@ -353,6 +338,7 @@ async function getApiResponse(
         // Use the button state instead of the keyword guess
         webSearch: webSearchActive,
         canvasMode: canvasMode, // NEW: Pass canvas mode flag
+        toolId: toolId, // NEW: Pass toolId
       }),
       signal: signal,
     });

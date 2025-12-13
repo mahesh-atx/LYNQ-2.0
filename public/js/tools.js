@@ -9,18 +9,13 @@ const TOOL_MESSAGES = {
     websearch: "🌐 **You are in Web Search mode!**\n\nI have access to real-time web data. Ask me about:\n- Latest news and events\n- Current trends and statistics\n- Recent developments\n\nWhat would you like to know?",
     dataanalysis: "📊 **You are in Data Analysis mode!**\n\nI can help you analyze data and generate insights. Try:\n- Uploading a CSV or describing your data\n- Asking for statistical summaries\n- Requesting data visualizations\n\nWhat data would you like to analyze?",
     webscraper: "🔍 **You are in Web Scraper mode!**\n\nI can help extract structured data from websites. Provide me with:\n- A URL to scrape\n- The type of data you need\n- Output format preference\n\nWhat would you like to scrape?",
-    imagegen: "🖼️ **You are in Image Generator mode!**\n\n*This feature is coming soon!*\n\nI'll be able to create AI-generated images from your descriptions. Stay tuned!",
-    codereviewer: "🔬 **You are in Code Review mode!**\n\nI can analyze your code and provide feedback on:\n- Best practices and patterns\n- Performance optimizations\n- Security vulnerabilities\n- Code quality improvements\n\nPaste your code and I'll review it!",
+
     writer: "✍️ **You are in Writing Assistant mode!**\n\nI can help you with:\n- Drafting emails and documents\n- Editing and proofreading\n- Content creation\n- Improving clarity and style\n\nWhat would you like me to write or improve?",
-    pdfanalyzer: "📄 **You are in PDF Analyzer mode!**\n\nUpload a PDF document and I can:\n- Summarize the content\n- Answer questions about it\n- Extract key information\n\nAttach a PDF to get started!",
-    translator: "🌍 **You are in Translator mode!**\n\nI can translate text between languages with context-aware accuracy.\n\nProvide the text and target language, and I'll translate it for you!",
-    summarizer: "📝 **You are in Summarizer mode!**\n\nI can condense long content into:\n- Bullet points\n- Executive summaries\n- TL;DR versions\n\nPaste your text and I'll summarize it!",
-    codeexplainer: "📖 **You are in Code Explainer mode!**\n\nI can explain code snippets in plain English.\n\nPaste any code block, and I'll break it down line-by-line for you!",
+
     regexbuilder: "🧩 **You are in Regex Builder mode!**\n\nDescribe what you want to match, and I'll generate the Regular Expression for you.\n\nExample: 'Match any email address ending in .com'",
     sqlgenerator: "🗄️ **You are in SQL Generator mode!**\n\nDescribe your data query in plain English, and I'll write the SQL for you.\n\nExample: 'Show me all users who signed up last week'",
     apitester: "🔌 **You are in API Tester mode!**\n\nI can help you construct and test API requests.\n\nTell me the endpoint and method, and I'll help you structure the request!",
-    colorpalette: "🎨 **You are in Color Palette mode!**\n\nDescribe a mood, theme, or object, and I'll generate a beautiful color palette for it.\n\nExample: 'Sunset over the ocean' or 'Cyberpunk neon'",
-    markdown: "📝 **You are in Markdown Editor mode!**\n\nI can help you write and format Markdown content.\n\nAsk me to create tables, lists, or structure a document for you!",
+
     resumebuilder: "📄 **You are in Resume Builder mode!**\n\nI can help you craft a professional resume.\n\nTell me about your experience, or paste your current resume for improvements!",
     emailtemplates: "✉️ **You are in Email Templates mode!**\n\nI can generate professional emails for any situation.\n\nTell me who you're writing to and the purpose of the email!"
 };
@@ -31,18 +26,13 @@ const TOOL_PARAMS = {
     websearch: 'tool=websearch',
     dataanalysis: 'tool=dataanalysis',
     webscraper: 'tool=webscraper',
-    imagegen: 'tool=imagegen',
-    codereviewer: 'tool=codereviewer',
+
     writer: 'tool=writer',
-    pdfanalyzer: 'tool=pdfanalyzer',
-    translator: 'tool=translator',
-    summarizer: 'tool=summarizer',
-    codeexplainer: 'tool=codeexplainer',
+
     regexbuilder: 'tool=regexbuilder',
     sqlgenerator: 'tool=sqlgenerator',
     apitester: 'tool=apitester',
-    colorpalette: 'tool=colorpalette',
-    markdown: 'tool=markdown',
+
     resumebuilder: 'tool=resumebuilder',
     emailtemplates: 'tool=emailtemplates'
 };

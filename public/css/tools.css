@@ -192,131 +192,9 @@
     box-sizing: border-box;
 }
 
-/* --- TOOL CARD --- */
-.tool-card {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-primary);
-    border-radius: 14px;
-    padding: 16px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    box-sizing: border-box;
-}
+/* --- TOOL CARD STYLES --- */
+/* Note: Core .tool-card styles have been moved to style.css for shared use. */
 
-.tool-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--bg-gold);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s ease;
-}
-
-.tool-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--border-secondary);
-    box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.15);
-}
-
-.tool-card:hover::before {
-    transform: scaleX(1);
-}
-
-/* Hide tool cards that don't match filter */
-.tool-card.hidden {
-    display: none;
-}
-
-/* --- TOOL CARD HEADER --- */
-.tool-card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-.tool-icon-wrapper {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    transition: transform 0.3s ease;
-}
-
-.tool-card:hover .tool-icon-wrapper {
-    transform: scale(1.1);
-}
-
-/* Category-specific colors */
-.tool-icon-wrapper.coding {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.tool-icon-wrapper.research {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    color: white;
-}
-
-.tool-icon-wrapper.content {
-    background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
-    color: white;
-}
-
-.tool-icon-wrapper.data {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-}
-
-/* --- TOOL BADGE --- */
-.tool-badge {
-    font-size: 0.7rem;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: rgba(255, 215, 0, 0.15);
-    color: #ffd700;
-}
-
-.tool-badge.new {
-    background: rgba(56, 239, 125, 0.15);
-    color: #38ef7d;
-}
-
-.tool-badge.coming-soon {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-secondary);
-}
-
-/* --- TOOL CARD CONTENT --- */
-.tool-card h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-heading);
-    margin-bottom: 6px;
-}
-
-.tool-card p {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    line-height: 1.5;
-    margin-bottom: 10px;
-}
 
 /* --- SUGGESTION CHIPS --- */
 .tool-suggestions {
@@ -540,6 +418,7 @@
         color: var(--text-secondary);
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         align-self: start;

@@ -7,28 +7,4 @@
     height: 100%;
 }
 
-.status-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.status-badge.completed {
-    background: rgba(16, 163, 127, 0.15);
-    color: #10a37f;
-}
-
-.status-badge.draft {
-    background: rgba(128, 128, 128, 0.15);
-    color: gray;
-}
-
-.status-badge.generating {
-    background: rgba(255, 215, 0, 0.2);
-    color: #b8860b;
-}
+/* Badge styles moved to style.css as .tool-badge */

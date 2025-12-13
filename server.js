@@ -7,6 +7,7 @@ import fs from "fs";
 import mongoose from "mongoose";
 // --- NEW: Import Firebase Admin SDK ---
 import admin from "firebase-admin";
+import * as cheerio from "cheerio";
 import https from "https";
 
 // --- NEW: Setup for __dirname in ES Modules ---
@@ -37,8 +38,21 @@ let CANVAS_SYSTEM_PROMPT = "";
 try {
   CANVAS_SYSTEM_PROMPT = fs.readFileSync(canvasPromptPath, "utf-8");
   console.log("✅ Canvas prompt loaded from config/canvasprompt.txt");
+  CANVAS_SYSTEM_PROMPT = fs.readFileSync(canvasPromptPath, "utf-8");
+  console.log("✅ Canvas prompt loaded from config/canvasprompt.txt");
 } catch (err) {
   console.warn("⚠️ Could not load canvasprompt.txt, canvas mode will use default.");
+}
+
+// --- Load Tool Prompts from config file ---
+const toolPromptsPath = path.join(__dirname, "config", "tool_prompts.json");
+let TOOL_PROMPTS = {};
+try {
+  const data = fs.readFileSync(toolPromptsPath, "utf-8");
+  TOOL_PROMPTS = JSON.parse(data);
+  console.log(`✅ Loaded ${Object.keys(TOOL_PROMPTS).length} tool prompts from config/tool_prompts.json`);
+} catch (err) {
+  console.warn("⚠️ Could not load tool_prompts.json, tool specific prompts will not work.", err.message);
 }
 
 // --- Environment Variables ---
@@ -289,6 +303,41 @@ app.delete("/api/chats", verifyAuthToken, async (req, res) => {
   }
 });
 
+// --- Scrape URL Helper Function ---
+async function scrapeUrl(url) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) return null;
+
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // Remove unwanted elements
+    $("script, style, nav, footer, iframe, noscript").remove();
+
+    // Extract main text
+    let text = $("body").text();
+    text = text.replace(/\s+/g, " ").trim();
+
+    // Limit length
+    return text.substring(0, 1500); // Return first 1500 chars
+  } catch (error) {
+    console.error(`Error scraping ${url}:`, error.message);
+    return null;
+  }
+}
+
 // --- Web Search Helper Function ---
 async function performWebSearch(query) {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
@@ -355,6 +404,23 @@ async function performWebSearch(query) {
       markdownOutput += `---\n`;
     });
 
+
+    // --- DEEP RESEARCH MODE: Scrape top 2 results ---
+    console.log("🕵️ Deep Research: Scraping top 2 results...");
+    const topResults = data.items.slice(0, 2);
+    const scrapePromises = topResults.map((item) => scrapeUrl(item.link));
+    const scrapedContents = await Promise.all(scrapePromises);
+
+    markdownOutput += `\n### 🕵️ Deep Research Insights\n\n`;
+
+    topResults.forEach((item, index) => {
+      const content = scrapedContents[index];
+      if (content) {
+        markdownOutput += `#### Extracted from [${item.title}](${item.link}):\n`;
+        markdownOutput += `> "${content}..."\n\n`;
+      }
+    });
+
     return markdownOutput;
   } catch (error) {
     console.error("Web search error:", error);
@@ -365,7 +431,7 @@ async function performWebSearch(query) {
 // --- MAIN GENERATION ENDPOINT ---
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
   // Get request parameters
-  let { prompt, systemMessage, history, model, max_tokens, webSearch, canvasMode } =
+  let { prompt, systemMessage, history, model, max_tokens, webSearch, canvasMode, toolId } =
     req.body;
 
   // Determine the system message based on mode
@@ -377,6 +443,14 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
   } else {
     finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
   }
+
+  // --- TOOL PROMPT INJECTION ---
+  if (toolId && TOOL_PROMPTS[toolId]) {
+    console.log(`🔧 Injecting system prompt for tool: ${toolId}`);
+    // Append the tool prompt to the system message
+    finalSystemMessage += `\n\nSYSTEM_INSTRUCTION:\n${TOOL_PROMPTS[toolId]}`;
+  }
+
   let searchResults = null;
 
   // --- WEB SEARCH LOGIC ---
@@ -398,58 +472,39 @@ ${searchResults}
 
 ⚠️ CRITICAL REQUIREMENTS - YOU MUST FOLLOW THESE:
 
-1. **EMBED EVERYTHING FROM SEARCH RESULTS:**
-   - EMBED ALL images from search results using Markdown: ![Description](image_url)
-   - EMBED ALL video links prominently with titles
-   - INCLUDE ALL relevant links as clickable Markdown links: [Title](url)
-   - Do NOT skip any useful content from the search results
+1.  **VISUALS FIRST (HORIZONTAL SCROLL):**
+    - You MUST start your response with a horizontal image row if images are available.
+    - Use EXACTLY this HTML structure for the images:
+    
+    \`\`\`html
+    <div class="image-carousel"><div class="image-card"><img src="URL" alt="desc"><p class="caption">Text</p></div><div class="image-card"><img src="URL2" alt="desc2"><p class="caption">Text2</p></div></div>
+    \`\`\`
+    
+    - Do NOT use standard Markdown image syntax (e.g. ![alt](url)).
+    - OUTPUT AS RAW HTML. Do not put backticks around the HTML in your final response.
+    - Put ALL relevant images into this single carousel at the very top.
 
-2. **VISUAL-FIRST RESPONSE:**
-   - Place images at the TOP of your response or near relevant sections
-   - For videos, display them as: **▶ Watch:** [Video Title](youtube_url)
-   - Make the response visually rich and engaging
 
-3. **COMPREHENSIVE SYNTHESIS:**
-   - Combine information from ALL search results into a cohesive answer
-   - Cite sources with clickable links
-   - Include prices, ratings, dates if available in results
-   - Provide direct links for purchase/download/access
+2.  **INTENT-AWARE RESPONSE:**
+    - **FOR PRODUCTS (e.g., iPhone 17):** Focus on Specs, Price, Release Date, Leaks. Do NOT give generic definitions.
+    - **FOR TUTORIALS:** Focus on Steps and "How-To".
+    - **FOR CONCEPTS:** Focus on Definitions and Explanations.
+    - **FOR NEWS:** Focus on "What happened", "When", and "Why".
 
-4. **CONTENT-SPECIFIC FORMATTING:**
+3.  **DEEP RESEARCH SYNTHESIS:**
+    - Use the "Deep Research Insights" provided above.
+    - Quote specific facts, numbers, or code snippets from the scraped content.
+    - Cite sources using [Title](url) format.
 
-   📦 **FOR PRODUCTS/SHOPPING:**
-   - Show product images first
-   - Create comparison tables with prices
-   - Include buy links: [Buy on Amazon](url), [Buy on Flipkart](url)
-   - List features, pros, cons, ratings
+4.  **VIDEOS & MEDIA:**
+    - Provide video links as: **▶ Watch:** [Video Title](youtube_url)
 
-   💻 **FOR CODING/TECH:**
-   - Include code snippets in proper code blocks
-   - Link to documentation and tutorials
-   - Embed tutorial video links
+5.  **RESPONSE STRUCTURE:**
+    - **Top:** \`<div class="image-carousel">...</div>\`
+    - **Middle:** Intent-Specific Answer (synthesized from search + scraped content).
+    - **Bottom:** Sources / Useful Links.
 
-   📰 **FOR NEWS/CURRENT EVENTS:**
-   - Mention dates for freshness
-   - Include news images
-   - Link to full articles
-
-   🎬 **FOR ENTERTAINMENT:**
-   - Embed movie/show posters
-   - Include trailers: **▶ Watch Trailer:** [Title](url)
-   - Show ratings, cast, release dates
-
-   📚 **FOR LEARNING/EXPLANATION:**
-   - Use diagrams and images from results
-   - Include educational video links
-   - Link to detailed resources
-
-5. **RESPONSE STRUCTURE:**
-   - Start with the most relevant image (if available)
-   - Give a clear, direct answer first
-   - Then provide detailed information with embedded media
-   - End with useful links for more information
-
-REMEMBER: Your goal is to make the response as visually rich and informative as possible by including EVERYTHING useful from the search results!
+REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if they ask for specs.
 
 ⚠️ IMPORTANT: Do NOT call any tools or functions. The web search has already been performed for you. Simply use the search results provided above to craft your response.
 `;

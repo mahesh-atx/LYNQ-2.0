@@ -502,7 +502,7 @@ body.dark-mode .btn-cancel {
 
 .input-container {
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-secondary);
+  border: none;
   border-radius: 26px;
   padding: 14px 18px;
   display: flex;
@@ -513,9 +513,6 @@ body.dark-mode .btn-cancel {
   position: relative;
 }
 
-.input-container:focus-within {
-  border-color: var(--text-heading);
-}
 
 textarea#chat-input {
   width: 100%;
@@ -527,9 +524,27 @@ textarea#chat-input {
   color: var(--text-primary);
   font-size: 1rem;
   min-height: 24px;
+  max-height: 200px; /* Limit height to ~8 lines */
   line-height: 1.5;
-  overflow: hidden;
-  /* This hides the scrollbar */
+  overflow-y: auto; /* Show scrollbar when content exceeds max-height */
+}
+
+/* Minimal scrollbar for chat input */
+textarea#chat-input::-webkit-scrollbar {
+  width: 4px;
+}
+
+textarea#chat-input::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+textarea#chat-input::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 4px;
+}
+
+textarea#chat-input::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.5);
 }
 
 .input-toolbar {
