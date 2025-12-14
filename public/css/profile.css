@@ -348,3 +348,23 @@
         padding: 40px 20px;
     }
 }
+
+/* --- LIGHT MODE OVERRIDES --- */
+body:not(.dark-mode) .profile-hero,
+body:not(.dark-mode) .profile-info-card,
+body:not(.dark-mode) .profile-action-btn,
+body:not(.dark-mode) .guest-profile-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body:not(.dark-mode) .profile-action-btn:hover {
+    background: rgba(100, 120, 255, 0.08);
+    border-color: rgba(100, 120, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+body:not(.dark-mode) .profile-hero::before {
+    background: linear-gradient(135deg, rgba(100, 120, 255, 0.15), rgba(120, 80, 200, 0.1));
+}

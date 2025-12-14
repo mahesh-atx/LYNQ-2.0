@@ -239,3 +239,26 @@ input:checked+.slider:before {
         margin-bottom: 5px;
     }
 }
+
+/* --- LIGHT MODE OVERRIDES --- */
+body:not(.dark-mode) .setting-item {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body:not(.dark-mode) .setting-item:hover {
+    border-color: rgba(100, 120, 255, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+body:not(.dark-mode) .btn-secondary {
+    background: rgba(100, 120, 255, 0.08);
+    border-color: rgba(100, 120, 255, 0.15);
+}
+
+body:not(.dark-mode) .btn-secondary:hover {
+    background: rgba(100, 120, 255, 0.15);
+    border-color: rgba(100, 120, 255, 0.3);
+}

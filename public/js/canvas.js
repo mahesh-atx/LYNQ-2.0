@@ -176,27 +176,27 @@ function updateCanvasPreview() {
 function toggleCanvasMode(forceState) {
     const newState = forceState ?? !isCanvasModeActive;
 
+    // Close the tools dropdown when toggling
+    const toolsDropdown = document.getElementById("tools-dropdown");
+    const toolsBtn = document.getElementById("tools-btn");
+    if (toolsDropdown) toolsDropdown.classList.remove("active");
+    if (toolsBtn) toolsBtn.classList.remove("active");
+
     if (newState === false) {
         isCanvasModeActive = false;
         if (canvasToggleBtn) canvasToggleBtn.classList.remove("active");
         if (canvasPane) canvasPane.classList.remove("active");
-        // Hide tool indicator
-        const indicator = document.getElementById("selected-tool-indicator");
-        if (indicator && indicator.style.display !== "none") {
-            const labelEl = document.getElementById("selected-tool-label");
-            if (labelEl && labelEl.textContent === "Canvas") {
-                indicator.style.display = "none";
-            }
+        // Hide tool indicator and restore tools button
+        if (typeof deselectTool === "function") {
+            deselectTool();
         }
-        // Toast removed for cleaner UX
     } else {
         isCanvasModeActive = true;
         if (canvasToggleBtn) canvasToggleBtn.classList.add("active");
-        // Show tool indicator
+        // Show tool indicator (this also hides the tools wrapper)
         if (typeof showSelectedToolIndicator === "function") {
             showSelectedToolIndicator('canvas', 'fa-solid fa-file-invoice', 'Canvas');
         }
-        // Toast removed for cleaner UX
     }
 }
 

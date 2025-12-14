@@ -403,3 +403,27 @@
         font-size: 1rem;
     }
 }
+
+/* --- LIGHT MODE OVERRIDES --- */
+body:not(.dark-mode) .tools-search-wrapper input,
+body:not(.dark-mode) .category-pill {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body:not(.dark-mode) .tools-search-wrapper input:focus {
+    border-color: rgba(100, 120, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(100, 120, 255, 0.08);
+}
+
+body:not(.dark-mode) .category-pill:hover {
+    border-color: rgba(100, 120, 255, 0.3);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+body:not(.dark-mode) .category-pill.active {
+    background: linear-gradient(135deg, rgba(100, 120, 255, 0.15), rgba(120, 80, 200, 0.15));
+    color: var(--text-heading);
+    border-color: rgba(100, 120, 255, 0.3);
+}

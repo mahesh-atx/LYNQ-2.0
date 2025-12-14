@@ -1036,6 +1036,12 @@ window.onclick = function (event) {
 
 /* --- INPUT MODEL SELECTOR FUNCTIONS --- */
 function toggleInputModelDropdown() {
+  // On mobile, open the model sheet instead of dropdown
+  if (window.innerWidth <= 768) {
+    toggleMobileModelSheet(true);
+    return;
+  }
+
   const dropdown = document.getElementById("input-model-dropdown");
   const btn = document.getElementById("input-model-btn");
 
@@ -1076,6 +1082,7 @@ function showSelectedToolIndicator(toolId, iconClass, toolName, hideXButton = fa
   const iconEl = document.getElementById("selected-tool-icon");
   const labelEl = document.getElementById("selected-tool-label");
   const xBtn = document.querySelector(".deselect-tool-btn");
+  const toolsWrapper = document.querySelector(".tools-dropdown-wrapper");
 
   if (indicator && iconEl) {
     iconEl.className = iconClass;
@@ -1088,6 +1095,11 @@ function showSelectedToolIndicator(toolId, iconClass, toolName, hideXButton = fa
     }
     indicator.style.display = "flex";
     currentSelectedTool = toolId;
+    
+    // Hide the tools button wrapper when a tool is selected
+    if (toolsWrapper) {
+      toolsWrapper.style.display = "none";
+    }
   }
 }
 
@@ -1127,27 +1139,25 @@ function deselectTool() {
 
 /* --- DESKTOP TOOL HANDLERS --- */
 function handleDesktopTool(action) {
-  // Close dropdown
+  // Close dropdown and remove active state from button
   const dropdown = document.getElementById("tools-dropdown");
+  const toolsBtn = document.getElementById("tools-btn");
   if (dropdown) dropdown.classList.remove("active");
+  if (toolsBtn) toolsBtn.classList.remove("active");
 
   // Handle tool selection
   switch (action) {
     case 'image':
       showSelectedToolIndicator('imagegen', 'fa-solid fa-paintbrush', 'Create Image');
-      // Toast removed
       break;
     case 'deep-research':
       showSelectedToolIndicator('deepresearch', 'fa-solid fa-microscope', 'Deep Research');
-      // Toast removed
       break;
     case 'shopping':
       showSelectedToolIndicator('shoppingresearch', 'fa-solid fa-bag-shopping', 'Shopping');
-      // Toast removed
       break;
     case 'thinking':
       showSelectedToolIndicator('thinking', 'fa-solid fa-brain', 'Thinking');
-      // Toast removed
       break;
   }
 }
@@ -1278,96 +1288,135 @@ function handleMobileAction(action) {
         showSelectedToolIndicator('thinking', 'fa-solid fa-brain', 'Thinking');
         break;
       case 'web-search':
-        const webBtn = document.getElementById('web-search-toggle-btn');
-        if (webBtn) {
-          webBtn.click();
-        }
-        // Show tool indicator
-        if (typeof isWebSearchActive !== "undefined") {
-          if (!isWebSearchActive) {
-            isWebSearchActive = true;
-            showSelectedToolIndicator('websearch', 'fa-solid fa-earth-americas', 'Web Search');
-            // Toast removed for cleaner UX
-          } else {
-            deselectTool();
-          }
+        // Just call toggleWebSearch - it handles everything including indicator
+        if (typeof toggleWebSearch === "function") {
+          toggleWebSearch();
         }
         break;
       case 'canvas':
-        const canvasBtn = document.getElementById('canvas-toggle-btn');
-        if (canvasBtn) {
-          canvasBtn.click();
-        }
-        // Show tool indicator
-        if (typeof isCanvasModeActive !== "undefined" && !isCanvasModeActive) {
-          showSelectedToolIndicator('canvas', 'fa-solid fa-file-invoice', 'Canvas');
+        // Just call toggleCanvasMode - it handles everything including indicator
+        if (typeof toggleCanvasMode === "function") {
+          toggleCanvasMode();
         }
         break;
     }
   }, 300);
 }
 
-/* Toggle Models Section in Sheet */
-function toggleSheetModels() {
-  const list = document.getElementById('sheet-models-list');
-  const chevron = document.getElementById('sheet-models-chevron');
+/* --- MOBILE MODEL SHEET FUNCTIONS --- */
 
-  if (list) {
-    list.classList.toggle('expanded');
-  }
-  if (chevron) {
-    chevron.classList.toggle('rotated');
+// Swipe tracking for model sheet
+let modelSheetTouchStartY = 0;
+let modelSheetTouchCurrentY = 0;
+
+/**
+ * Toggles the mobile model sheet visibility
+ */
+function toggleMobileModelSheet(show) {
+  const sheet = document.getElementById("mobile-model-sheet");
+  const overlay = document.getElementById("mobile-model-overlay");
+
+  if (show) {
+    sheet.classList.add("active");
+    overlay.classList.add("active");
+    // Initialize swipe-to-close
+    initModelSheetSwipe(sheet);
+  } else {
+    sheet.classList.remove("active");
+    overlay.classList.remove("active");
+    sheet.style.transform = ''; // Reset any drag transform
   }
 }
 
-/* Select Model from Sheet */
-/* Select Model from Sheet */
-function selectMobileModel(modelId, displayName) {
-  // Update selected state
-  const options = document.querySelectorAll('.sheet-model-option');
+/**
+ * Initialize swipe-to-close for model sheet
+ */
+function initModelSheetSwipe(sheet) {
+  if (sheet._swipeInitialized) return;
+  sheet._swipeInitialized = true;
+
+  sheet.addEventListener('touchstart', (e) => {
+    modelSheetTouchStartY = e.touches[0].clientY;
+    modelSheetTouchCurrentY = modelSheetTouchStartY;
+    sheet.style.transition = 'none';
+  }, { passive: true });
+
+  sheet.addEventListener('touchmove', (e) => {
+    modelSheetTouchCurrentY = e.touches[0].clientY;
+    const diff = modelSheetTouchCurrentY - modelSheetTouchStartY;
+    
+    // Only allow dragging down
+    if (diff > 0) {
+      sheet.style.transform = `translateY(${diff}px)`;
+    }
+  }, { passive: true });
+
+  sheet.addEventListener('touchend', () => {
+    sheet.style.transition = 'transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)';
+    const diff = modelSheetTouchCurrentY - modelSheetTouchStartY;
+    
+    // Close if dragged more than 100px down
+    if (diff > 100) {
+      toggleMobileModelSheet(false);
+    } else {
+      sheet.style.transform = 'translateY(0)';
+    }
+  }, { passive: true });
+}
+
+/**
+ * Selects a model from the mobile model sheet
+ */
+function selectMobileSheetModel(element, modelId, displayName) {
+  // Update selected state in sheet
+  const options = document.querySelectorAll('.model-sheet-option');
   options.forEach(opt => opt.classList.remove('selected'));
-  if (event && event.currentTarget) {
-    event.currentTarget.classList.add('selected');
-  }
+  element.classList.add('selected');
 
   // Define icons mapping
   const modelIcons = {
-    'llama-3.1-8b-instant': { icon: 'zap', color: '#f59e0b' },
-    'openai/gpt-oss-20b': { icon: 'box', color: '#10b981' },
-    'openai/gpt-oss-120b': { icon: 'flame', color: '#3b82f6' }
+    'llama-3.1-8b-instant': { faIcon: 'fa-bolt', color: '#f59e0b' },
+    'openai/gpt-oss-20b': { faIcon: 'fa-cube', color: '#10b981' },
+    'openai/gpt-oss-120b': { faIcon: 'fa-fire', color: '#8b5cf6' }
   };
 
-  const iconData = modelIcons[modelId] || { icon: 'box', color: '#a1a1aa' };
+  const iconData = modelIcons[modelId] || { faIcon: 'fa-cube', color: '#a1a1aa' };
 
-  // Update header model name if exists - DISABLED as per user request to keep "LYNQ" static
-  // const headerModelName = document.getElementById('header-model-name');
-  // if (headerModelName) {
-  //   headerModelName.textContent = displayName;
-  // }
-
-  // Update input model name button (for mobile display)
+  // Update input model name button
   const inputModelName = document.getElementById('input-model-name');
   if (inputModelName) {
-    // Map icons to FontAwesome for dynamic update safely
-    let faIcon = 'fa-bolt';
-    if (iconData.icon === 'box') faIcon = 'fa-cube';
-    if (iconData.icon === 'flame') faIcon = 'fa-fire';
-    
-    // Update parent content to include icon + text + chevron
     inputModelName.parentElement.innerHTML = `
       <span id="input-model-name" style="display: flex; align-items: center; gap: 6px;">
-        <i class="fa-solid ${faIcon}" style="color: ${iconData.color}; font-size: 0.8rem;"></i>
+        <i class="fa-solid ${iconData.faIcon}" style="color: ${iconData.color}; font-size: 0.8rem;"></i>
         ${displayName}
       </span>
       <i class="fa-solid fa-chevron-down" style="margin-left: 4px;"></i>
     `;
   }
 
-  // Store selected model
+  // Also update desktop model selector to stay in sync
+  const desktopOptions = document.querySelectorAll('.input-model-option');
+  desktopOptions.forEach(opt => {
+    opt.classList.remove('selected');
+    if (opt.getAttribute('onclick')?.includes(modelId)) {
+      opt.classList.add('selected');
+    }
+  });
+
+  // Store selected model globally
   currentSelectedModel = modelId;
 
-  // Close sheet after selection
-  setTimeout(() => toggleMobileActionSheet(false), 200);
+  // Close sheet after selection with slight delay for visual feedback
+  setTimeout(() => toggleMobileModelSheet(false), 200);
+}
+
+/**
+ * Opens the model sheet when clicking on model button (mobile only)
+ */
+function handleMobileModelClick() {
+  if (window.innerWidth <= 768) {
+    toggleMobileModelSheet(true);
+  }
 }
 
 // ============================================

@@ -231,3 +231,29 @@
         gap: 10px;
     }
 }
+
+/* --- LIGHT MODE OVERRIDES --- */
+body:not(.dark-mode) .help-search input,
+body:not(.dark-mode) .help-card,
+body:not(.dark-mode) .faq-item,
+body:not(.dark-mode) .contact-form {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+body:not(.dark-mode) .help-card:hover {
+    border-color: rgba(100, 120, 255, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+body:not(.dark-mode) .help-search input:focus {
+    border-color: rgba(100, 120, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(100, 120, 255, 0.08);
+}
+
+body:not(.dark-mode) .faq-item.open {
+    border-color: rgba(100, 120, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}

@@ -113,10 +113,17 @@ function injectSidebar(activePage = '') {
 
 /**
  * Injects the top bar HTML into the page
+ * @param {string} activePage - The current page ID (e.g., 'home', 'projects', 'settings', 'profile', 'help', 'tools')
  */
-function injectTopBar() {
+function injectTopBar(activePage = '') {
   const container = document.getElementById('topbar-container');
   if (!container) return;
+
+  const isHome = activePage === 'home';
+  // On home page: button is hidden initially and calls resetChat()
+  // On other pages: button is visible and navigates to index.html
+  const newChatAction = isHome ? 'onclick="resetChat()"' : 'onclick="location.href=\'index.html\'"';
+  const newChatDisplay = isHome ? 'style="display: none;"' : '';
 
   container.innerHTML = `
     <div class="top-bar">
@@ -165,8 +172,8 @@ function injectTopBar() {
       <div style="flex: 1"></div>
       
       <div class="top-actions">
-        <!-- New Chat Button -->
-        <button class="new-chat-btn" onclick="resetChat()" title="New Chat">
+        <!-- New Chat Button (hidden in hero on home page, always visible on other pages) -->
+        <button class="new-chat-btn" id="topbar-new-chat-btn" ${newChatAction} title="New Chat" ${newChatDisplay}>
           <i class="fa-solid fa-pen-to-square"></i>
           <span>New Chat</span>
         </button>
@@ -380,7 +387,7 @@ function injectProfilePopup() {
  */
 function initSharedComponents(activePage = '') {
   injectSidebar(activePage);
-  injectTopBar();
+  injectTopBar(activePage);
   injectPricingModal();
   injectToast();
   injectProfilePopup();

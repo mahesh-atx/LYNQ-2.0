@@ -284,6 +284,33 @@
                 accept="application/pdf"
                 style="display: none"
               />
+              <!-- Inline Suggestions (shown on input focus) -->
+              <div class="inline-suggestions" id="inline-suggestions">
+                <button
+                  class="inline-suggestion"
+                  onclick="sendSuggestion('Help me write code')"
+                >
+                  <i class="fa-solid fa-code"></i> Write code
+                </button>
+                <button
+                  class="inline-suggestion"
+                  onclick="sendSuggestion('Summarize this topic')"
+                >
+                  <i class="fa-solid fa-compress"></i> Summarize
+                </button>
+                <button
+                  class="inline-suggestion"
+                  onclick="sendSuggestion('Brainstorm ideas for')"
+                >
+                  <i class="fa-solid fa-lightbulb"></i> Brainstorm
+                </button>
+                <button
+                  class="inline-suggestion"
+                  onclick="sendSuggestion('Explain this concept')"
+                >
+                  <i class="fa-solid fa-graduation-cap"></i> Explain
+                </button>
+              </div>
               <div class="input-container">
                 <div id="attachment-preview-container"></div>
 
@@ -664,61 +691,6 @@
 
       <!-- List Actions -->
       <div class="sheet-list-actions">
-        <!-- Models Section (Expandable) -->
-        <div class="sheet-models-section">
-          <div class="sheet-section-header" onclick="toggleSheetModels()">
-            <div class="sheet-item-left">
-              <i class="fa-solid fa-cube"></i>
-              <span class="sheet-item-title">Models</span>
-            </div>
-            <i
-              class="fa-solid fa-chevron-down sheet-arrow"
-              id="sheet-models-chevron"
-            ></i>
-          </div>
-          <div class="sheet-models-list" id="sheet-models-list">
-            <button
-              class="sheet-model-option"
-              onclick="selectMobileModel('llama-3.1-8b-instant', 'llama-3.1')"
-            >
-              <i
-                class="fa-solid fa-bolt"
-                style="margin-right: 8px; color: #f59e0b"
-              ></i>
-              <div class="model-info">
-                <span>llama-3.1</span>
-                <span class="model-desc">8B params</span>
-              </div>
-            </button>
-            <button
-              class="sheet-model-option"
-              onclick="selectMobileModel('openai/gpt-oss-20b', 'GPT-OSS-20B')"
-            >
-              <i
-                class="fa-solid fa-cube"
-                style="margin-right: 8px; color: #10b981"
-              ></i>
-              <div class="model-info">
-                <span>GPT-OSS-20B</span>
-                <span class="model-desc">Balanced</span>
-              </div>
-            </button>
-            <button
-              class="sheet-model-option"
-              onclick="selectMobileModel('openai/gpt-oss-120b', 'gpt-oss-120b')"
-            >
-              <i
-                class="fa-solid fa-fire"
-                style="margin-right: 8px; color: #8b5cf6"
-              ></i>
-              <div class="model-info">
-                <span>gpt-oss-120b</span>
-                <span class="model-desc">Most powerful</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
         <button class="sheet-list-item" onclick="handleMobileAction('image')">
           <div class="sheet-item-left">
             <i class="fa-solid fa-paintbrush"></i>
@@ -795,11 +767,70 @@
       </div>
     </div>
 
-    <!-- Overlay -->
+    <!-- Overlay for Action Sheet -->
     <div
       id="mobile-sheet-overlay"
       class="mobile-sheet-overlay"
       onclick="toggleMobileActionSheet(false)"
+    ></div>
+
+    <!-- Mobile Model Sheet (separate from action sheet) -->
+    <div id="mobile-model-sheet" class="mobile-model-sheet">
+      <div class="sheet-handle"></div>
+      <div class="model-sheet-header">
+        <span>Select Model</span>
+      </div>
+      <div class="model-sheet-list">
+        <button
+          class="model-sheet-option selected"
+          data-model-id="llama-3.1-8b-instant"
+          onclick="selectMobileSheetModel(this, 'llama-3.1-8b-instant', 'llama-3.1')"
+        >
+          <div class="model-option-left">
+            <i class="fa-solid fa-bolt" style="color: #f59e0b"></i>
+            <div class="model-option-info">
+              <span class="model-option-name">llama-3.1</span>
+              <span class="model-option-desc">Fast · 8B params</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-check model-check-icon"></i>
+        </button>
+        <button
+          class="model-sheet-option"
+          data-model-id="openai/gpt-oss-20b"
+          onclick="selectMobileSheetModel(this, 'openai/gpt-oss-20b', 'GPT-OSS-20B')"
+        >
+          <div class="model-option-left">
+            <i class="fa-solid fa-cube" style="color: #10b981"></i>
+            <div class="model-option-info">
+              <span class="model-option-name">GPT-OSS-20B</span>
+              <span class="model-option-desc">Balanced · 20B params</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-check model-check-icon"></i>
+        </button>
+        <button
+          class="model-sheet-option"
+          data-model-id="openai/gpt-oss-120b"
+          onclick="selectMobileSheetModel(this, 'openai/gpt-oss-120b', 'gpt-oss-120b')"
+        >
+          <div class="model-option-left">
+            <i class="fa-solid fa-fire" style="color: #8b5cf6"></i>
+            <div class="model-option-info">
+              <span class="model-option-name">gpt-oss-120b</span>
+              <span class="model-option-desc">Most powerful · 120B params</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-check model-check-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Overlay for Model Sheet -->
+    <div
+      id="mobile-model-overlay"
+      class="mobile-sheet-overlay"
+      onclick="toggleMobileModelSheet(false)"
     ></div>
   </body>
 </html>

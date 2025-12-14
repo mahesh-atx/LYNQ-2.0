@@ -101,13 +101,41 @@
   }
 }
 
-/* Light mode adjustments - very subtle effect */
+/* Light mode - hide spotlight completely */
 body:not(.dark-mode) .hero-spotlight-bg {
-  opacity: 0.25;
+  display: none;
 }
 
-body:not(.dark-mode) .spotlight-main {
-  filter: blur(80px);
+/* Light mode input container styling */
+body:not(.dark-mode) .input-container {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-secondary);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+body:not(.dark-mode) .input-container:focus-within {
+  border-color: var(--text-heading);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+body:not(.dark-mode) .tool-btn-round {
+  background: var(--bg-primary);
+  border-color: var(--border-primary);
+}
+
+body:not(.dark-mode) .tool-btn-round:hover {
+  background: rgba(100, 120, 255, 0.08);
+  border-color: rgba(100, 120, 255, 0.2);
+}
+
+body:not(.dark-mode) .pill-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body:not(.dark-mode) .pill-card:hover {
+  background: rgba(100, 120, 255, 0.08);
+  border-color: rgba(100, 120, 255, 0.2);
 }
 
 /* --- END HERO SPOTLIGHT GLOW --- */
@@ -202,6 +230,17 @@ body:not(.dark-mode) .spotlight-main {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* Light mode guest notice banner */
+body:not(.dark-mode) .guest-notice-banner {
+  background: rgba(255, 215, 0, 0.12);
+  border-bottom-color: rgba(200, 165, 0, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+body:not(.dark-mode) .guest-banner-content i {
+  color: #d4a800;
 }
 
 /* --- CHAT MESSAGES & ACTIONS --- */
@@ -2036,4 +2075,27 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   /* Reverted hiding labels as per user request */
 
 
+}
+
+/* --- LIGHT MODE MOBILE OVERRIDES --- */
+@media (max-width: 768px) {
+  body:not(.dark-mode) .pill-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+  }
+
+  body:not(.dark-mode) .pill-card i {
+    color: var(--text-secondary);
+  }
+
+  body:not(.dark-mode) .pill-card:hover {
+    background: rgba(100, 120, 255, 0.08);
+    border-color: rgba(100, 120, 255, 0.2);
+  }
+
+  body:not(.dark-mode) .input-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--border-secondary);
+  }
 }
