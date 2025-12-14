@@ -1,4 +1,4 @@
-﻿/*
+/*
   home/home.css
   Styles for the Chat Interface
 */
@@ -2293,4 +2293,32 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.9);
     border-color: var(--border-secondary);
   }
+}
+
+/* --- Hero Profile Animation --- */
+.header-profile-avatar {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+}
+
+.header-profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--bg-accent);
+}
+
+.header-profile-avatar:active {
+  transform: scale(0.95);
+}
+
+@keyframes profilePulse {
+  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); } 
+  70% { box-shadow: 0 0 0 6px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+}
+
+.header-profile-avatar:hover {
+  animation: profilePulse 1.5s infinite;
 }

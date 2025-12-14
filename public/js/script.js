@@ -317,7 +317,8 @@ async function getApiResponse(
   signal = null,
   webSearchActive = false,
   canvasMode = false, // NEW: Canvas mode flag
-  toolId = null // NEW: Tool ID for backend prompt injection
+  toolId = null, // NEW: Tool ID for backend prompt injection
+  attachment = null // NEW: Attachment data
 ) {
   // --- MODIFIED: Auth is now optional ---
   let headers = { "Content-Type": "application/json" };
@@ -346,6 +347,7 @@ async function getApiResponse(
         webSearch: webSearchActive,
         canvasMode: canvasMode, // NEW: Pass canvas mode flag
         toolId: toolId, // NEW: Pass toolId
+        attachment: attachment // NEW: Pass attachment
       }),
       signal: signal,
     });
@@ -804,8 +806,11 @@ function updateUIAfterAuth(user) {
     if (authDivider) authDivider.style.display = "none";
     if (guestBanner) guestBanner.style.display = "none";
 
-    // Show profile container with avatar
-    if (headerProfileContainer) {
+    // Show profile    // Update profile displays
+    // --- NEW: Sync Sidebar Profile ---
+    updateSidebarUserInfo(user);
+    
+    if (headerProfileContainer) { // Changed from headerProfileAvatar to headerProfileContainer
       headerProfileContainer.style.display = "flex";
     }
     
@@ -955,10 +960,18 @@ function selectHeaderModel(element, modelName, displayName, description) {
 
 
 // --- NEW: Update Sidebar User Info ---
-function updateSidebarUserInfo(user) {
+// --- NEW: Update Sidebar User Info ---
+function updateSidebarUserInfo(user, retryCount = 0) {
   const avatar = document.getElementById("sidebar-user-avatar");
   const name = document.getElementById("sidebar-user-name");
   const plan = document.getElementById("sidebar-user-plan");
+
+  // If elements aren't found, retry a few times (waiting for injection)
+  if ((!avatar || !name) && retryCount < 5) {
+    console.log(`Sidebar elements not found, retrying sync (${retryCount + 1}/5)...`);
+    setTimeout(() => updateSidebarUserInfo(user, retryCount + 1), 500);
+    return;
+  }
 
   if (user) {
     const displayName = user.displayName || user.email?.split("@")[0] || "User";

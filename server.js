@@ -19,7 +19,7 @@ const port = 3000;
 
 // --- Middleware ---
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // --- Load System Prompt from config file ---
@@ -431,7 +431,7 @@ async function performWebSearch(query) {
 // --- MAIN GENERATION ENDPOINT ---
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
   // Get request parameters
-  let { prompt, systemMessage, history, model, max_tokens, webSearch, canvasMode, toolId } =
+  let { prompt, systemMessage, history, model, max_tokens, webSearch, canvasMode, toolId, attachment } =
     req.body;
 
   // Determine the system message based on mode
@@ -504,6 +504,9 @@ ${searchResults}
     - **Middle:** Intent-Specific Answer (synthesized from search + scraped content).
     - **Bottom:** Sources / Useful Links.
 
+6.  **DATE AWARENESS:**
+    - Today is ${new Date().toLocaleDateString()}. Prioritize recent results.
+
 REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if they ask for specs.
 
 ⚠️ IMPORTANT: Do NOT call any tools or functions. The web search has already been performed for you. Simply use the search results provided above to craft your response.
@@ -521,16 +524,67 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
   }
 
   if (prompt) {
-    messages.push({ role: "user", content: prompt });
+    const userMsg = { role: "user", content: prompt };
+    if (attachment) {
+        userMsg.attachment = attachment;
+    }
+    messages.push(userMsg);
   } else {
     return res.status(400).json({ error: "No prompt provided" });
   }
 
   try {
+    // --- AUTO-SWITCH TO VISION MODEL FOR IMAGES ---
+    const hasImageAttachment = messages.some(msg => msg.attachment && msg.attachment.type === "image");
+    
+    if (hasImageAttachment) {
+        const originalModel = model;
+        model = "meta-llama/llama-4-scout-17b-16e-instruct"; // Force vision model
+        if (originalModel !== model) {
+            console.log(`🔄 Auto-switched from '${originalModel}' to '${model}' due to image attachment.`);
+        }
+    }
+
+    // --- VISION MODEL HANDLING ---
+    // Check if the selected model is our known vision model (or others in future)
+    const isVisionModel = model === "meta-llama/llama-4-scout-17b-16e-instruct" || model?.includes("monitor") || model?.includes("vision") || model === "llama-3.2-11b-vision-preview" || model === "llama-3.2-90b-vision-preview";
+
+    // If it's a vision model, we need to check the LAST user message for an attachment
+    if (isVisionModel && messages.length > 0) {
+      const lastMsgIndex = messages.length - 1;
+      const lastMsg = messages[lastMsgIndex];
+
+      if (lastMsg.role === "user" && lastMsg.attachment && lastMsg.attachment.type === "image" && lastMsg.attachment.data_url) {
+        console.log("👁️ Vision request detected with image attachment.");
+        
+        // Transform the content from string to array for Groq Vision
+        // Reference: https://console.groq.com/docs/vision
+        const newContent = [
+          { type: "text", text: lastMsg.content || "Describe this image." },
+          { 
+            type: "image_url", 
+            image_url: { 
+              url: lastMsg.attachment.data_url 
+            } 
+          }
+        ];
+        
+        messages[lastMsgIndex].content = newContent;
+        // Remove the attachment object to avoid confusing the API (it's not part of standard schema)
+        delete messages[lastMsgIndex].attachment;
+      }
+    }
+
+    // Prepare clean messages for API (remove internal fields like 'attachment')
+    const finalMessages = messages.map(msg => {
+        const { attachment, ...rest } = msg;
+        return rest;
+    });
+
     // Build request body
     const requestBody = {
       model: model || process.env.MODEL,
-      messages: messages,
+      messages: finalMessages,
       ...(max_tokens && { max_tokens: parseInt(max_tokens, 10) }),
     };
 

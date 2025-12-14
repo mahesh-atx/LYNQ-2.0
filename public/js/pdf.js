@@ -19,15 +19,19 @@ async function handlePdfUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.type !== "application/pdf") {
+    // Check for PDF or Image
+    if (file.type !== "application/pdf" && !file.type.startsWith("image/")) {
         if (typeof showToast === "function")
-            showToast("Only PDF files are supported.");
+            showToast("Only PDF and Image files are supported.");
         fileUploadInput.value = "";
         return;
     }
 
+    const isImage = file.type.startsWith("image/");
+    const loadingIcon = isImage ? '<i class="fa-solid fa-image fa-bounce"></i>' : '<i class="fa-solid fa-spinner fa-spin"></i>';
+    
     const pill = createAttachmentPill(
-        `<i class="fa-solid fa-spinner fa-spin"></i> Processing "${file.name}"...`,
+        `${loadingIcon} Processing "${file.name}"...`,
         true
     );
     attachmentPreviewContainer.innerHTML = "";
@@ -36,39 +40,62 @@ async function handlePdfUpload(event) {
     try {
         const fileReader = new FileReader();
         fileReader.onload = async function () {
-            const typedarray = new Uint8Array(this.result);
-            // pdfjsLib is globally available from the script tag in index.html
-            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-            let extractedText = "";
+            if (isImage) {
+                 // Image Handling
+                const base64Data = this.result; // Data URL
+                currentAttachment = {
+                    name: file.name,
+                    data_url: base64Data, // Store full Data URL
+                    type: "image",
+                    mime_type: file.type
+                };
 
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                extractedText +=
-                    textContent.items.map((item) => item.str).join(" ") + "\n";
+                 // Update pill to show thumbnail if desired, or just icon
+                 pill.remove();
+                 createAttachmentPill(file.name, false, true, base64Data);
+
+            } else {
+                 // PDF Handling (Existing)
+                const typedarray = new Uint8Array(this.result);
+                // pdfjsLib is globally available from the script tag in index.html
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let extractedText = "";
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    extractedText +=
+                        textContent.items.map((item) => item.str).join(" ") + "\n";
+                }
+
+                currentAttachment = {
+                    name: file.name,
+                    text: extractedText,
+                    type: "pdf",
+                };
+                
+                pill.remove();
+                createAttachmentPill(file.name);
             }
 
-            currentAttachment = {
-                name: file.name,
-                text: extractedText,
-                type: "pdf",
-            };
-
-            pill.remove();
-            createAttachmentPill(file.name);
-
             if (typeof showToast === "function")
-                showToast(`Attached "${file.name}" (${pdf.numPages} pages)`);
+                showToast(`Attached "${file.name}"`);
 
             // chatInput is a global var defined in chat.js
             if (typeof chatInput !== "undefined" && chatInput) {
                 chatInput.focus();
             }
         };
-        fileReader.readAsArrayBuffer(file);
+
+        if (isImage) {
+            fileReader.readAsDataURL(file);
+        } else {
+            fileReader.readAsArrayBuffer(file);
+        }
+
     } catch (error) {
-        console.error("Error parsing PDF:", error);
-        if (typeof showToast === "function") showToast("Failed to process PDF.");
+        console.error("Error processing file:", error);
+        if (typeof showToast === "function") showToast("Failed to process file.");
         pill.remove();
         currentAttachment = null;
     } finally {
@@ -79,15 +106,20 @@ async function handlePdfUpload(event) {
 /**
  * Creates and displays the attachment "pill" above the text input.
  */
-function createAttachmentPill(fileName, isProcessing = false) {
+function createAttachmentPill(fileName, isProcessing = false, isImage = false, previewUrl = null) {
     const pill = document.createElement("div");
     pill.className = "attachment-pill";
 
-    let icon = '<i class="fa-solid fa-file-pdf"></i>';
+    let icon = isImage ? '<i class="fa-solid fa-image"></i>' : '<i class="fa-solid fa-file-pdf"></i>';
+    // If we have a preview URL, use a tiny image thumbnail instead of the icon
+    if (isImage && previewUrl) {
+         icon = `<img src="${previewUrl}" class="pill-thumb" style="width: 20px; height: 20px; border-radius: 4px; object-fit: cover; vertical-align: middle; margin-right: 5px;">`;
+    }
+
     let nameHTML = `<span>${fileName}</span>`;
 
     if (isProcessing) {
-        nameHTML = fileName;
+        nameHTML = fileName; // Should already contain icon html if passed from caller
     } else {
         const closeBtn = document.createElement("button");
         closeBtn.className = "close-btn";
@@ -101,7 +133,12 @@ function createAttachmentPill(fileName, isProcessing = false) {
         pill.appendChild(closeBtn);
     }
 
-    pill.insertAdjacentHTML("afterbegin", `${icon} ${nameHTML}`);
+    // Only add icon if it's not processing (caller handles processing icon) or if we want standard icon
+    if (!isProcessing) {
+         pill.insertAdjacentHTML("afterbegin", `${icon} ${nameHTML}`);
+    } else {
+         pill.innerHTML = fileName; // fileName contains the spinner HTML
+    }
 
     if (!isProcessing) {
         attachmentPreviewContainer.innerHTML = "";
