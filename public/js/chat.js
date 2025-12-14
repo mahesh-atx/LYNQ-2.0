@@ -112,6 +112,13 @@ function resetChat() {
         welcomeScreen.style.animation = "fadeIn 0.4s ease forwards";
     }
     if (messagesWrapper) messagesWrapper.innerHTML = "";
+    
+    // Show spotlight when returning to welcome screen
+    const spotlightBg = document.querySelector('.hero-spotlight-bg');
+    if (spotlightBg) {
+        spotlightBg.style.transition = 'opacity 0.5s ease';
+        spotlightBg.style.opacity = '1';
+    }
 
     // 2. Reset Global State (defined in script.js)
     mainChatHistory = [];
@@ -250,6 +257,13 @@ async function loadChat(chatId) {
 
     if (welcomeScreen) welcomeScreen.style.display = "none";
     if (messagesWrapper) messagesWrapper.innerHTML = "";
+    
+    // Hide spotlight when loading a chat (only visible on welcome screen)
+    const spotlightBg = document.querySelector('.hero-spotlight-bg');
+    if (spotlightBg) {
+        spotlightBg.style.transition = 'opacity 0.5s ease';
+        spotlightBg.style.opacity = '0';
+    }
 
     // 1. Fetch the full chat history from the server
     try {
@@ -358,7 +372,16 @@ async function handleSend() {
 
     if (!text && !currentAttachment) return;
 
+    // Hide welcome screen and spotlight
     if (welcomeScreen) welcomeScreen.style.display = "none";
+    
+    // Hide spotlight when chat becomes active
+    const spotlightBg = document.querySelector('.hero-spotlight-bg');
+    if (spotlightBg) {
+        spotlightBg.style.transition = 'opacity 0.5s ease';
+        spotlightBg.style.opacity = '0';
+    }
+    
     chatInput.value = "";
     chatInput.style.height = "auto";
 
@@ -445,6 +468,8 @@ async function handleSend() {
     const thinkingBubble = showThinking();
 
     isResponding = true;
+    // Note: Spotlight is already hidden when chat starts (at line 365)
+    
     if (sendBtn) sendBtn.style.display = "none";
     if (stopBtn) {
         stopBtn.style.display = "flex";

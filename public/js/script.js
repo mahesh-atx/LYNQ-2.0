@@ -257,6 +257,11 @@ async function loadState(loadChats = true) {
     // Apply to the global CSS variable
     document.documentElement.style.setProperty("--bg-gold", savedAccent);
 
+    // Update spotlight colors to match accent
+    if (typeof window.updateSpotlightColors === "function") {
+      window.updateSpotlightColors(savedAccent);
+    }
+
     // Optional: Try to update the Logo icon if it exists on this page
     // (Wait slightly for DOM to be ready if needed, or apply directly)
     setTimeout(() => {
@@ -774,8 +779,13 @@ function updateUIAfterAuth(user) {
   const headerLoginBtn = document.getElementById("header-login-btn");
   const headerSignupBtn = document.getElementById("header-signup-btn");
   const authDivider = document.getElementById("auth-divider");
-  const headerGreeting = document.getElementById("header-greeting");
-  const greetingName = document.getElementById("greeting-name");
+  const headerProfileContainer = document.getElementById("header-profile-container");
+  
+  // Profile dropdown elements
+  const dropdownName = document.getElementById("dropdown-name");
+  const dropdownEmail = document.getElementById("dropdown-email");
+  const headerAvatarInitial = document.getElementById("header-avatar-initial");
+  const dropdownAvatarInitial = document.getElementById("dropdown-avatar-initial");
 
   const welcomeName = document.getElementById("welcome-name");
   const guestBanner = document.getElementById("guest-banner");
@@ -791,10 +801,22 @@ function updateUIAfterAuth(user) {
     if (authDivider) authDivider.style.display = "none";
     if (guestBanner) guestBanner.style.display = "none";
 
-    // Show greeting with user name
-    if (headerGreeting) {
-      headerGreeting.style.display = "flex";
-      if (greetingName) greetingName.innerText = displayName;
+    // Show profile container with avatar
+    if (headerProfileContainer) {
+      headerProfileContainer.style.display = "flex";
+    }
+    
+    // Update dropdown user info
+    if (dropdownName) dropdownName.textContent = displayName;
+    if (dropdownEmail) dropdownEmail.textContent = user.email || "";
+    
+    // Set default initial if no avatar is saved
+    if (headerAvatarInitial) headerAvatarInitial.textContent = avatarInitial;
+    if (dropdownAvatarInitial) dropdownAvatarInitial.textContent = avatarInitial;
+    
+    // Load saved avatar (if any)
+    if (typeof loadSavedAvatar === "function") {
+      loadSavedAvatar();
     }
 
     if (welcomeName) welcomeName.innerText = `Hello, ${displayName}`;
@@ -812,8 +834,8 @@ function updateUIAfterAuth(user) {
     if (authDivider) authDivider.style.display = "inline";
     if (guestBanner) guestBanner.style.display = "flex";
 
-    // Hide greeting
-    if (headerGreeting) headerGreeting.style.display = "none";
+    // Hide profile container
+    if (headerProfileContainer) headerProfileContainer.style.display = "none";
 
     if (welcomeName) welcomeName.innerText = "Hello, Guest";
 
@@ -1320,3 +1342,252 @@ function selectMobileModel(modelId, displayName) {
   // Close sheet after selection
   setTimeout(() => toggleMobileActionSheet(false), 200);
 }
+
+// ============================================
+// === PROFILE AVATAR PICKER FUNCTIONALITY ===
+// ============================================
+
+// Preset avatars - fun emoji-based avatars with gradient backgrounds
+const PRESET_AVATARS = [
+  { type: 'emoji', emoji: '🦊', bg: 'linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%)' },
+  { type: 'emoji', emoji: '🐱', bg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+  { type: 'emoji', emoji: '🐼', bg: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' },
+  { type: 'emoji', emoji: '🦁', bg: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)' },
+  { type: 'emoji', emoji: '🐸', bg: 'linear-gradient(135deg, #96e6a1 0%, #d4fc79 100%)' },
+  { type: 'emoji', emoji: '🦄', bg: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)' },
+  { type: 'emoji', emoji: '🐲', bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+  { type: 'emoji', emoji: '🦋', bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+  { type: 'emoji', emoji: '🌸', bg: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)' },
+  { type: 'emoji', emoji: '🌊', bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+  { type: 'emoji', emoji: '🔥', bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+  { type: 'emoji', emoji: '⚡', bg: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)' },
+  { type: 'emoji', emoji: '🎮', bg: 'linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)' },
+  { type: 'emoji', emoji: '🚀', bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+  { type: 'emoji', emoji: '🎨', bg: 'linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%)' },
+  { type: 'emoji', emoji: '💎', bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+  { type: 'emoji', emoji: '🌙', bg: 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)' },
+  { type: 'emoji', emoji: '☀️', bg: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)' },
+  { type: 'emoji', emoji: '🍀', bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+  { type: 'emoji', emoji: '🎪', bg: 'linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%)' },
+];
+
+let selectedAvatarData = null;
+
+// Toggle Header Profile Dropdown
+function toggleHeaderProfileMenu(forceState) {
+  const dropdown = document.getElementById('header-profile-dropdown');
+  if (!dropdown) return;
+  
+  if (forceState !== undefined) {
+    dropdown.classList.toggle('active', forceState);
+  } else {
+    dropdown.classList.toggle('active');
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const container = document.getElementById('header-profile-container');
+  const dropdown = document.getElementById('header-profile-dropdown');
+  if (dropdown && container && !container.contains(e.target)) {
+    dropdown.classList.remove('active');
+  }
+});
+
+// Open Avatar Picker Modal
+function openAvatarPicker() {
+  toggleHeaderProfileMenu(false); // Close dropdown
+  
+  const modal = document.getElementById('avatar-picker-modal');
+  if (modal) {
+    modal.classList.add('active');
+    populateAvatarGrid();
+  }
+}
+
+// Close Avatar Picker Modal
+function closeAvatarPicker() {
+  const modal = document.getElementById('avatar-picker-modal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+  selectedAvatarData = null;
+}
+
+// Switch Avatar Picker Tabs
+function switchAvatarTab(tab) {
+  const tabs = document.querySelectorAll('.avatar-tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  document.querySelector(`.avatar-tab[data-tab="${tab}"]`)?.classList.add('active');
+  
+  const avatarGrid = document.getElementById('avatar-grid');
+  const uploadSection = document.getElementById('avatar-upload-section');
+  
+  if (tab === 'avatars') {
+    if (avatarGrid) avatarGrid.style.display = 'grid';
+    if (uploadSection) uploadSection.style.display = 'none';
+  } else {
+    if (avatarGrid) avatarGrid.style.display = 'none';
+    if (uploadSection) uploadSection.style.display = 'block';
+  }
+}
+
+// Populate Avatar Grid
+function populateAvatarGrid() {
+  const grid = document.getElementById('avatar-grid');
+  if (!grid) return;
+  
+  grid.innerHTML = PRESET_AVATARS.map((avatar, index) => `
+    <button class="avatar-option" onclick="selectPresetAvatar(${index})" data-index="${index}" style="background: ${avatar.bg}">
+      <span class="avatar-emoji">${avatar.emoji}</span>
+    </button>
+  `).join('');
+}
+
+// Select Preset Avatar
+function selectPresetAvatar(index) {
+  const avatar = PRESET_AVATARS[index];
+  selectedAvatarData = { type: 'preset', index, ...avatar };
+  
+  // Update UI selection
+  document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('selected'));
+  document.querySelector(`.avatar-option[data-index="${index}"]`)?.classList.add('selected');
+}
+
+// Handle Avatar Upload
+function handleAvatarUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // Validate file size (2MB max)
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('Image must be less than 2MB');
+    return;
+  }
+  
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showToast('Please upload an image file');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    selectedAvatarData = { type: 'upload', dataUrl: e.target.result };
+    
+    // Show preview in dropzone
+    const dropzone = document.getElementById('avatar-dropzone');
+    if (dropzone) {
+      dropzone.innerHTML = `
+        <img src="${e.target.result}" alt="Preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover;">
+        <p style="margin-top: 12px;">Image selected! Click Save to apply.</p>
+      `;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// Save Selected Avatar
+function saveSelectedAvatar() {
+  if (!selectedAvatarData) {
+    showToast('Please select an avatar first');
+    return;
+  }
+  
+  // Save to localStorage
+  localStorage.setItem('lynq-user-avatar', JSON.stringify(selectedAvatarData));
+  
+  // Update all avatar displays
+  updateAvatarDisplays(selectedAvatarData);
+  
+  closeAvatarPicker();
+  showToast('Avatar updated successfully!');
+}
+
+// Update all avatar displays across the UI
+function updateAvatarDisplays(avatarData) {
+  const headerAvatarImg = document.getElementById('header-avatar-img');
+  const headerAvatarInitial = document.getElementById('header-avatar-initial');
+  const dropdownAvatarImg = document.getElementById('dropdown-avatar-img');
+  const dropdownAvatarInitial = document.getElementById('dropdown-avatar-initial');
+  const headerAvatar = document.getElementById('header-profile-avatar');
+  const dropdownAvatar = document.getElementById('dropdown-avatar');
+  
+  if (avatarData.type === 'upload' && avatarData.dataUrl) {
+    // Show uploaded image
+    if (headerAvatarImg) {
+      headerAvatarImg.src = avatarData.dataUrl;
+      headerAvatarImg.style.display = 'block';
+    }
+    if (headerAvatarInitial) headerAvatarInitial.style.display = 'none';
+    if (dropdownAvatarImg) {
+      dropdownAvatarImg.src = avatarData.dataUrl;
+      dropdownAvatarImg.style.display = 'block';
+    }
+    if (dropdownAvatarInitial) dropdownAvatarInitial.style.display = 'none';
+    
+    // Reset background to simple color
+    if (headerAvatar) headerAvatar.style.background = 'transparent';
+    if (dropdownAvatar) dropdownAvatar.style.background = 'transparent';
+  } else if (avatarData.type === 'preset' || avatarData.type === 'emoji') {
+    // Show emoji avatar
+    if (headerAvatarImg) headerAvatarImg.style.display = 'none';
+    if (headerAvatarInitial) {
+      headerAvatarInitial.style.display = 'flex';
+      headerAvatarInitial.textContent = avatarData.emoji;
+      headerAvatarInitial.style.fontSize = '1.3rem';
+    }
+    if (dropdownAvatarImg) dropdownAvatarImg.style.display = 'none';
+    if (dropdownAvatarInitial) {
+      dropdownAvatarInitial.style.display = 'flex';
+      dropdownAvatarInitial.textContent = avatarData.emoji;
+      dropdownAvatarInitial.style.fontSize = '1.5rem';
+    }
+    
+    // Set gradient background
+    if (headerAvatar) headerAvatar.style.background = avatarData.bg;
+    if (dropdownAvatar) dropdownAvatar.style.background = avatarData.bg;
+  }
+  
+  // Also update profile page avatar if it exists
+  const profileAvatarEl = document.getElementById('profile-avatar');
+  const profileAvatarImg = document.getElementById('profile-avatar-img');
+  const profileAvatarInitial = document.getElementById('profile-avatar-initial');
+  
+  if (profileAvatarEl) {
+    if (avatarData.type === 'upload' && avatarData.dataUrl) {
+      if (profileAvatarImg) {
+        profileAvatarImg.src = avatarData.dataUrl;
+        profileAvatarImg.style.display = 'block';
+      }
+      if (profileAvatarInitial) profileAvatarInitial.style.display = 'none';
+      profileAvatarEl.style.background = 'transparent';
+    } else if (avatarData.type === 'preset' || avatarData.type === 'emoji') {
+      if (profileAvatarImg) profileAvatarImg.style.display = 'none';
+      if (profileAvatarInitial) {
+        profileAvatarInitial.style.display = 'flex';
+        profileAvatarInitial.textContent = avatarData.emoji;
+        profileAvatarInitial.style.fontSize = '3rem';
+      }
+      profileAvatarEl.style.background = avatarData.bg;
+    }
+  }
+}
+
+// Load saved avatar on page load
+function loadSavedAvatar() {
+  const saved = localStorage.getItem('lynq-user-avatar');
+  if (saved) {
+    try {
+      const avatarData = JSON.parse(saved);
+      updateAvatarDisplays(avatarData);
+    } catch (e) {
+      console.error('Error loading saved avatar:', e);
+    }
+  }
+}
+
+// Initialize avatar on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadSavedAvatar, 100);
+});

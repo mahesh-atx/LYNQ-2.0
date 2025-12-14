@@ -3,6 +3,115 @@
   Styles for the Chat Interface
 */
 
+/* --- HERO SPOTLIGHT GLOW BACKGROUND --- */
+
+/* Default spotlight colors (blue/purple) */
+:root {
+  --spotlight-color-1: rgba(100, 120, 255, 1);
+  --spotlight-color-2: rgba(80, 100, 220, 0.85);
+  --spotlight-color-3: rgba(60, 80, 200, 0.5);
+  --spotlight-color-4: rgba(40, 60, 180, 0.25);
+  --spotlight-accent-1: rgba(255, 255, 255, 1);
+  --spotlight-accent-2: rgba(220, 225, 255, 0.6);
+  --spotlight-accent-3: rgba(180, 190, 255, 0.25);
+}
+
+.hero-spotlight-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.spotlight-glow {
+  position: absolute;
+  border-radius: 50%;
+}
+
+/* Main spotlight - wide arc effect */
+.spotlight-main {
+  top: -400px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1400px;
+  height: 800px;
+  background: radial-gradient(
+    ellipse 70% 60% at center,
+    var(--spotlight-color-1) 0%,
+    var(--spotlight-color-2) 15%,
+    var(--spotlight-color-3) 35%,
+    var(--spotlight-color-4) 55%,
+    transparent 80%
+  );
+  filter: blur(60px);
+  opacity: 0.8;
+  animation: spotlightPulse 10s ease-in-out infinite;
+}
+
+/* Secondary accent glow - bright white/colored core */
+.spotlight-accent {
+  top: -300px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(
+    ellipse 60% 50% at center,
+    var(--spotlight-accent-1) 0%,
+    var(--spotlight-accent-2) 20%,
+    var(--spotlight-accent-3) 45%,
+    transparent 75%
+  );
+  filter: blur(40px);
+  opacity: 0.9;
+  animation: spotlightPulse 10s ease-in-out infinite 2s;
+}
+
+/* Tertiary outer glow for depth */
+.hero-spotlight-bg::before {
+  content: '';
+  position: absolute;
+  top: -500px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1800px;
+  height: 900px;
+  background: radial-gradient(
+    ellipse 80% 50% at center,
+    var(--spotlight-color-4) 0%,
+    transparent 60%
+  );
+  filter: blur(80px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+@keyframes spotlightPulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateX(-50%) scale(1.03);
+  }
+}
+
+/* Light mode adjustments - very subtle effect */
+body:not(.dark-mode) .hero-spotlight-bg {
+  opacity: 0.25;
+}
+
+body:not(.dark-mode) .spotlight-main {
+  filter: blur(80px);
+}
+
+/* --- END HERO SPOTLIGHT GLOW --- */
+
 #messages-wrapper {
   padding-inline: 2em;
 }
@@ -218,7 +327,7 @@
 }
 
 /* NEW: Add margin between attachment and bubble */
-.message-attachment-container+.bubble {
+.message-attachment-container + .bubble {
   margin-top: 10px;
 }
 
@@ -250,7 +359,7 @@
   font-size: 0.8rem;
   font-weight: 500;
   color: #abb2bf;
-  font-family: 'Outfit', sans-serif;
+  font-family: "Outfit", sans-serif;
 }
 
 .code-copy-btn {
@@ -265,7 +374,7 @@
   padding: 4px 10px;
   border-radius: 6px;
   transition: all 0.2s ease;
-  font-family: 'Outfit', sans-serif;
+  font-family: "Outfit", sans-serif;
 }
 
 .code-copy-btn:hover {
@@ -375,7 +484,6 @@
 }
 
 @keyframes bounce {
-
   0%,
   80%,
   100% {
@@ -513,7 +621,6 @@ body.dark-mode .btn-cancel {
   position: relative;
 }
 
-
 textarea#chat-input {
   width: 100%;
   background: transparent;
@@ -572,14 +679,25 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.2s;
+  transition: all 0.2s ease;
 }
 
 .tool-btn-round:hover {
   background: var(--bg-secondary);
   border-color: var(--border-secondary);
   color: var(--text-heading);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tool-btn-round:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: none;
+}
+
+.tool-btn-round:focus-visible {
+  outline: 2px solid var(--bg-accent);
+  outline-offset: 2px;
 }
 
 /* START: TOOLS/CANVAS TOGGLE STYLES */
@@ -669,11 +787,12 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   width: 240px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 10px;
-  box-shadow: var(--shadow-strong);
-  padding: 4px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 6px;
   z-index: 100;
-  animation: dropdownFadeIn 0.2s ease-out;
+  animation: dropdownSlideIn 0.25s ease-out;
+  backdrop-filter: blur(10px);
 }
 
 .tool-dropdown-menu.active {
@@ -681,16 +800,16 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   /* Show when active */
 }
 
-/* Simple fade-in animation */
-@keyframes dropdownFadeIn {
+/* Enhanced slide-in animation */
+@keyframes dropdownSlideIn {
   from {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(10px) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -699,27 +818,39 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
   background: none;
   border: 1px solid transparent;
   /* For active state alignment */
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: all 0.2s ease;
   color: var(--text-primary);
 }
 
 .tool-dropdown-item:hover {
   background: var(--bg-tertiary);
+  transform: translateX(4px);
+  border-color: var(--border-secondary);
+}
+
+.tool-dropdown-item:active {
+  transform: translateX(2px) scale(0.98);
 }
 
 .tool-dropdown-item i {
   font-size: 0.95rem;
   color: var(--text-secondary);
-  width: 18px;
+  width: 20px;
   /* Align icons */
   text-align: center;
+  transition: all 0.2s ease;
+}
+
+.tool-dropdown-item:hover i {
+  color: var(--text-heading);
+  transform: scale(1.1);
 }
 
 .tool-dropdown-item span {
@@ -1225,7 +1356,6 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 
 /* --- NEW: MOBILE-SPECIFIC STYLES (applies only on screens <= 768px) --- */
 @media (max-width: 768px) {
-
   /* 1. Fixed Input Area */
   /* Ensure chat container scrolls above the fixed input */
   #chat-container {
@@ -1337,7 +1467,6 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 
 /* --- CRUCIAL FIX: DESKTOP OVERRIDE (applies only on screens > 768px) --- */
 @media (min-width: 769px) {
-
   /* Explicitly hide all mobile-only elements on desktop */
   .input-area-wrapper {
     padding: 20px;
@@ -1552,21 +1681,32 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-secondary);
+  /* Glassmorphism effect */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
   padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .new-chat-btn:hover {
-  background: var(--bg-secondary);
-  border-color: var(--text-heading);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
   color: var(--text-heading);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.new-chat-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .new-chat-btn i {
@@ -1601,7 +1741,7 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   animation: fadeIn 0.2s ease;
 }
 
-.selected-tool-indicator>i {
+.selected-tool-indicator > i {
   font-size: 0.85rem;
 }
 
@@ -1690,19 +1830,32 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   padding: 10px 12px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
   color: var(--text-primary);
   font-size: 0.9rem;
+  border: 1px solid transparent;
 }
 
 .input-model-option:hover {
   background: var(--bg-tertiary);
+  transform: translateX(4px);
+  border-color: var(--border-secondary);
 }
 
+.input-model-option:active {
+  transform: translateX(2px) scale(0.98);
+}
+
+/* Neon Icon Glow Effect */
 .input-model-option i:first-child {
-  width: 18px;
+  width: 20px;
   text-align: center;
-  color: var(--text-secondary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-model-option:hover i:first-child {
+  transform: scale(1.15);
 }
 
 .input-model-option span {
@@ -1718,10 +1871,24 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 
 .input-model-option.selected .model-check {
   display: block;
+  animation: checkPop 0.3s ease;
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .input-model-option.selected {
   background: var(--bg-primary);
+  border-color: var(--border-secondary);
 }
 
 /* Tool Dropdown Divider */

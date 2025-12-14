@@ -181,9 +181,86 @@ function injectTopBar() {
           Sign Up
         </button>
 
-        <div class="header-greeting" id="header-greeting" style="display: none;">
-          <span>Hi,</span>
-          <span class="greeting-name" id="greeting-name">User</span>
+        <div class="header-profile-container" id="header-profile-container" style="display: none;">
+          <button class="header-profile-avatar" id="header-profile-avatar" onclick="toggleHeaderProfileMenu()" title="Profile">
+            <img id="header-avatar-img" src="" alt="Profile" style="display: none;">
+            <span id="header-avatar-initial">U</span>
+          </button>
+          
+          <!-- Profile Dropdown Menu -->
+          <div class="header-profile-dropdown" id="header-profile-dropdown">
+            <div class="profile-dropdown-header">
+              <div class="profile-dropdown-avatar" id="dropdown-avatar">
+                <img id="dropdown-avatar-img" src="" alt="Profile" style="display: none;">
+                <span id="dropdown-avatar-initial">U</span>
+              </div>
+              <div class="profile-dropdown-info">
+                <span class="profile-dropdown-name" id="dropdown-name">User</span>
+                <span class="profile-dropdown-email" id="dropdown-email">user@email.com</span>
+              </div>
+            </div>
+            
+            <div class="profile-dropdown-divider"></div>
+            
+            <button class="profile-dropdown-item" onclick="openAvatarPicker()">
+              <i class="fa-solid fa-palette"></i> Change Avatar
+            </button>
+            <a href="profile.html" class="profile-dropdown-item">
+              <i class="fa-solid fa-user-pen"></i> Edit Profile
+            </a>
+            <a href="settings.html" class="profile-dropdown-item">
+              <i class="fa-solid fa-gear"></i> Settings
+            </a>
+            
+            <div class="profile-dropdown-divider"></div>
+            
+            <button class="profile-dropdown-item profile-logout" onclick="logoutUser()">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Avatar Picker Modal -->
+    <div class="avatar-picker-modal" id="avatar-picker-modal">
+      <div class="avatar-picker-content">
+        <div class="avatar-picker-header">
+          <h3>Choose Your Avatar</h3>
+          <button class="avatar-picker-close" onclick="closeAvatarPicker()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        
+        <div class="avatar-picker-tabs">
+          <button class="avatar-tab active" data-tab="avatars" onclick="switchAvatarTab('avatars')">
+            <i class="fa-solid fa-face-smile"></i> Avatars
+          </button>
+          <button class="avatar-tab" data-tab="upload" onclick="switchAvatarTab('upload')">
+            <i class="fa-solid fa-upload"></i> Upload
+          </button>
+        </div>
+        
+        <div class="avatar-picker-body">
+          <!-- Preset Avatars -->
+          <div class="avatar-grid" id="avatar-grid">
+            <!-- Avatars will be populated by JS -->
+          </div>
+          
+          <!-- Upload Section -->
+          <div class="avatar-upload-section" id="avatar-upload-section" style="display: none;">
+            <div class="upload-dropzone" id="avatar-dropzone" onclick="document.getElementById('avatar-file-input').click()">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>Click to upload or drag an image here</p>
+              <span>PNG, JPG up to 2MB</span>
+            </div>
+            <input type="file" id="avatar-file-input" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
+          </div>
+        </div>
+        
+        <div class="avatar-picker-footer">
+          <button class="avatar-cancel-btn" onclick="closeAvatarPicker()">Cancel</button>
+          <button class="avatar-save-btn" id="avatar-save-btn" onclick="saveSelectedAvatar()">Save</button>
         </div>
       </div>
     </div>

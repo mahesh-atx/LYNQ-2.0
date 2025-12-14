@@ -86,9 +86,11 @@
     width: 100%;
     padding: 14px 20px 14px 50px;
     font-size: 1rem;
-    border: 1px solid var(--border-primary);
+    border: 1px solid rgba(100, 120, 255, 0.15);
     border-radius: 50px;
-    background: var(--bg-tertiary);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: var(--text-primary);
     outline: none;
     transition: all 0.3s ease;
@@ -100,8 +102,8 @@
 }
 
 .tools-search-wrapper input:focus {
-    border-color: var(--text-heading);
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+    border-color: rgba(100, 120, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(100, 120, 255, 0.15);
 }
 
 /* --- CATEGORY FILTERS --- */
@@ -125,8 +127,10 @@
     gap: 8px;
     padding: 10px 20px;
     border-radius: 50px;
-    border: 1px solid var(--border-primary);
-    background: var(--bg-tertiary);
+    border: 1px solid rgba(100, 120, 255, 0.15);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: var(--text-secondary);
     font-size: 0.9rem;
     font-weight: 500;
@@ -135,15 +139,16 @@
 }
 
 .category-pill:hover {
-    border-color: var(--text-heading);
+    border-color: rgba(100, 120, 255, 0.4);
     color: var(--text-heading);
     transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(100, 120, 255, 0.15);
 }
 
 .category-pill.active {
-    background: var(--bg-accent);
-    color: var(--text-accent);
-    border-color: transparent;
+    background: linear-gradient(135deg, rgba(100, 120, 255, 0.3), rgba(120, 80, 200, 0.3));
+    color: #fff;
+    border-color: rgba(100, 120, 255, 0.5);
 }
 
 .category-pill i {

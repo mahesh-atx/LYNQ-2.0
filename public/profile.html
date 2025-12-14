@@ -1,139 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
     <title>Profile — LYNQ AI</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
     <link rel="manifest" href="./favicons/site.webmanifest" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
-        rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
 
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/animations.css" />
     <link rel="stylesheet" href="css/home.css" />
     <link rel="stylesheet" href="css/profile.css" />
-</head>
+  </head>
 
-<body class="dark-mode">
+  <body class="dark-mode">
+    <!-- Hero Spotlight Glow Background Effect -->
+    <div class="hero-spotlight-bg" aria-hidden="true">
+      <div class="spotlight-glow spotlight-main"></div>
+      <div class="spotlight-glow spotlight-accent"></div>
+    </div>
+
     <script src="js/theme-init.js"></script>
 
     <div id="app-container">
-        <!-- Sidebar injected by components.js -->
-        <div id="sidebar-container"></div>
+      <!-- Sidebar injected by components.js -->
+      <div id="sidebar-container"></div>
 
-        <main id="main-content">
-            <!-- Top Bar injected by components.js -->
-            <div id="topbar-container"></div>
+      <main id="main-content">
+        <!-- Top Bar injected by components.js -->
+        <div id="topbar-container"></div>
 
-            <div id="profile-view" class="view-section active">
-                <div class="profile-container">
-                    <div class="profile-page-header">
-                        <h1>Profile</h1>
-                    </div>
-
-                    <!-- Logged In View -->
-                    <div id="logged-in-profile" style="display: none;">
-                        <div class="profile-hero">
-                            <div class="profile-avatar-xl" id="profile-avatar">U</div>
-                            <h2 class="profile-hero-name" id="profile-name">User</h2>
-                            <p class="profile-hero-email" id="profile-email">user@example.com</p>
-                            <div class="profile-badge">
-                                <i class="fa-solid fa-crown"></i> Free Plan
-                            </div>
-                        </div>
-
-                        <div class="profile-section">
-                            <h3><i class="fa-solid fa-circle-info"></i> Account Information</h3>
-                            <div class="profile-info-card">
-                                <div class="profile-info-item">
-                                    <i class="fa-solid fa-envelope"></i>
-                                    <div class="profile-info-content">
-                                        <div class="profile-info-label">Email Address</div>
-                                        <div class="profile-info-value" id="profile-email-value">user@example.com</div>
-                                    </div>
-                                </div>
-                                <div class="profile-info-item">
-                                    <i class="fa-solid fa-phone"></i>
-                                    <div class="profile-info-content">
-                                        <div class="profile-info-label">Phone Number</div>
-                                        <div class="profile-info-value" id="profile-phone-value">No phone linked</div>
-                                    </div>
-                                </div>
-                                <div class="profile-info-item">
-                                    <i class="fa-solid fa-calendar"></i>
-                                    <div class="profile-info-content">
-                                        <div class="profile-info-label">Member Since</div>
-                                        <div class="profile-info-value" id="profile-joined">-</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="profile-section">
-                            <h3><i class="fa-solid fa-sliders"></i> Quick Actions</h3>
-                            <div class="profile-actions">
-                                <button class="profile-action-btn" onclick="location.href='settings.html'">
-                                    <i class="fa-solid fa-gear"></i>
-                                    <div class="action-content">
-                                        <div class="action-title">Settings</div>
-                                        <div class="action-desc">Theme, customization, API keys</div>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
-                                </button>
-                                <button class="profile-action-btn" onclick="location.href='help.html'">
-                                    <i class="fa-solid fa-circle-question"></i>
-                                    <div class="action-content">
-                                        <div class="action-title">Help Center</div>
-                                        <div class="action-desc">FAQs, guides, and support</div>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
-                                </button>
-                                <button class="profile-action-btn danger" onclick="logoutUser()">
-                                    <i class="fa-solid fa-right-from-bracket"></i>
-                                    <div class="action-content">
-                                        <div class="action-title">Logout</div>
-                                        <div class="action-desc">Sign out of your account</div>
-                                    </div>
-                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Guest View -->
-                    <div id="guest-profile" style="display: none;">
-                        <div class="guest-profile-card">
-                            <i class="fa-solid fa-user-circle guest-icon"></i>
-                            <h2>Welcome to LYNQ AI</h2>
-                            <p>Sign in to access your profile, sync your chats across devices, and unlock personalized
-                                features.</p>
-                            <div class="guest-profile-actions">
-                                <button class="auth-btn login-btn" onclick="location.href='login.html'">Login</button>
-                                <button class="auth-btn signup-btn"
-                                    onclick="location.href='login.html?action=signup'">Create
-                                    Account</button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+        <div id="profile-view" class="view-section active">
+          <div class="profile-container">
+            <div class="profile-page-header">
+              <h1>Profile</h1>
             </div>
-        </main>
+
+            <!-- Logged In View -->
+            <div id="logged-in-profile" style="display: none">
+              <div class="profile-hero">
+                <div class="profile-avatar-wrapper">
+                  <div class="profile-avatar-xl" id="profile-avatar">
+                    <img
+                      id="profile-avatar-img"
+                      src=""
+                      alt="Profile"
+                      style="display: none"
+                    />
+                    <span id="profile-avatar-initial">U</span>
+                  </div>
+                  <button
+                    class="profile-avatar-edit-btn"
+                    onclick="openAvatarPicker()"
+                    title="Change Avatar"
+                  >
+                    <i class="fa-solid fa-camera"></i>
+                  </button>
+                </div>
+                <h2 class="profile-hero-name" id="profile-name">User</h2>
+                <p class="profile-hero-email" id="profile-email">
+                  user@example.com
+                </p>
+                <div class="profile-badge">
+                  <i class="fa-solid fa-crown"></i> Free Plan
+                </div>
+              </div>
+
+              <div class="profile-section">
+                <h3>
+                  <i class="fa-solid fa-circle-info"></i> Account Information
+                </h3>
+                <div class="profile-info-card">
+                  <div class="profile-info-item">
+                    <i class="fa-solid fa-envelope"></i>
+                    <div class="profile-info-content">
+                      <div class="profile-info-label">Email Address</div>
+                      <div class="profile-info-value" id="profile-email-value">
+                        user@example.com
+                      </div>
+                    </div>
+                  </div>
+                  <div class="profile-info-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <div class="profile-info-content">
+                      <div class="profile-info-label">Phone Number</div>
+                      <div class="profile-info-value" id="profile-phone-value">
+                        No phone linked
+                      </div>
+                    </div>
+                  </div>
+                  <div class="profile-info-item">
+                    <i class="fa-solid fa-calendar"></i>
+                    <div class="profile-info-content">
+                      <div class="profile-info-label">Member Since</div>
+                      <div class="profile-info-value" id="profile-joined">
+                        -
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="profile-section">
+                <h3><i class="fa-solid fa-sliders"></i> Quick Actions</h3>
+                <div class="profile-actions">
+                  <button
+                    class="profile-action-btn"
+                    onclick="openAvatarPicker()"
+                  >
+                    <i class="fa-solid fa-palette"></i>
+                    <div class="action-content">
+                      <div class="action-title">Change Avatar</div>
+                      <div class="action-desc">
+                        Choose a fun avatar or upload your photo
+                      </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                  </button>
+                  <button
+                    class="profile-action-btn"
+                    onclick="location.href='settings.html'"
+                  >
+                    <i class="fa-solid fa-gear"></i>
+                    <div class="action-content">
+                      <div class="action-title">Settings</div>
+                      <div class="action-desc">
+                        Theme, customization, API keys
+                      </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                  </button>
+                  <button
+                    class="profile-action-btn"
+                    onclick="location.href='help.html'"
+                  >
+                    <i class="fa-solid fa-circle-question"></i>
+                    <div class="action-content">
+                      <div class="action-title">Help Center</div>
+                      <div class="action-desc">FAQs, guides, and support</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                  </button>
+                  <button
+                    class="profile-action-btn danger"
+                    onclick="logoutUser()"
+                  >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <div class="action-content">
+                      <div class="action-title">Logout</div>
+                      <div class="action-desc">Sign out of your account</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guest View -->
+            <div id="guest-profile" style="display: none">
+              <div class="guest-profile-card">
+                <i class="fa-solid fa-user-circle guest-icon"></i>
+                <h2>Welcome to LYNQ AI</h2>
+                <p>
+                  Sign in to access your profile, sync your chats across
+                  devices, and unlock personalized features.
+                </p>
+                <div class="guest-profile-actions">
+                  <button
+                    class="auth-btn login-btn"
+                    onclick="location.href='login.html'"
+                  >
+                    Login
+                  </button>
+                  <button
+                    class="auth-btn signup-btn"
+                    onclick="location.href='login.html?action=signup'"
+                  >
+                    Create Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
     <!-- Shared Components Containers -->
@@ -148,56 +237,101 @@
     <script src="js/script.js"></script>
 
     <script>
-        // Initialize shared components
-        initSharedComponents('profile');
+      // Initialize shared components
+      initSharedComponents("profile");
 
-        document.addEventListener("DOMContentLoaded", () => {
-            // Listen for auth state
-            document.addEventListener("authStateReady", (e) => {
-                updateProfilePage(e.detail.user);
-            });
-
-            // Fallback if already available
-            if (typeof currentUser !== "undefined") {
-                updateProfilePage(currentUser);
-            }
+      document.addEventListener("DOMContentLoaded", () => {
+        // Listen for auth state
+        document.addEventListener("authStateReady", (e) => {
+          updateProfilePage(e.detail.user);
         });
 
-        function updateProfilePage(user) {
-            const loggedInView = document.getElementById("logged-in-profile");
-            const guestView = document.getElementById("guest-profile");
-
-            if (user) {
-                // Show logged in view
-                loggedInView.style.display = "block";
-                guestView.style.display = "none";
-
-                // Populate data
-                const displayName = user.displayName || user.email.split("@")[0];
-                const avatarInitial = (displayName[0] || "U").toUpperCase();
-
-                document.getElementById("profile-avatar").innerText = avatarInitial;
-                document.getElementById("profile-name").innerText = displayName;
-                document.getElementById("profile-email").innerText = user.email;
-                document.getElementById("profile-email-value").innerText = user.email;
-                document.getElementById("profile-phone-value").innerText = user.phoneNumber || "No phone linked";
-
-                // Format join date
-                if (user.metadata && user.metadata.creationTime) {
-                    const joinDate = new Date(user.metadata.creationTime);
-                    document.getElementById("profile-joined").innerText = joinDate.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                }
-            } else {
-                // Show guest view
-                loggedInView.style.display = "none";
-                guestView.style.display = "block";
-            }
+        // Fallback if already available
+        if (typeof currentUser !== "undefined") {
+          updateProfilePage(currentUser);
         }
-    </script>
-</body>
+      });
 
+      function updateProfilePage(user) {
+        const loggedInView = document.getElementById("logged-in-profile");
+        const guestView = document.getElementById("guest-profile");
+
+        if (user) {
+          // Show logged in view
+          loggedInView.style.display = "block";
+          guestView.style.display = "none";
+
+          // Populate data
+          const displayName = user.displayName || user.email.split("@")[0];
+          const avatarInitial = (displayName[0] || "U").toUpperCase();
+
+          // Set default initial
+          const avatarInitialEl = document.getElementById(
+            "profile-avatar-initial"
+          );
+          if (avatarInitialEl) avatarInitialEl.textContent = avatarInitial;
+
+          // Load saved avatar and apply it to profile page
+          const saved = localStorage.getItem("lynq-user-avatar");
+          if (saved) {
+            try {
+              const avatarData = JSON.parse(saved);
+              const profileAvatarEl = document.getElementById("profile-avatar");
+              const profileAvatarImg =
+                document.getElementById("profile-avatar-img");
+              const profileAvatarInitialEl = document.getElementById(
+                "profile-avatar-initial"
+              );
+
+              if (avatarData.type === "upload" && avatarData.dataUrl) {
+                if (profileAvatarImg) {
+                  profileAvatarImg.src = avatarData.dataUrl;
+                  profileAvatarImg.style.display = "block";
+                }
+                if (profileAvatarInitialEl)
+                  profileAvatarInitialEl.style.display = "none";
+                if (profileAvatarEl)
+                  profileAvatarEl.style.background = "transparent";
+              } else if (
+                avatarData.type === "preset" ||
+                avatarData.type === "emoji"
+              ) {
+                if (profileAvatarImg) profileAvatarImg.style.display = "none";
+                if (profileAvatarInitialEl) {
+                  profileAvatarInitialEl.style.display = "flex";
+                  profileAvatarInitialEl.textContent = avatarData.emoji;
+                  profileAvatarInitialEl.style.fontSize = "3rem";
+                }
+                if (profileAvatarEl)
+                  profileAvatarEl.style.background = avatarData.bg;
+              }
+            } catch (e) {
+              console.error("Error loading avatar:", e);
+            }
+          }
+
+          document.getElementById("profile-name").innerText = displayName;
+          document.getElementById("profile-email").innerText = user.email;
+          document.getElementById("profile-email-value").innerText = user.email;
+          document.getElementById("profile-phone-value").innerText =
+            user.phoneNumber || "No phone linked";
+
+          // Format join date
+          if (user.metadata && user.metadata.creationTime) {
+            const joinDate = new Date(user.metadata.creationTime);
+            document.getElementById("profile-joined").innerText =
+              joinDate.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+          }
+        } else {
+          // Show guest view
+          loggedInView.style.display = "none";
+          guestView.style.display = "block";
+        }
+      }
+    </script>
+  </body>
 </html>

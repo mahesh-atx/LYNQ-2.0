@@ -40,20 +40,24 @@
 }
 
 .setting-item {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-primary);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(100, 120, 255, 0.1);
     border-radius: 16px;
     padding: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 12px;
-    transition: 0.2s;
+    transition: all 0.3s ease;
     gap: 20px;
 }
 
 .setting-item:hover {
-    border-color: var(--border-secondary);
+    border-color: rgba(100, 120, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(100, 120, 255, 0.1);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.8);
 }
 
 .setting-item.vertical {
@@ -184,18 +188,19 @@ input:checked+.slider:before {
 
 .btn-secondary {
     color: var(--text-heading);
-    background: var(--bg-primary);
-    border: 1px solid var(--border-primary);
+    background: rgba(100, 120, 255, 0.1);
+    border: 1px solid rgba(100, 120, 255, 0.2);
     padding: 10px 20px;
     border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--text-secondary);
+    background: rgba(100, 120, 255, 0.2);
+    border-color: rgba(100, 120, 255, 0.4);
+    box-shadow: 0 4px 20px rgba(100, 120, 255, 0.15);
 }
 
 /* Color Picker Dots */

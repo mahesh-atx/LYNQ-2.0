@@ -29,12 +29,20 @@
     width: 100%;
     padding: 16px 20px 16px 50px;
     border-radius: 16px;
-    border: 1px solid var(--border-primary);
-    background: var(--bg-tertiary);
+    border: 1px solid rgba(100, 120, 255, 0.15);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: var(--text-primary);
     font-size: 1rem;
     outline: none;
     box-shadow: var(--shadow-soft);
+    transition: all 0.3s ease;
+}
+
+.help-search input:focus {
+    border-color: rgba(100, 120, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(100, 120, 255, 0.1);
 }
 
 .help-search i {
@@ -53,18 +61,21 @@
 }
 
 .help-card {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-primary);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(100, 120, 255, 0.1);
     border-radius: 20px;
     padding: 25px;
     text-align: center;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
 .help-card:hover {
-    border-color: var(--text-heading);
+    border-color: rgba(100, 120, 255, 0.4);
     transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(100, 120, 255, 0.15);
 }
 
 .help-card i {
@@ -84,17 +95,19 @@
 }
 
 .faq-item {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-primary);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(100, 120, 255, 0.08);
     border-radius: 12px;
     margin-bottom: 10px;
     overflow: hidden;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
 .faq-item.open {
-    border-color: var(--text-heading);
-    box-shadow: var(--shadow-soft);
+    border-color: rgba(100, 120, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(100, 120, 255, 0.1);
 }
 
 .faq-question {
@@ -125,10 +138,12 @@
 }
 
 .contact-form {
-    background: var(--bg-tertiary);
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     padding: 35px;
     border-radius: 24px;
-    border: 1px solid var(--border-primary);
+    border: 1px solid rgba(100, 120, 255, 0.15);
     margin-top: 40px;
     position: relative;
     overflow: hidden;

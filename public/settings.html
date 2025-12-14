@@ -30,6 +30,12 @@
 </head>
 
 <body class="dark-mode">
+  <!-- Hero Spotlight Glow Background Effect -->
+  <div class="hero-spotlight-bg" aria-hidden="true">
+    <div class="spotlight-glow spotlight-main"></div>
+    <div class="spotlight-glow spotlight-accent"></div>
+  </div>
+
   <script src="js/theme-init.js"></script>
 
   <div id="app-container">
@@ -286,6 +292,11 @@
       });
       if (btnElement) {
         btnElement.style.border = "2px solid var(--text-heading)";
+      }
+
+      // Update spotlight background colors dynamically (function from theme-init.js)
+      if (typeof window.updateSpotlightColors === 'function') {
+        window.updateSpotlightColors(color);
       }
     }
 

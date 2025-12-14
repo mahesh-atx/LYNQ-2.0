@@ -1,577 +1,791 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <title>Home — LYNQ AI</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Home — LYNQ AI</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <!-- Lucide Icons - Modern, Minimal Icon Library -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png">
-  <link rel="manifest" href="./favicons/site.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
-    rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
 
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" />
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+    </script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
-  </script>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/home.css" />
 
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/animations.css" />
-  <link rel="stylesheet" href="css/home.css" />
-
-  <style>
-    .confirm-modal-overlay {
-      position: fixed;
-      inset: 0;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .confirm-modal-overlay.active {
-      display: flex;
-    }
-
-    .confirm-modal {
-      background-color: var(--bg-secondary);
-      border-radius: 12px;
-      padding: 24px;
-      width: 90%;
-      max-width: 400px;
-      border: 1px solid var(--border-primary);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      animation: modalFadeIn 0.2s ease-out;
-    }
-
-    .confirm-modal h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      color: var(--text-primary);
-    }
-
-    .confirm-modal p {
-      margin-bottom: 20px;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .confirm-modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    .confirm-btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .confirm-btn-cancel {
-      background-color: var(--bg-tertiary);
-      color: var(--text-secondary);
-    }
-
-    .confirm-btn-cancel:hover {
-      background-color: var(--border-primary);
-    }
-
-    .confirm-btn-delete {
-      background-color: #d9534f;
-      color: white;
-    }
-
-    .confirm-btn-delete:hover {
-      background-color: #c9302c;
-    }
-
-    @keyframes modalFadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
+    <style>
+      .confirm-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
       }
 
-      to {
-        opacity: 1;
-        transform: scale(1);
+      .confirm-modal-overlay.active {
+        display: flex;
       }
-    }
-  </style>
-</head>
 
-<body class="dark-mode">
-  <!-- Skeleton Loader - matches exact layout of actual content -->
-  <div id="skeleton-loader">
-    <!-- Skeleton Topbar - matches .top-bar -->
-    <div class="skeleton-topbar">
-      <div class="skeleton-topbar-left">
-        <div class="skeleton-bone skeleton-menu-btn"></div>
-        <div class="skeleton-bone skeleton-logo"></div>
-      </div>
-      <div class="skeleton-topbar-right">
-        <div class="skeleton-bone skeleton-avatar"></div>
-      </div>
+      .confirm-modal {
+        background-color: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 24px;
+        width: 90%;
+        max-width: 400px;
+        border: 1px solid var(--border-primary);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: modalFadeIn 0.2s ease-out;
+      }
+
+      .confirm-modal h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+      }
+
+      .confirm-modal p {
+        margin-bottom: 20px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        word-break: break-word;
+      }
+
+      .confirm-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .confirm-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .confirm-btn-cancel {
+        background-color: var(--bg-tertiary);
+        color: var(--text-secondary);
+      }
+
+      .confirm-btn-cancel:hover {
+        background-color: var(--border-primary);
+      }
+
+      .confirm-btn-delete {
+        background-color: #d9534f;
+        color: white;
+      }
+
+      .confirm-btn-delete:hover {
+        background-color: #c9302c;
+      }
+
+      @keyframes modalFadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    </style>
+  </head>
+
+  <body class="dark-mode">
+    <!-- Hero Spotlight Glow Background Effect -->
+    <div class="hero-spotlight-bg" aria-hidden="true">
+      <div class="spotlight-glow spotlight-main"></div>
+      <div class="spotlight-glow spotlight-accent"></div>
     </div>
 
-    <!-- Skeleton Main Area -->
-    <div class="skeleton-main-area">
-      <!-- Skeleton Welcome - matches .welcome-screen -->
-      <div class="skeleton-welcome">
-        <div class="skeleton-bone skeleton-welcome-title"></div>
-        <div class="skeleton-bone skeleton-welcome-subtitle"></div>
-        <div class="skeleton-pills">
-          <div class="skeleton-bone skeleton-pill"></div>
-          <div class="skeleton-bone skeleton-pill"></div>
-          <div class="skeleton-bone skeleton-pill"></div>
-          <div class="skeleton-bone skeleton-pill"></div>
+    <!-- Skeleton Loader - matches exact layout of actual content -->
+    <div id="skeleton-loader">
+      <!-- Skeleton Topbar - matches .top-bar -->
+      <div class="skeleton-topbar">
+        <div class="skeleton-topbar-left">
+          <div class="skeleton-bone skeleton-menu-btn"></div>
+          <div class="skeleton-bone skeleton-logo"></div>
+        </div>
+        <div class="skeleton-topbar-right">
+          <div class="skeleton-bone skeleton-avatar"></div>
         </div>
       </div>
 
-      <!-- Skeleton Input - matches .input-area-wrapper -->
-      <div class="skeleton-input-wrapper">
-        <div class="skeleton-bone skeleton-input-container"></div>
-      </div>
-
-      <!-- Skeleton Footer -->
-      <div class="skeleton-bone skeleton-footer"></div>
-    </div>
-  </div>
-
-  <div id="app-container">
-    <script src="js/theme-init.js"></script>
-
-    <!-- Sidebar injected by components.js -->
-    <div id="sidebar-container"></div>
-
-    <main id="main-content">
-      <!-- Top Bar injected by components.js -->
-      <div id="topbar-container"></div>
-
-      <div id="home-view" class="view-section active">
-
-        <div id="chat-wrapper">
-          <div id="guest-banner" class="guest-notice-banner" style="display: none;">
-            <div class="guest-banner-content">
-              <i class="fa-solid fa-circle-info"></i>
-              <span>
-                You are using LYNQ as a Guest. Chats are saved locally.
-                <a href="login.html" class="guest-link">Log in</a> to sync.
-              </span>
-            </div>
-            <button class="close-banner-btn" onclick="document.getElementById('guest-banner').style.display='none'">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-
-          <div id="chat-container">
-            <div class="welcome-screen" id="welcome-screen">
-              <div class="welcome-text">
-                <h1 id="welcome-name">Hello</h1>
-                <p style="color: var(--text-secondary)">
-                  How can I help you create today?
-                </p>
-              </div>
-
-              <div class="suggestion-pills-mobile" id="suggestion-pills-mobile">
-                <button class="pill-card" onclick="sendSuggestion('Make a website digital agency with all sctions.')">
-                  <i class="fa-solid fa-code"></i> website
-                </button>
-                <button class="pill-card"
-                  onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')">
-                  <i class="fa-solid fa-palette"></i> Color Palette
-                </button>
-                <button class="pill-card"
-                  onclick="sendSuggestion('Write a Python script to automate file organization.')">
-                  <i class="fa-brands fa-python"></i> Python Script
-                </button>
-                <button class="pill-card"
-                  onclick="sendSuggestion('Explain the key differences between SQL and NoSQL.')">
-                  <i class="fa-solid fa-database"></i> SQL vs NoSQL
-                </button>
-              </div>
-            </div>
-            <div id="messages-wrapper"></div>
-          </div>
-
-          <div class="input-area-wrapper fixed-mobile-input">
-            <input type="file" id="file-upload" accept="application/pdf" style="display: none" />
-            <div class="input-container">
-              <div id="attachment-preview-container"></div>
-
-              <textarea id="chat-input" rows="1" placeholder="Ask LYNQ anything..."></textarea>
-              <div class="input-toolbar">
-                <div class="toolbar-left">
-                  <!-- + Button (Attach Only) -->
-                  <div class="attach-dropdown-wrapper">
-                    <button class="tool-btn-round" id="attach-file-btn" title="Attach">
-                      <i class="fa-solid fa-plus"></i>
-                    </button>
-                    <div class="tool-dropdown-menu" id="attach-dropdown">
-                      <button class="tool-dropdown-item" onclick="handleDesktopAttach('camera')">
-                        <i class="fa-solid fa-camera"></i>
-                        <div>
-                          <span>Camera</span>
-                          <span class="tool-desc">Take a photo</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopAttach('photos')">
-                        <i class="fa-solid fa-image"></i>
-                        <div>
-                          <span>Photos</span>
-                          <span class="tool-desc">Upload from gallery</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopAttach('files')">
-                        <i class="fa-solid fa-paperclip"></i>
-                        <div>
-                          <span>Files</span>
-                          <span class="tool-desc">Upload PDF or document</span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Tools Button with Dropdown -->
-                  <div class="tools-dropdown-wrapper">
-                    <button class="tools-btn" id="tools-btn" title="Tools">
-                      <i class="fa-solid fa-wand-magic-sparkles"></i>
-                      <span>Tools</span>
-                    </button>
-                    <div class="tool-dropdown-menu" id="tools-dropdown">
-                      <button class="tool-dropdown-item" id="canvas-toggle-btn">
-                        <i class="fa-solid fa-file-invoice"></i>
-                        <div>
-                          <span>Canvas</span>
-                          <span class="tool-desc">Open the code canvas</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" id="web-search-toggle-btn">
-                        <i class="fa-solid fa-earth-americas"></i>
-                        <div>
-                          <span>Web Search</span>
-                          <span class="tool-desc">Find real-time info</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('image')">
-                        <i class="fa-solid fa-paintbrush"></i>
-                        <div>
-                          <span>Create Image</span>
-                          <span class="tool-desc">Visualize anything</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('deep-research')">
-                        <i class="fa-solid fa-microscope"></i>
-                        <div>
-                          <span>Deep Research</span>
-                          <span class="tool-desc">Get detailed report</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('shopping')">
-                        <i class="fa-solid fa-bag-shopping"></i>
-                        <div>
-                          <span>Shopping</span>
-                          <span class="tool-desc">Product research</span>
-                        </div>
-                      </button>
-                      <button class="tool-dropdown-item" onclick="handleDesktopTool('thinking')">
-                        <i class="fa-solid fa-brain"></i>
-                        <div>
-                          <span>Thinking</span>
-                          <span class="tool-desc">Learn concepts</span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Selected Tool Indicator -->
-                  <div class="selected-tool-indicator" id="selected-tool-indicator" style="display: none;">
-                    <i class="fa-solid fa-earth-americas" id="selected-tool-icon"></i>
-                    <span id="selected-tool-label">Web Search</span>
-                    <button class="deselect-tool-btn" onclick="deselectTool()" title="Deselect tool">
-                      <i class="fa-solid fa-xmark"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="toolbar-right">
-                  <!-- Model Selector Dropdown (showing selected model) -->
-                  <div class="input-model-selector">
-                    <button class="input-model-btn" id="input-model-btn" onclick="toggleInputModelDropdown()">
-                      <span id="input-model-name">llama-3.1</span>
-                      <i class="fa-solid fa-chevron-down"></i>
-                    </button>
-                    <div class="input-model-dropdown" id="input-model-dropdown">
-                      <div class="input-model-option selected"
-                        onclick="selectInputModel(this, 'llama-3.1-8b-instant', 'llama-3.1')">
-                        <i class="fa-solid fa-bolt"></i>
-                        <span>llama-3.1</span>
-                        <i class="fa-solid fa-check model-check"></i>
-                      </div>
-                      <div class="input-model-option"
-                        onclick="selectInputModel(this, 'openai/gpt-oss-20b', 'GPT-OSS-20B')">
-                        <i class="fa-solid fa-robot"></i>
-                        <span>GPT-OSS-20B</span>
-                        <i class="fa-solid fa-check model-check"></i>
-                      </div>
-                      <div class="input-model-option"
-                        onclick="selectInputModel(this, 'openai/gpt-oss-120b', 'gpt-oss-120b')">
-                        <i class="fa-solid fa-bolt-lightning"></i>
-                        <span>gpt-oss-120b</span>
-                        <i class="fa-solid fa-check model-check"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <button class="tool-btn-round" id="voice-btn">
-                    <i class="fa-solid fa-microphone-lines"></i>
-                  </button>
-                  <button class="tool-btn-round send-btn" id="send-btn" onclick="handleSend()">
-                    <i class="fa-solid fa-arrow-up"></i>
-                  </button>
-                  <button class="tool-btn-round stop-btn" id="stop-btn" onclick="stopResponse()" style="display: none">
-                    <i class="fa-solid fa-square"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-          </div>
-          <div class="footer-text">
-            LYNQ AI can make mistakes. Check important info. •
-            <a href="https://mahesh-atx.github.io/Portfolio2.0/" target="_blank">Developed by Mahesh Dongare</a>
+      <!-- Skeleton Main Area -->
+      <div class="skeleton-main-area">
+        <!-- Skeleton Welcome - matches .welcome-screen -->
+        <div class="skeleton-welcome">
+          <div class="skeleton-bone skeleton-welcome-title"></div>
+          <div class="skeleton-bone skeleton-welcome-subtitle"></div>
+          <div class="skeleton-pills">
+            <div class="skeleton-bone skeleton-pill"></div>
+            <div class="skeleton-bone skeleton-pill"></div>
+            <div class="skeleton-bone skeleton-pill"></div>
+            <div class="skeleton-bone skeleton-pill"></div>
           </div>
         </div>
-        <div id="canvas-pane">
-          <div class="canvas-header">
-            <div class="canvas-tabs">
-              <button class="canvas-tab active" id="canvas-tab-code">
-                <i class="fa-solid fa-code"></i>
-                <span>Code</span>
-              </button>
-              <button class="canvas-tab" id="canvas-tab-preview">
-                <i class="fa-solid fa-eye"></i>
-                <span>Preview</span>
-              </button>
-            </div>
-            <div class="canvas-actions">
-              <button class="tool-btn-round" id="canvas-download-btn" title="Download Code">
-                <i class="fa-solid fa-download"></i>
-              </button>
-              <button class="tool-btn-round" id="canvas-close-btn" title="Close Canvas">
+
+        <!-- Skeleton Input - matches .input-area-wrapper -->
+        <div class="skeleton-input-wrapper">
+          <div class="skeleton-bone skeleton-input-container"></div>
+        </div>
+
+        <!-- Skeleton Footer -->
+        <div class="skeleton-bone skeleton-footer"></div>
+      </div>
+    </div>
+
+    <div id="app-container">
+      <script src="js/theme-init.js"></script>
+
+      <!-- Sidebar injected by components.js -->
+      <div id="sidebar-container"></div>
+
+      <main id="main-content">
+        <!-- Top Bar injected by components.js -->
+        <div id="topbar-container"></div>
+
+        <div id="home-view" class="view-section active">
+          <div id="chat-wrapper">
+            <div
+              id="guest-banner"
+              class="guest-notice-banner"
+              style="display: none"
+            >
+              <div class="guest-banner-content">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>
+                  You are using LYNQ as a Guest. Chats are saved locally.
+                  <a href="login.html" class="guest-link">Log in</a> to sync.
+                </span>
+              </div>
+              <button
+                class="close-banner-btn"
+                onclick="document.getElementById('guest-banner').style.display='none'"
+              >
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
-          </div>
-          <div id="canvas-content">
-            <!-- Monaco Editor Container -->
-            <div id="monaco-editor-container"></div>
-            <div id="canvas-placeholder">
-              <i class="fa-solid fa-code"></i>
-              <p>Code from the conversation will appear here when Canvas Mode is active.</p>
-            </div>
-          </div>
 
-          <div id="canvas-preview-wrapper" style="display: none;">
-            <div id="canvas-preview-placeholder">
-              <i class="fa-solid fa-eye"></i>
-              <p>Click the "Preview" tab to see rendered HTML/CSS.</p>
+            <div id="chat-container">
+              <div class="welcome-screen" id="welcome-screen">
+                <div class="welcome-text">
+                  <h1 id="welcome-name">Hello</h1>
+                  <p style="color: var(--text-secondary)">
+                    How can I help you create today?
+                  </p>
+                </div>
+
+                <div
+                  class="suggestion-pills-mobile"
+                  id="suggestion-pills-mobile"
+                >
+                  <button
+                    class="pill-card"
+                    onclick="sendSuggestion('Make a website digital agency with all sctions.')"
+                  >
+                    <i class="fa-solid fa-code"></i> website
+                  </button>
+                  <button
+                    class="pill-card"
+                    onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')"
+                  >
+                    <i class="fa-solid fa-palette"></i> Color Palette
+                  </button>
+                  <button
+                    class="pill-card"
+                    onclick="sendSuggestion('Write a Python script to automate file organization.')"
+                  >
+                    <i class="fa-brands fa-python"></i> Python Script
+                  </button>
+                  <button
+                    class="pill-card"
+                    onclick="sendSuggestion('Explain the key differences between SQL and NoSQL.')"
+                  >
+                    <i class="fa-solid fa-database"></i> SQL vs NoSQL
+                  </button>
+                </div>
+              </div>
+              <div id="messages-wrapper"></div>
             </div>
-            <iframe id="canvas-preview-iframe" title="Canvas Preview"></iframe>
+
+            <div class="input-area-wrapper fixed-mobile-input">
+              <input
+                type="file"
+                id="file-upload"
+                accept="application/pdf"
+                style="display: none"
+              />
+              <div class="input-container">
+                <div id="attachment-preview-container"></div>
+
+                <textarea
+                  id="chat-input"
+                  rows="1"
+                  placeholder="Ask LYNQ anything..."
+                ></textarea>
+                <div class="input-toolbar">
+                  <div class="toolbar-left">
+                    <!-- + Button (Attach Only) -->
+                    <div class="attach-dropdown-wrapper">
+                      <button
+                        class="tool-btn-round"
+                        id="attach-file-btn"
+                        title="Attach"
+                      >
+                        <i class="fa-solid fa-plus"></i>
+                      </button>
+                      <div class="tool-dropdown-menu" id="attach-dropdown">
+                        <button
+                          class="tool-dropdown-item"
+                          onclick="handleDesktopAttach('camera')"
+                        >
+                          <i class="fa-solid fa-camera"></i>
+                          <div>
+                            <span>Camera</span>
+                            <span class="tool-desc">Take a photo</span>
+                          </div>
+                        </button>
+                        <button
+                          class="tool-dropdown-item"
+                          onclick="handleDesktopAttach('photos')"
+                        >
+                          <i class="fa-solid fa-image"></i>
+                          <div>
+                            <span>Photos</span>
+                            <span class="tool-desc">Upload from gallery</span>
+                          </div>
+                        </button>
+                        <button
+                          class="tool-dropdown-item"
+                          onclick="handleDesktopAttach('files')"
+                        >
+                          <i class="fa-solid fa-paperclip"></i>
+                          <div>
+                            <span>Files</span>
+                            <span class="tool-desc"
+                              >Upload PDF or document</span
+                            >
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Tools Button with Dropdown -->
+                    <div class="tools-dropdown-wrapper">
+                      <button class="tools-btn" id="tools-btn" title="Tools">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Tools</span>
+                      </button>
+                      <div class="tool-dropdown-menu" id="tools-dropdown">
+                        <button
+                          class="tool-dropdown-item"
+                          id="canvas-toggle-btn"
+                        >
+                          <i class="fa-solid fa-file-invoice"></i>
+                          <div>
+                            <span>Canvas</span>
+                            <span class="tool-desc">Open the code canvas</span>
+                          </div>
+                        </button>
+                        <button
+                          class="tool-dropdown-item"
+                          id="web-search-toggle-btn"
+                        >
+                          <i class="fa-solid fa-earth-americas"></i>
+                          <div>
+                            <span>Web Search</span>
+                            <span class="tool-desc">Find real-time info</span>
+                          </div>
+                        </button>
+                        <button
+                          class="tool-dropdown-item"
+                          onclick="handleDesktopTool('image')"
+                        >
+                          <i class="fa-solid fa-paintbrush"></i>
+                          <div>
+                            <span>Create Image</span>
+                            <span class="tool-desc">Visualize anything</span>
+                          </div>
+                        </button>
+                        <button
+                          class="tool-dropdown-item"
+                          onclick="handleDesktopTool('deep-research')"
+                        >
+                          <i class="fa-solid fa-microscope"></i>
+                          <div>
+                            <span>Deep Research</span>
+                            <span class="tool-desc">Get detailed report</span>
+                          </div>
+                        </button>
+                        <button
+                          class="tool-dropdown-item"
+                          onclick="handleDesktopTool('shopping')"
+                        >
+                          <i class="fa-solid fa-bag-shopping"></i>
+                          <div>
+                            <span>Shopping</span>
+                            <span class="tool-desc">Product research</span>
+                          </div>
+                        </button>
+                        <button
+                          class="tool-dropdown-item"
+                          onclick="handleDesktopTool('thinking')"
+                        >
+                          <i class="fa-solid fa-brain"></i>
+                          <div>
+                            <span>Thinking</span>
+                            <span class="tool-desc">Learn concepts</span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Selected Tool Indicator -->
+                    <div
+                      class="selected-tool-indicator"
+                      id="selected-tool-indicator"
+                      style="display: none"
+                    >
+                      <i
+                        class="fa-solid fa-earth-americas"
+                        id="selected-tool-icon"
+                      ></i>
+                      <span id="selected-tool-label">Web Search</span>
+                      <button
+                        class="deselect-tool-btn"
+                        onclick="deselectTool()"
+                        title="Deselect tool"
+                      >
+                        <i class="fa-solid fa-xmark"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="toolbar-right">
+                    <!-- Model Selector Dropdown (showing selected model) -->
+                    <div class="input-model-selector">
+                      <button
+                        class="input-model-btn"
+                        id="input-model-btn"
+                        onclick="toggleInputModelDropdown()"
+                      >
+                        <span id="input-model-name">llama-3.1</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </button>
+                      <div
+                        class="input-model-dropdown"
+                        id="input-model-dropdown"
+                      >
+                        <div
+                          class="input-model-option selected"
+                          onclick="selectInputModel(this, 'llama-3.1-8b-instant', 'llama-3.1')"
+                        >
+                          <i
+                            data-lucide="zap"
+                            style="color: #f59e0b; width: 16px; height: 16px"
+                          ></i>
+                          <span>llama-3.1</span>
+                          <i
+                            data-lucide="check"
+                            class="model-check"
+                            style="width: 14px; height: 14px"
+                          ></i>
+                        </div>
+                        <div
+                          class="input-model-option"
+                          onclick="selectInputModel(this, 'openai/gpt-oss-20b', 'GPT-OSS-20B')"
+                        >
+                          <i
+                            data-lucide="box"
+                            style="color: #10b981; width: 16px; height: 16px"
+                          ></i>
+                          <span>GPT-OSS-20B</span>
+                          <i
+                            data-lucide="check"
+                            class="model-check"
+                            style="width: 14px; height: 14px"
+                          ></i>
+                        </div>
+                        <div
+                          class="input-model-option"
+                          onclick="selectInputModel(this, 'openai/gpt-oss-120b', 'gpt-oss-120b')"
+                        >
+                          <i
+                            data-lucide="flame"
+                            style="color: #8b5cf6; width: 16px; height: 16px"
+                          ></i>
+                          <span>gpt-oss-120b</span>
+                          <i
+                            data-lucide="check"
+                            class="model-check"
+                            style="width: 14px; height: 14px"
+                          ></i>
+                        </div>
+                      </div>
+                    </div>
+                    <button class="tool-btn-round" id="voice-btn">
+                      <i class="fa-solid fa-microphone-lines"></i>
+                    </button>
+                    <button
+                      class="tool-btn-round send-btn"
+                      id="send-btn"
+                      onclick="handleSend()"
+                    >
+                      <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                    <button
+                      class="tool-btn-round stop-btn"
+                      id="stop-btn"
+                      onclick="stopResponse()"
+                      style="display: none"
+                    >
+                      <i class="fa-solid fa-square"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="footer-text">
+              LYNQ AI can make mistakes. Check important info. •
+              <a
+                href="https://mahesh-atx.github.io/Portfolio2.0/"
+                target="_blank"
+                >Developed by Mahesh Dongare</a
+              >
+            </div>
+          </div>
+          <div id="canvas-pane">
+            <div class="canvas-header">
+              <div class="canvas-tabs">
+                <button class="canvas-tab active" id="canvas-tab-code">
+                  <i class="fa-solid fa-code"></i>
+                  <span>Code</span>
+                </button>
+                <button class="canvas-tab" id="canvas-tab-preview">
+                  <i class="fa-solid fa-eye"></i>
+                  <span>Preview</span>
+                </button>
+              </div>
+              <div class="canvas-actions">
+                <button
+                  class="tool-btn-round"
+                  id="canvas-download-btn"
+                  title="Download Code"
+                >
+                  <i class="fa-solid fa-download"></i>
+                </button>
+                <button
+                  class="tool-btn-round"
+                  id="canvas-close-btn"
+                  title="Close Canvas"
+                >
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+            <div id="canvas-content">
+              <!-- Monaco Editor Container -->
+              <div id="monaco-editor-container"></div>
+              <div id="canvas-placeholder">
+                <i class="fa-solid fa-code"></i>
+                <p>
+                  Code from the conversation will appear here when Canvas Mode
+                  is active.
+                </p>
+              </div>
+            </div>
+
+            <div id="canvas-preview-wrapper" style="display: none">
+              <div id="canvas-preview-placeholder">
+                <i class="fa-solid fa-eye"></i>
+                <p>Click the "Preview" tab to see rendered HTML/CSS.</p>
+              </div>
+              <iframe
+                id="canvas-preview-iframe"
+                title="Canvas Preview"
+              ></iframe>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
-  </div>
-
-  <!-- Shared Components Containers -->
-  <div id="toast-container"></div>
-  <div id="pricing-modal-container"></div>
-  <div id="profile-popup-container"></div>
-
-  <div class="confirm-modal-overlay" id="confirm-delete-modal">
-    <div class="confirm-modal">
-      <h3>Delete Chat</h3>
-      <p id="confirm-delete-text">
-        Are you sure you want to delete this chat? This action cannot be
-        undone.
-      </p>
-      <div class="confirm-modal-actions">
-        <button class="confirm-btn confirm-btn-cancel" id="confirm-delete-cancel">
-          Cancel
-        </button>
-        <button class="confirm-btn confirm-btn-delete" id="confirm-delete-confirm">
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-
-  <!-- Monaco Editor -->
-  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
-
-  <script src="js/components.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/script.js"></script>
-  <!-- Modular Chat Page Scripts (split from home.js) -->
-  <script src="js/canvas.js"></script>
-  <script src="js/voice.js"></script>
-  <script src="js/pdf.js"></script>
-  <script src="js/chat.js"></script>
-  <script>
-    // Initialize shared components
-    initSharedComponents('home');
-  </script>
-
-  <!-- Mobile Action Sheet -->
-  <div id="mobile-action-sheet" class="mobile-action-sheet">
-    <div class="sheet-handle"></div>
-
-    <!-- Top Grid Actions -->
-    <div class="sheet-grid-actions">
-      <button class="sheet-action-card" onclick="handleMobileAction('camera')">
-        <div class="sheet-card-icon"><i class="fa-solid fa-camera"></i></div>
-        <span>Camera</span>
-      </button>
-      <button class="sheet-action-card" onclick="handleMobileAction('photos')">
-        <div class="sheet-card-icon"><i class="fa-solid fa-image"></i></div>
-        <span>Photos</span>
-      </button>
-      <button class="sheet-action-card" onclick="handleMobileAction('files')">
-        <div class="sheet-card-icon"><i class="fa-solid fa-paperclip"></i></div>
-        <span>Files</span>
-      </button>
+      </main>
     </div>
 
-    <!-- Divider -->
-    <div class="sheet-divider"></div>
+    <!-- Shared Components Containers -->
+    <div id="toast-container"></div>
+    <div id="pricing-modal-container"></div>
+    <div id="profile-popup-container"></div>
 
-    <!-- List Actions -->
-    <div class="sheet-list-actions">
-      <!-- Models Section (Expandable) -->
-      <div class="sheet-models-section">
-        <div class="sheet-section-header" onclick="toggleSheetModels()">
+    <div class="confirm-modal-overlay" id="confirm-delete-modal">
+      <div class="confirm-modal">
+        <h3>Delete Chat</h3>
+        <p id="confirm-delete-text">
+          Are you sure you want to delete this chat? This action cannot be
+          undone.
+        </p>
+        <div class="confirm-modal-actions">
+          <button
+            class="confirm-btn confirm-btn-cancel"
+            id="confirm-delete-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            class="confirm-btn confirm-btn-delete"
+            id="confirm-delete-confirm"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/script.js"></script>
+    <!-- Modular Chat Page Scripts (split from home.js) -->
+    <script src="js/canvas.js"></script>
+    <script src="js/voice.js"></script>
+    <script src="js/pdf.js"></script>
+    <script src="js/chat.js"></script>
+    <script>
+      // Initialize shared components
+      initSharedComponents("home");
+
+      // Initialize Lucide icons
+      if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+      }
+    </script>
+
+    <!-- Mobile Action Sheet -->
+    <div id="mobile-action-sheet" class="mobile-action-sheet">
+      <div class="sheet-handle"></div>
+
+      <!-- Top Grid Actions -->
+      <div class="sheet-grid-actions">
+        <button
+          class="sheet-action-card"
+          onclick="handleMobileAction('camera')"
+        >
+          <div class="sheet-card-icon"><i class="fa-solid fa-camera"></i></div>
+          <span>Camera</span>
+        </button>
+        <button
+          class="sheet-action-card"
+          onclick="handleMobileAction('photos')"
+        >
+          <div class="sheet-card-icon"><i class="fa-solid fa-image"></i></div>
+          <span>Photos</span>
+        </button>
+        <button class="sheet-action-card" onclick="handleMobileAction('files')">
+          <div class="sheet-card-icon">
+            <i class="fa-solid fa-paperclip"></i>
+          </div>
+          <span>Files</span>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div class="sheet-divider"></div>
+
+      <!-- List Actions -->
+      <div class="sheet-list-actions">
+        <!-- Models Section (Expandable) -->
+        <div class="sheet-models-section">
+          <div class="sheet-section-header" onclick="toggleSheetModels()">
+            <div class="sheet-item-left">
+              <i class="fa-solid fa-cube"></i>
+              <span class="sheet-item-title">Models</span>
+            </div>
+            <i
+              class="fa-solid fa-chevron-down sheet-arrow"
+              id="sheet-models-chevron"
+            ></i>
+          </div>
+          <div class="sheet-models-list" id="sheet-models-list">
+            <button
+              class="sheet-model-option selected"
+              onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ')"
+            >
+              <span>LYNQ</span>
+              <span class="model-desc">Fast & efficient</span>
+            </button>
+            <button
+              class="sheet-model-option"
+              onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ Pro')"
+            >
+              <span>LYNQ Pro</span>
+              <span class="model-desc">Smartest model</span>
+            </button>
+            <button
+              class="sheet-model-option"
+              onclick="selectMobileModel('llama-3.1-8b-instant', 'llama-3.1')"
+            >
+              <span>llama-3.1</span>
+              <span class="model-desc">8B params</span>
+            </button>
+            <button
+              class="sheet-model-option"
+              onclick="selectMobileModel('openai/gpt-oss-20b', 'GPT-OSS-20B')"
+            >
+              <span>GPT-OSS-20B</span>
+              <span class="model-desc">Balanced</span>
+            </button>
+            <button
+              class="sheet-model-option"
+              onclick="selectMobileModel('openai/gpt-oss-120b', 'gpt-oss-120b')"
+            >
+              <span>gpt-oss-120b</span>
+              <span class="model-desc">Most powerful</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="sheet-list-item" onclick="handleMobileAction('image')">
           <div class="sheet-item-left">
-            <i class="fa-solid fa-cube"></i>
-            <span class="sheet-item-title">Models</span>
+            <i class="fa-solid fa-paintbrush"></i>
+            <div class="sheet-item-text">
+              <span class="sheet-item-title">Create image</span>
+              <span class="sheet-item-subtitle">Visualize anything</span>
+            </div>
           </div>
-          <i class="fa-solid fa-chevron-down sheet-arrow" id="sheet-models-chevron"></i>
-        </div>
-        <div class="sheet-models-list" id="sheet-models-list">
-          <button class="sheet-model-option selected" onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ')">
-            <span>LYNQ</span>
-            <span class="model-desc">Fast & efficient</span>
-          </button>
-          <button class="sheet-model-option" onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ Pro')">
-            <span>LYNQ Pro</span>
-            <span class="model-desc">Smartest model</span>
-          </button>
-          <button class="sheet-model-option" onclick="selectMobileModel('llama-3.1-8b-instant', 'llama-3.1')">
-            <span>llama-3.1</span>
-            <span class="model-desc">8B params</span>
-          </button>
-          <button class="sheet-model-option" onclick="selectMobileModel('openai/gpt-oss-20b', 'GPT-OSS-20B')">
-            <span>GPT-OSS-20B</span>
-            <span class="model-desc">Balanced</span>
-          </button>
-          <button class="sheet-model-option" onclick="selectMobileModel('openai/gpt-oss-120b', 'gpt-oss-120b')">
-            <span>gpt-oss-120b</span>
-            <span class="model-desc">Most powerful</span>
-          </button>
-        </div>
+        </button>
+
+        <button
+          class="sheet-list-item"
+          onclick="handleMobileAction('deep-research')"
+        >
+          <div class="sheet-item-left">
+            <i class="fa-solid fa-microscope"></i>
+            <div class="sheet-item-text">
+              <span class="sheet-item-title">Deep research</span>
+              <span class="sheet-item-subtitle">Get a detailed report</span>
+            </div>
+          </div>
+        </button>
+
+        <button
+          class="sheet-list-item"
+          onclick="handleMobileAction('shopping')"
+        >
+          <div class="sheet-item-left">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <div class="sheet-item-text">
+              <span class="sheet-item-title">Shopping research</span>
+              <span class="sheet-item-subtitle">Get an in-depth guide</span>
+            </div>
+          </div>
+        </button>
+
+        <button
+          class="sheet-list-item"
+          onclick="handleMobileAction('web-search')"
+        >
+          <div class="sheet-item-left">
+            <i class="fa-solid fa-earth-americas"></i>
+            <div class="sheet-item-text">
+              <span class="sheet-item-title">Web search</span>
+              <span class="sheet-item-subtitle"
+                >Find real-time news and info</span
+              >
+            </div>
+          </div>
+        </button>
+
+        <button
+          class="sheet-list-item"
+          onclick="handleMobileAction('thinking')"
+        >
+          <div class="sheet-item-left">
+            <i class="fa-solid fa-brain"></i>
+            <div class="sheet-item-text">
+              <span class="sheet-item-title">Thinking</span>
+              <span class="sheet-item-subtitle">Learn a new concept</span>
+            </div>
+          </div>
+        </button>
+
+        <button class="sheet-list-item" onclick="handleMobileAction('canvas')">
+          <div class="sheet-item-left">
+            <i class="fa-solid fa-file-invoice"></i>
+            <div class="sheet-item-text">
+              <span class="sheet-item-title">Canvas</span>
+              <span class="sheet-item-subtitle">Open code editor</span>
+            </div>
+          </div>
+        </button>
       </div>
-
-      <button class="sheet-list-item" onclick="handleMobileAction('image')">
-        <div class="sheet-item-left">
-          <i class="fa-solid fa-paintbrush"></i>
-          <div class="sheet-item-text">
-            <span class="sheet-item-title">Create image</span>
-            <span class="sheet-item-subtitle">Visualize anything</span>
-          </div>
-        </div>
-      </button>
-
-      <button class="sheet-list-item" onclick="handleMobileAction('deep-research')">
-        <div class="sheet-item-left">
-          <i class="fa-solid fa-microscope"></i>
-          <div class="sheet-item-text">
-            <span class="sheet-item-title">Deep research</span>
-            <span class="sheet-item-subtitle">Get a detailed report</span>
-          </div>
-        </div>
-      </button>
-
-      <button class="sheet-list-item" onclick="handleMobileAction('shopping')">
-        <div class="sheet-item-left">
-          <i class="fa-solid fa-bag-shopping"></i>
-          <div class="sheet-item-text">
-            <span class="sheet-item-title">Shopping research</span>
-            <span class="sheet-item-subtitle">Get an in-depth guide</span>
-          </div>
-        </div>
-      </button>
-
-      <button class="sheet-list-item" onclick="handleMobileAction('web-search')">
-        <div class="sheet-item-left">
-          <i class="fa-solid fa-earth-americas"></i>
-          <div class="sheet-item-text">
-            <span class="sheet-item-title">Web search</span>
-            <span class="sheet-item-subtitle">Find real-time news and info</span>
-          </div>
-        </div>
-      </button>
-
-      <button class="sheet-list-item" onclick="handleMobileAction('thinking')">
-        <div class="sheet-item-left">
-          <i class="fa-solid fa-brain"></i>
-          <div class="sheet-item-text">
-            <span class="sheet-item-title">Thinking</span>
-            <span class="sheet-item-subtitle">Learn a new concept</span>
-          </div>
-        </div>
-      </button>
-
-      <button class="sheet-list-item" onclick="handleMobileAction('canvas')">
-        <div class="sheet-item-left">
-          <i class="fa-solid fa-file-invoice"></i>
-          <div class="sheet-item-text">
-            <span class="sheet-item-title">Canvas</span>
-            <span class="sheet-item-subtitle">Open code editor</span>
-          </div>
-        </div>
-      </button>
-
     </div>
-  </div>
 
-  <!-- Overlay -->
-  <div id="mobile-sheet-overlay" class="mobile-sheet-overlay" onclick="toggleMobileActionSheet(false)"></div>
-
-</body>
-
+    <!-- Overlay -->
+    <div
+      id="mobile-sheet-overlay"
+      class="mobile-sheet-overlay"
+      onclick="toggleMobileActionSheet(false)"
+    ></div>
+  </body>
 </html>

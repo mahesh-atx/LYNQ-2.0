@@ -1,48 +1,78 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help Center — LYNQ AI</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Help Center — LYNQ AI</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png" />
-  <link rel="manifest" href="./favicons/site.webmanifest" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
-    rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/home.css" />
+    <link rel="stylesheet" href="css/help.css" />
+  </head>
 
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/animations.css" />
-  <link rel="stylesheet" href="css/home.css" />
-  <link rel="stylesheet" href="css/help.css" />
-</head>
+  <body class="dark-mode">
+    <!-- Hero Spotlight Glow Background Effect -->
+    <div class="hero-spotlight-bg" aria-hidden="true">
+      <div class="spotlight-glow spotlight-main"></div>
+      <div class="spotlight-glow spotlight-accent"></div>
+    </div>
 
-<body class="dark-mode">
-  <script src="js/theme-init.js"></script>
+    <script src="js/theme-init.js"></script>
 
-  <div id="app-container">
-    <!-- Sidebar injected by components.js -->
-    <div id="sidebar-container"></div>
+    <div id="app-container">
+      <!-- Sidebar injected by components.js -->
+      <div id="sidebar-container"></div>
 
-    <main id="main-content">
-      <!-- Top Bar injected by components.js -->
-      <div id="topbar-container"></div>
+      <main id="main-content">
+        <!-- Top Bar injected by components.js -->
+        <div id="topbar-container"></div>
 
-      <div id="help-view" class="view-section active">
-        <div class="help-container">
-          <div class="help-header">
-            <h1>Help Center</h1>
-          </div>
-          <button class="btn-secondary" onclick="location.href='settings.html'" style="
+        <div id="help-view" class="view-section active">
+          <div class="help-container">
+            <div class="help-header">
+              <h1>Help Center</h1>
+            </div>
+            <button
+              class="btn-secondary"
+              onclick="location.href='settings.html'"
+              style="
                 margin-bottom: 20px;
                 padding: 8px 16px;
                 border-radius: 8px;
@@ -50,259 +80,283 @@
                 background: var(--bg-tertiary);
                 color: var(--text-heading);
                 cursor: pointer;
-              ">
-            <i class="fa-solid fa-arrow-left"></i> Back to Settings
-          </button>
-
-          <div class="help-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="help-search-input"
-              placeholder="Search for articles, guides, and troubleshooting..." />
-          </div>
-
-          <div class="help-grid">
-            <div class="help-card">
-              <i class="fa-solid fa-rocket"></i>
-              <h4>Getting Started</h4>
-              <p>Learn the basics of LYNQ AI prompts.</p>
-            </div>
-            <div class="help-card">
-              <i class="fa-solid fa-file-invoice-dollar"></i>
-              <h4>Billing & Plans</h4>
-              <p>Manage subscriptions and payments.</p>
-            </div>
-            <div class="help-card">
-              <i class="fa-solid fa-users"></i>
-              <h4>Community</h4>
-              <p>Join our Discord server.</p>
-            </div>
-          </div>
-
-          <h3 style="margin-bottom: 20px">Frequently Asked Questions</h3>
-          <div class="faq-item" onclick="this.classList.toggle('open')">
-            <div class="faq-question">
-              What is LYNQ AI Pro? <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              LYNQ AI Pro is our advanced tier giving you access to Gemini 1.5
-              Pro and GPT-4o models, priority support, and unlimited fast
-              project generation.
-            </div>
-          </div>
-          <div class="faq-item" onclick="this.classList.toggle('open')">
-            <div class="faq-question">
-              How do I generate an API Key?
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              Go to Settings > Account > API Keys. You can generate up to 5
-              keys for personal use in your custom applications.
-            </div>
-          </div>
-          <div class="faq-item" onclick="this.classList.toggle('open')">
-            <div class="faq-question">
-              Can I use LYNQ AI for commercial projects?
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              Yes! All code and content generated by LYNQ AI (Pro Plan) is
-              yours to use commercially without attribution.
-            </div>
-          </div>
-          <div class="faq-item" onclick="this.classList.toggle('open')">
-            <div class="faq-question">
-              How do I reset my chat history?
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              You can clear your entire history in Settings > Data & Privacy.
-              Be careful, as this action cannot be undone.
-            </div>
-          </div>
-          <div class="faq-item" onclick="this.classList.toggle('open')">
-            <div class="faq-question">
-              Is my data private? <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              Absolutely. We do not train our public models on data from Pro
-              users. Your workspace is private and encrypted.
-            </div>
-          </div>
-
-          <div class="contact-form">
-            <div class="contact-header">
-              <h3>Contact Support</h3>
-              <div class="status-indicator">
-                <div class="status-dot"></div>
-                All Systems Operational
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Name</label>
-                <input type="text" id="contact-name" placeholder="Your Name" />
-              </div>
-              <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="contact-email" placeholder="your@email.com" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Message</label>
-              <input type="text" id="contact-subject" placeholder="Subject" style="margin-bottom: 10px" />
-              <textarea id="contact-message" rows="4" placeholder="Describe your issue..."></textarea>
-            </div>
-            <button class="upgrade-btn" id="contact-send-btn" style="margin-top: 20px">
-              Send Message
+              "
+            >
+              <i class="fa-solid fa-arrow-left"></i> Back to Settings
             </button>
+
+            <div class="help-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="text"
+                id="help-search-input"
+                placeholder="Search for articles, guides, and troubleshooting..."
+              />
+            </div>
+
+            <div class="help-grid">
+              <div class="help-card">
+                <i class="fa-solid fa-rocket"></i>
+                <h4>Getting Started</h4>
+                <p>Learn the basics of LYNQ AI prompts.</p>
+              </div>
+              <div class="help-card">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <h4>Billing & Plans</h4>
+                <p>Manage subscriptions and payments.</p>
+              </div>
+              <div class="help-card">
+                <i class="fa-solid fa-users"></i>
+                <h4>Community</h4>
+                <p>Join our Discord server.</p>
+              </div>
+            </div>
+
+            <h3 style="margin-bottom: 20px">Frequently Asked Questions</h3>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                What is LYNQ AI Pro? <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                LYNQ AI Pro is our advanced tier giving you access to Gemini 1.5
+                Pro and GPT-4o models, priority support, and unlimited fast
+                project generation.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                How do I generate an API Key?
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                Go to Settings > Account > API Keys. You can generate up to 5
+                keys for personal use in your custom applications.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                Can I use LYNQ AI for commercial projects?
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                Yes! All code and content generated by LYNQ AI (Pro Plan) is
+                yours to use commercially without attribution.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                How do I reset my chat history?
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                You can clear your entire history in Settings > Data & Privacy.
+                Be careful, as this action cannot be undone.
+              </div>
+            </div>
+            <div class="faq-item" onclick="this.classList.toggle('open')">
+              <div class="faq-question">
+                Is my data private? <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="faq-answer">
+                Absolutely. We do not train our public models on data from Pro
+                users. Your workspace is private and encrypted.
+              </div>
+            </div>
+
+            <div class="contact-form">
+              <div class="contact-header">
+                <h3>Contact Support</h3>
+                <div class="status-indicator">
+                  <div class="status-dot"></div>
+                  All Systems Operational
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    id="contact-name"
+                    placeholder="Your Name"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    id="contact-email"
+                    placeholder="your@email.com"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Message</label>
+                <input
+                  type="text"
+                  id="contact-subject"
+                  placeholder="Subject"
+                  style="margin-bottom: 10px"
+                />
+                <textarea
+                  id="contact-message"
+                  rows="4"
+                  placeholder="Describe your issue..."
+                ></textarea>
+              </div>
+              <button
+                class="upgrade-btn"
+                id="contact-send-btn"
+                style="margin-top: 20px"
+              >
+                Send Message
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
-  </div>
+      </main>
+    </div>
 
-  <!-- Shared Components Containers -->
-  <div id="toast-container"></div>
-  <div id="pricing-modal-container"></div>
-  <div id="profile-popup-container"></div>
+    <!-- Shared Components Containers -->
+    <div id="toast-container"></div>
+    <div id="pricing-modal-container"></div>
+    <div id="profile-popup-container"></div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="js/components.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/script.js"></script>
-  <script>
-    // Initialize shared components
-    initSharedComponents('help');
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      // Initialize shared components
+      initSharedComponents("help");
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // 1. Setup Search Functionality
-      const searchInput = document.getElementById("help-search-input");
-      if (searchInput) {
-        searchInput.addEventListener("keyup", (e) => {
-          const query = e.target.value.toLowerCase();
-          filterHelpContent(query);
+      document.addEventListener("DOMContentLoaded", () => {
+        // 1. Setup Search Functionality
+        const searchInput = document.getElementById("help-search-input");
+        if (searchInput) {
+          searchInput.addEventListener("keyup", (e) => {
+            const query = e.target.value.toLowerCase();
+            filterHelpContent(query);
+          });
+        }
+
+        // 2. Setup Contact Form Submission
+        const contactBtn = document.getElementById("contact-send-btn");
+        if (contactBtn) {
+          contactBtn.addEventListener("click", handleContactSubmit);
+        }
+
+        // 3. Listen for Auth State to pre-fill form
+        document.addEventListener("authStateReady", (e) => {
+          const user = e.detail.user;
+          if (user) {
+            prefillContactForm(user);
+          }
+        });
+
+        // Fallback: Check if currentUser is already available globally
+        if (typeof currentUser !== "undefined" && currentUser) {
+          prefillContactForm(currentUser);
+        }
+      });
+
+      /**
+       * Filters FAQ items and Help Cards based on search query
+       */
+      function filterHelpContent(query) {
+        // Filter FAQ Items
+        const faqItems = document.querySelectorAll(".faq-item");
+        faqItems.forEach((item) => {
+          const question = item
+            .querySelector(".faq-question")
+            .innerText.toLowerCase();
+          const answer = item
+            .querySelector(".faq-answer")
+            .innerText.toLowerCase();
+
+          if (question.includes(query) || answer.includes(query)) {
+            item.style.display = "block";
+          } else {
+            item.style.display = "none";
+          }
+        });
+
+        // Filter Help Cards (Categories)
+        const helpCards = document.querySelectorAll(".help-card");
+        helpCards.forEach((card) => {
+          const title = card.querySelector("h4").innerText.toLowerCase();
+          const desc = card.querySelector("p").innerText.toLowerCase();
+
+          if (title.includes(query) || desc.includes(query)) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
         });
       }
 
-      // 2. Setup Contact Form Submission
-      const contactBtn = document.getElementById("contact-send-btn");
-      if (contactBtn) {
-        contactBtn.addEventListener("click", handleContactSubmit);
+      /**
+       * Pre-fills the contact form with logged-in user data
+       */
+      function prefillContactForm(user) {
+        const nameInput = document.getElementById("contact-name");
+        const emailInput = document.getElementById("contact-email");
+
+        if (nameInput && user.displayName) {
+          nameInput.value = user.displayName;
+        }
+        if (emailInput && user.email) {
+          emailInput.value = user.email;
+          emailInput.readOnly = true;
+          emailInput.style.opacity = "0.7";
+        }
       }
 
-      // 3. Listen for Auth State to pre-fill form
-      document.addEventListener("authStateReady", (e) => {
-        const user = e.detail.user;
-        if (user) {
-          prefillContactForm(user);
-        }
-      });
+      /**
+       * Handles the contact form submission (Simulation)
+       */
+      function handleContactSubmit(e) {
+        e.preventDefault();
 
-      // Fallback: Check if currentUser is already available globally
-      if (typeof currentUser !== "undefined" && currentUser) {
-        prefillContactForm(currentUser);
+        const nameInput = document.getElementById("contact-name");
+        const emailInput = document.getElementById("contact-email");
+        const messageInput = document.getElementById("contact-message");
+        const subjectInput = document.getElementById("contact-subject");
+        const btn = e.target;
+
+        // Validation
+        if (!nameInput.value || !emailInput.value || !messageInput.value) {
+          if (typeof showToast === "function") {
+            showToast("Please fill in all fields.");
+          } else {
+            alert("Please fill in all fields.");
+          }
+          return;
+        }
+
+        // Simulate Sending state
+        const originalText = btn.innerText;
+        btn.innerText = "Sending...";
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+
+        // Simulate API call delay (1.5 seconds)
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+
+          // Clear Message only (keep contact info)
+          messageInput.value = "";
+          if (subjectInput) subjectInput.value = "";
+
+          if (typeof showToast === "function") {
+            showToast("Message sent successfully! We'll get back to you soon.");
+          } else {
+            alert("Message sent successfully!");
+          }
+        }, 1500);
       }
-    });
-
-    /**
-     * Filters FAQ items and Help Cards based on search query
-     */
-    function filterHelpContent(query) {
-      // Filter FAQ Items
-      const faqItems = document.querySelectorAll(".faq-item");
-      faqItems.forEach((item) => {
-        const question = item
-          .querySelector(".faq-question")
-          .innerText.toLowerCase();
-        const answer = item
-          .querySelector(".faq-answer")
-          .innerText.toLowerCase();
-
-        if (question.includes(query) || answer.includes(query)) {
-          item.style.display = "block";
-        } else {
-          item.style.display = "none";
-        }
-      });
-
-      // Filter Help Cards (Categories)
-      const helpCards = document.querySelectorAll(".help-card");
-      helpCards.forEach((card) => {
-        const title = card.querySelector("h4").innerText.toLowerCase();
-        const desc = card.querySelector("p").innerText.toLowerCase();
-
-        if (title.includes(query) || desc.includes(query)) {
-          card.style.display = "block";
-        } else {
-          card.style.display = "none";
-        }
-      });
-    }
-
-    /**
-     * Pre-fills the contact form with logged-in user data
-     */
-    function prefillContactForm(user) {
-      const nameInput = document.getElementById("contact-name");
-      const emailInput = document.getElementById("contact-email");
-
-      if (nameInput && user.displayName) {
-        nameInput.value = user.displayName;
-      }
-      if (emailInput && user.email) {
-        emailInput.value = user.email;
-        emailInput.readOnly = true;
-        emailInput.style.opacity = "0.7";
-      }
-    }
-
-    /**
-     * Handles the contact form submission (Simulation)
-     */
-    function handleContactSubmit(e) {
-      e.preventDefault();
-
-      const nameInput = document.getElementById("contact-name");
-      const emailInput = document.getElementById("contact-email");
-      const messageInput = document.getElementById("contact-message");
-      const subjectInput = document.getElementById("contact-subject");
-      const btn = e.target;
-
-      // Validation
-      if (!nameInput.value || !emailInput.value || !messageInput.value) {
-        if (typeof showToast === "function") {
-          showToast("Please fill in all fields.");
-        } else {
-          alert("Please fill in all fields.");
-        }
-        return;
-      }
-
-      // Simulate Sending state
-      const originalText = btn.innerText;
-      btn.innerText = "Sending...";
-      btn.disabled = true;
-      btn.style.opacity = "0.7";
-
-      // Simulate API call delay (1.5 seconds)
-      setTimeout(() => {
-        btn.innerText = originalText;
-        btn.disabled = false;
-        btn.style.opacity = "1";
-
-        // Clear Message only (keep contact info)
-        messageInput.value = "";
-        if (subjectInput) subjectInput.value = "";
-
-        if (typeof showToast === "function") {
-          showToast("Message sent successfully! We'll get back to you soon.");
-        } else {
-          alert("Message sent successfully!");
-        }
-      }, 1500);
-    }
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
