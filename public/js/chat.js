@@ -40,6 +40,83 @@ const TOOL_WELCOME_MESSAGES = {
     emailtemplates: "✉️ **You are in Email Templates mode!**\n\nI can generate professional emails for any situation.\n\nTell me who you're writing to and the purpose of the email!"
 };
 
+// --- NEW: Inline Suggestion Prompts Pool (varied lengths) ---
+const INLINE_SUGGESTION_PROMPTS = [
+    // Short (2-3 words)
+    "Write code",
+    "Explain this",
+    "Summarize",
+    "Translate",
+    "Fix bugs",
+    // Medium (3-5 words)
+    "Top movies of 2024",
+    "Plan a weekend trip",
+    "Debug my code",
+    "Best pizza recipe",
+    "How to learn fast",
+    // Long (6+ words)
+    "Create a stunning portfolio website for me",
+    "Recommend the best comedy shows on Netflix",
+    "Explain machine learning like I'm five",
+    "Write a professional email to my boss",
+    "Help me prepare for a job interview",
+    "What are the latest trends in AI",
+    "Give me workout tips for beginners"
+];
+
+/**
+ * Gets random suggestions from the pool
+ */
+function getRandomSuggestions(count = 3) {
+    const shuffled = [...INLINE_SUGGESTION_PROMPTS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+}
+
+/**
+ * Adds suggestion text to the input field with animation (doesn't send)
+ */
+function addToInput(text, event, element) {
+    if (event) event.preventDefault(); // Prevent blur from firing
+    
+    // Animate the clicked suggestion
+    if (element) {
+        element.classList.add('clicked');
+    }
+    
+    if (chatInput) {
+        chatInput.value = text;
+        chatInput.focus();
+        // Trigger height adjustment
+        chatInput.style.height = "auto";
+        chatInput.style.height = chatInput.scrollHeight + "px";
+        
+        // Hide inline suggestions after adding
+        const inlineSuggestions = document.getElementById("inline-suggestions");
+        if (inlineSuggestions) {
+            inlineSuggestions.classList.remove("visible");
+        }
+    }
+}
+
+// Colorful dot colors for inline suggestions
+const DOT_COLORS = ['#667eea', '#f59e0b', '#10b981', '#ec4899', '#8b5cf6', '#06b6d4'];
+
+/**
+ * Updates the inline suggestions with random prompts and colorful dots
+ */
+function updateInlineSuggestions() {
+    const container = document.getElementById("inline-suggestions");
+    if (!container) return;
+    
+    const suggestions = getRandomSuggestions(3);
+    container.innerHTML = suggestions.map((text, index) => {
+        const dotColor = DOT_COLORS[index % DOT_COLORS.length];
+        return `<button class="inline-suggestion" onmousedown="addToInput('${text.replace(/'/g, "\\'")}', event, this)">
+            <span class="suggestion-dot" style="background: ${dotColor};"></span> ${text}
+        </button>`;
+    }).join('');
+}
+
 /**
  * Toggles the visibility state of the Tools dropdown menu.
  */
@@ -1117,6 +1194,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.preventDefault();
                 handleSend();
             }
+        });
+
+        // --- NEW: Input Focus/Blur handlers for inline suggestions (pills stay visible) ---
+        chatInput.addEventListener("focus", () => {
+            const inlineSuggestions = document.getElementById("inline-suggestions");
+            
+            // Only show effects if welcome screen is visible
+            if (welcomeScreen && welcomeScreen.style.display !== "none") {
+                // Show inline suggestions with new random prompts
+                if (inlineSuggestions) {
+                    updateInlineSuggestions(); // Randomize suggestions each time
+                    inlineSuggestions.classList.add("visible");
+                }
+            }
+        });
+
+        chatInput.addEventListener("blur", () => {
+            const inlineSuggestions = document.getElementById("inline-suggestions");
+            
+            // Only hide inline suggestions if input is empty
+            setTimeout(() => {
+                if (chatInput.value.trim() === "" && welcomeScreen && welcomeScreen.style.display !== "none") {
+                    // Hide inline suggestions
+                    if (inlineSuggestions) {
+                        inlineSuggestions.classList.remove("visible");
+                    }
+                }
+            }, 150); // Small delay to allow click events on inline suggestions
         });
 
         if (toolsToggleBtn) {
