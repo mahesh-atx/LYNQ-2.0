@@ -30,7 +30,8 @@
   --glass-blur: blur(16px);
 }
 
-body.dark-mode {
+body.dark-mode,
+html.dark-mode {
   --bg-primary: #121212;
   --bg-secondary: rgba(30, 30, 30, 0.85);
   /* Glassy */
@@ -240,6 +241,12 @@ body {
 .chat-item-wrapper {
   position: relative;
   flex-shrink: 0;
+  z-index: 1; /* Base z-index for stacking */
+}
+
+/* When context menu is open, raise this wrapper above siblings */
+.chat-item-wrapper:has(.chat-context-menu.show) {
+  z-index: 100;
 }
 
 .chat-item-wrapper .nav-item {
@@ -282,11 +289,20 @@ body {
   flex-direction: column;
   padding: 6px;
   overflow: hidden;
-  animation: fadeIn 0.15s ease;
+  /* Note: animation is applied via .show class to prevent flicker */
 }
 
 .chat-context-menu.show {
   display: flex;
+  animation: fadeIn 0.15s ease;
+}
+
+/* Desktop: Show context menu on hover */
+@media (min-width: 769px) {
+  .chat-item-wrapper:hover .chat-context-menu {
+    display: flex;
+    animation: fadeIn 0.15s ease;
+  }
 }
 
 .context-item {
@@ -2045,7 +2061,7 @@ body.dark-mode .pro-badge {
 .top-bar-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px; /* Reduced gap as requested */
 }
 
 .header-model-selector {
@@ -3398,3 +3414,4 @@ body.dark-mode .pro-badge {
     max-height: 80vh;
   }
 }
+

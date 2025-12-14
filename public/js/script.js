@@ -245,9 +245,11 @@ async function loadState(loadChats = true) {
 
   if (savedTheme === "light") {
     document.body.classList.remove("dark-mode");
+    document.documentElement.classList.remove("dark-mode");
     if (settingsToggle) settingsToggle.checked = false;
   } else {
     document.body.classList.add("dark-mode");
+    document.documentElement.classList.add("dark-mode");
     localStorage.setItem("lynq-theme", "dark");
     if (settingsToggle) settingsToggle.checked = true;
   }
@@ -394,6 +396,7 @@ function showToast(message) {
 function toggleTheme() {
   if (!body) return;
   body.classList.toggle("dark-mode");
+  document.documentElement.classList.toggle("dark-mode");
 
   if (body.classList.contains("dark-mode")) {
     localStorage.setItem("lynq-theme", "dark");
@@ -787,7 +790,7 @@ function updateUIAfterAuth(user) {
   const headerAvatarInitial = document.getElementById("header-avatar-initial");
   const dropdownAvatarInitial = document.getElementById("dropdown-avatar-initial");
 
-  const welcomeName = document.getElementById("welcome-name");
+  const welcomeNameSpan = document.getElementById("welcome-name-span");
   const guestBanner = document.getElementById("guest-banner");
 
   if (user) {
@@ -819,7 +822,7 @@ function updateUIAfterAuth(user) {
       loadSavedAvatar();
     }
 
-    if (welcomeName) welcomeName.innerText = `Hello, ${displayName}`;
+    if (welcomeNameSpan) welcomeNameSpan.innerText = displayName;
 
     // Update sidebar user info
     updateSidebarUserInfo(user);
@@ -837,7 +840,7 @@ function updateUIAfterAuth(user) {
     // Hide profile container
     if (headerProfileContainer) headerProfileContainer.style.display = "none";
 
-    if (welcomeName) welcomeName.innerText = "Hello, Guest";
+    if (welcomeNameSpan) welcomeNameSpan.innerText = "Guest";
 
     // Clear user-specific data
     recentChats = [];
@@ -1318,22 +1321,46 @@ function toggleSheetModels() {
 }
 
 /* Select Model from Sheet */
+/* Select Model from Sheet */
 function selectMobileModel(modelId, displayName) {
   // Update selected state
   const options = document.querySelectorAll('.sheet-model-option');
   options.forEach(opt => opt.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-
-  // Update header model name if exists
-  const headerModelName = document.getElementById('header-model-name');
-  if (headerModelName) {
-    headerModelName.textContent = displayName;
+  if (event && event.currentTarget) {
+    event.currentTarget.classList.add('selected');
   }
+
+  // Define icons mapping
+  const modelIcons = {
+    'llama-3.1-8b-instant': { icon: 'zap', color: '#f59e0b' },
+    'openai/gpt-oss-20b': { icon: 'box', color: '#10b981' },
+    'openai/gpt-oss-120b': { icon: 'flame', color: '#3b82f6' }
+  };
+
+  const iconData = modelIcons[modelId] || { icon: 'box', color: '#a1a1aa' };
+
+  // Update header model name if exists - DISABLED as per user request to keep "LYNQ" static
+  // const headerModelName = document.getElementById('header-model-name');
+  // if (headerModelName) {
+  //   headerModelName.textContent = displayName;
+  // }
 
   // Update input model name button (for mobile display)
   const inputModelName = document.getElementById('input-model-name');
   if (inputModelName) {
-    inputModelName.textContent = displayName;
+    // Map icons to FontAwesome for dynamic update safely
+    let faIcon = 'fa-bolt';
+    if (iconData.icon === 'box') faIcon = 'fa-cube';
+    if (iconData.icon === 'flame') faIcon = 'fa-fire';
+    
+    // Update parent content to include icon + text + chevron
+    inputModelName.parentElement.innerHTML = `
+      <span id="input-model-name" style="display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid ${faIcon}" style="color: ${iconData.color}; font-size: 0.8rem;"></i>
+        ${displayName}
+      </span>
+      <i class="fa-solid fa-chevron-down" style="margin-left: 4px;"></i>
+    `;
   }
 
   // Store selected model
@@ -1590,4 +1617,54 @@ function loadSavedAvatar() {
 // Initialize avatar on DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(loadSavedAvatar, 100);
+
+  // --- Mobile Action Sheet Swipe to Close ---
+  const mobileSheet = document.getElementById('mobile-action-sheet');
+  
+  if (mobileSheet) {
+    let sheetStartY = 0;
+    let sheetCurrentY = 0;
+    
+    mobileSheet.addEventListener('touchstart', (e) => {
+      // Logic to prevent dragging if content is scrolled down (optional)
+      // For now, simple drag down
+      const scrollTop = mobileSheet.querySelector('.sheet-models-list')?.scrollTop || 0;
+      if (scrollTop > 0) return; // Don't drag sheet if list is scrolled
+
+      sheetStartY = e.touches[0].clientY;
+      sheetCurrentY = sheetStartY;
+      mobileSheet.style.transition = 'none';
+    }, { passive: true });
+
+    mobileSheet.addEventListener('touchmove', (e) => {
+      sheetCurrentY = e.touches[0].clientY;
+      const deltaY = sheetCurrentY - sheetStartY;
+
+      if (deltaY > 0) { // Dragging down
+        mobileSheet.style.transform = `translateY(${deltaY}px)`;
+        e.preventDefault(); // Prevent scrolling body
+      }
+    }, { passive: false });
+
+    mobileSheet.addEventListener('touchend', () => {
+      const deltaY = sheetCurrentY - sheetStartY;
+      mobileSheet.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+      if (deltaY > 100) { // Threshold to close
+        // Force slide down to hidden
+        mobileSheet.style.transform = 'translateY(100%)';
+        
+        // Remove active class after transition
+        setTimeout(() => {
+          toggleMobileActionSheet(false);
+          // Wait a tick before clearing transform so it doesn't flash back
+          setTimeout(() => {
+             mobileSheet.style.transform = ''; 
+          }, 50);
+        }, 300);
+      } else {
+        mobileSheet.style.transform = '';
+      }
+    });
+  }
 });

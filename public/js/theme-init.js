@@ -8,6 +8,7 @@
   const savedTheme = localStorage.getItem("lynq-theme");
   if (savedTheme === "light") {
     document.body.classList.remove("dark-mode");
+    document.documentElement.classList.remove("dark-mode");
   }
 
   // Helper function to parse color from gradient or rgba string

@@ -1,10 +1,20 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark-mode">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta
+      name="theme-color"
+      content="#efeded"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#121212"
+      media="(prefers-color-scheme: dark)"
     />
     <title>Home — LYNQ AI</title>
 
@@ -228,10 +238,10 @@
             <div id="chat-container">
               <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-text">
-                  <h1 id="welcome-name">Hello</h1>
-                  <p style="color: var(--text-secondary)">
-                    How can I help you create today?
-                  </p>
+                  <h2 class="greeting-sub">
+                    Hi <span id="welcome-name-span">there</span>
+                  </h2>
+                  <h1 class="hero-question">Where should we start?</h1>
                 </div>
 
                 <div
@@ -668,39 +678,43 @@
           </div>
           <div class="sheet-models-list" id="sheet-models-list">
             <button
-              class="sheet-model-option selected"
-              onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ')"
-            >
-              <span>LYNQ</span>
-              <span class="model-desc">Fast & efficient</span>
-            </button>
-            <button
-              class="sheet-model-option"
-              onclick="selectMobileModel('llama-3.1-8b-instant', 'LYNQ Pro')"
-            >
-              <span>LYNQ Pro</span>
-              <span class="model-desc">Smartest model</span>
-            </button>
-            <button
               class="sheet-model-option"
               onclick="selectMobileModel('llama-3.1-8b-instant', 'llama-3.1')"
             >
-              <span>llama-3.1</span>
-              <span class="model-desc">8B params</span>
+              <i
+                class="fa-solid fa-bolt"
+                style="margin-right: 8px; color: #f59e0b"
+              ></i>
+              <div class="model-info">
+                <span>llama-3.1</span>
+                <span class="model-desc">8B params</span>
+              </div>
             </button>
             <button
               class="sheet-model-option"
               onclick="selectMobileModel('openai/gpt-oss-20b', 'GPT-OSS-20B')"
             >
-              <span>GPT-OSS-20B</span>
-              <span class="model-desc">Balanced</span>
+              <i
+                class="fa-solid fa-cube"
+                style="margin-right: 8px; color: #10b981"
+              ></i>
+              <div class="model-info">
+                <span>GPT-OSS-20B</span>
+                <span class="model-desc">Balanced</span>
+              </div>
             </button>
             <button
               class="sheet-model-option"
               onclick="selectMobileModel('openai/gpt-oss-120b', 'gpt-oss-120b')"
             >
-              <span>gpt-oss-120b</span>
-              <span class="model-desc">Most powerful</span>
+              <i
+                class="fa-solid fa-fire"
+                style="margin-right: 8px; color: #8b5cf6"
+              ></i>
+              <div class="model-info">
+                <span>gpt-oss-120b</span>
+                <span class="model-desc">Most powerful</span>
+              </div>
             </button>
           </div>
         </div>
