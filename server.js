@@ -53,6 +53,21 @@ try {
   console.warn("⚠️ Could not load tool_prompts.json, tool specific prompts will not work.", err.message);
 }
 
+// --- Load Models Config ---
+const modelsConfigPath = path.join(__dirname, "config", "models.json");
+let AVAILABLE_MODELS = [];
+try {
+  const data = fs.readFileSync(modelsConfigPath, "utf-8");
+  AVAILABLE_MODELS = JSON.parse(data);
+  console.log(`✅ Loaded ${AVAILABLE_MODELS.length} models from config/models.json`);
+} catch (err) {
+  console.warn("⚠️ Could not load models.json, using defaults.");
+  // Fallback defaults
+  AVAILABLE_MODELS = [
+     { id: "openai/gpt-oss-120b", name: "gpt-oss-120b", provider: "groq" }
+  ];
+}
+
 // --- Environment Variables ---
 const MONGODB_URI = process.env.MONGODB_URI;
 // --- Firebase Admin Initialization using FIREBASE_ADMIN_KEY from .env ---
@@ -299,6 +314,12 @@ app.delete("/api/chats", verifyAuthToken, async (req, res) => {
     console.error("Error deleting all chats:", err);
     res.status(500).json({ error: "Failed to delete history" });
   }
+});
+
+    // ... (rest of search/scrape code)
+// --- Models API Endpoint ---
+app.get("/api/models", (req, res) => {
+  res.json(AVAILABLE_MODELS);
 });
 
 // ============================================
@@ -779,31 +800,59 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
   }
 
   try {
-    // --- AUTO-SWITCH TO VISION MODEL FOR IMAGES ---
-    const hasImageAttachment = messages.some(msg => msg.attachment && msg.attachment.type === "image");
-    
-    if (hasImageAttachment) {
-        const originalModel = model;
-        model = "meta-llama/llama-4-scout-17b-16e-instruct"; // Force vision model
-        if (originalModel !== model) {
-            console.log(`🔄 Auto-switched from '${originalModel}' to '${model}' due to image attachment.`);
+    // --- MODEL SELECTION & PROVIDER LOGIC ---
+    let selectedModelConfig = AVAILABLE_MODELS.find(m => m.id === model);
+    if (!selectedModelConfig) {
+        // Fallback or check if it's one of the hardcoded types
+        if (model.includes("llama")) {
+            selectedModelConfig = { provider: "groq" };
+        } else {
+             selectedModelConfig = { provider: "groq" }; // Default to groq
         }
     }
 
-    // --- VISION MODEL HANDLING ---
-    // Check if the selected model is our known vision model (or others in future)
-    const isVisionModel = model === "meta-llama/llama-4-scout-17b-16e-instruct" || model?.includes("monitor") || model?.includes("vision") || model === "llama-3.2-11b-vision-preview" || model === "llama-3.2-90b-vision-preview";
+    let apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+    let apiKey = process.env.API_KEY;
 
-    // If it's a vision model, we need to check the LAST user message for an attachment
-    if (isVisionModel && messages.length > 0) {
+    if (selectedModelConfig.provider === "google") {
+        apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+        apiKey = process.env.GOOGLE_GENERATIVE_AI_KEY;
+        if (!apiKey) {
+            return res.status(500).json({ error: "Google Generative AI Key is missing in server environment." });
+        }
+    }
+    
+    console.log(`🤖 Processing request with model: ${model} (Provider: ${selectedModelConfig.provider})`);
+
+    // Vision handling for Gemini (Google) if needed
+    // The OpenAI compatibility layer for Gemini supports image_url, so the existing formatting might work.
+    // However, we should ensure the model name is correct.
+
+    // --- AUTO-SWITCH TO VISION MODEL FOR IMAGES ---
+    // (Logic preserved but adapted)
+    const hasImageAttachment = messages.some(msg => msg.attachment && msg.attachment.type === "image");
+    
+    if (hasImageAttachment) {
+        // Only auto-switch if we aren't already on a multimodal model
+        // Gemini models are multimodal by default usually, but let's check config
+        const isMultimodal = selectedModelConfig.id?.includes("gemini") || selectedModelConfig.id?.includes("vision") || selectedModelConfig.id?.includes("scout");
+        
+        if (!isMultimodal) {
+             const visionModel = "meta-llama/llama-4-scout-17b-16e-instruct"; 
+             model = visionModel;
+             selectedModelConfig = AVAILABLE_MODELS.find(m => m.id === model) || { provider: "groq" };
+             console.log(`🔄 Auto-switched to '${model}' for image support.`);
+        }
+    }
+
+     // --- VISION MESSAGE FORMATTING ---
+    if (hasImageAttachment) {
       const lastMsgIndex = messages.length - 1;
       const lastMsg = messages[lastMsgIndex];
 
       if (lastMsg.role === "user" && lastMsg.attachment && lastMsg.attachment.type === "image" && lastMsg.attachment.data_url) {
-        console.log("👁️ Vision request detected with image attachment.");
+        console.log("👁️ Vision request processing...");
         
-        // Transform the content from string to array for Groq Vision
-        // Reference: https://console.groq.com/docs/vision
         const newContent = [
           { type: "text", text: lastMsg.content || "Describe this image." },
           { 
@@ -815,7 +864,7 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
         ];
         
         messages[lastMsgIndex].content = newContent;
-        // Remove the attachment object to avoid confusing the API (it's not part of standard schema)
+        // Remove attachment property
         delete messages[lastMsgIndex].attachment;
       }
     }
@@ -828,18 +877,18 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
 
     // Build request body
     const requestBody = {
-      model: model || process.env.MODEL,
+      model: model,
       messages: finalMessages,
       ...(max_tokens && { max_tokens: parseInt(max_tokens, 10) }),
     };
 
     const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+      apiUrl,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify(requestBody),
       }
@@ -847,20 +896,34 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
 
     const data = await response.json();
     if (!response.ok) {
-      console.error("Groq API error:", data);
-
-      // Handle specific Groq tool_use_failed error
+      console.error(`${selectedModelConfig.provider} API error:`, data);
+      
+      // Handle tool_use_failed (Groq specific) or generic errors
       if (data?.error?.code === "tool_use_failed") {
-        console.warn("⚠️ Model tried to use tools. Returning search results as fallback.");
-        // If we have search results, return them directly as the response
-        if (searchResults) {
-          return res.json({
-            text: `Here's what I found:\n\n${searchResults}\n\n*Note: The AI model encountered an issue. Showing raw search results instead.*`
-          });
-        }
+          if (searchResults) {
+             return res.json({
+               text: `Here's what I found:\n\n${searchResults}\n\n*Note: The AI model encountered an issue. Showing raw search results instead.*`
+             });
+          }
       }
 
-      return res.status(response.status).json({ error: data });
+      // IMPROVED ERROR HANDLING
+      let errorMessage = "An unknown error occurred.";
+      
+      if (selectedModelConfig.provider === "google") {
+          if (response.status === 429 || data?.error?.status === "RESOURCE_EXHAUSTED") {
+              errorMessage = "Google AI Quota Exceeded. Please try a different model (like Llama) or wait a moment. The free tier limits may have been reached.";
+          } else if (data?.error?.message) {
+              errorMessage = `Google API Error: ${data.error.message}`;
+          } else {
+             errorMessage = `Google API Error (${response.status})`;
+          }
+      } else {
+          // Groq or other provider
+          errorMessage = data?.error?.message || `API Error (${response.status})`;
+      }
+
+      return res.status(response.status).json({ error: errorMessage });
     }
 
     const reply = data.choices?.[0]?.message?.content;
@@ -868,10 +931,7 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
       return res.status(500).json({ error: "No reply from model" });
     }
 
-    // --- CHANGED: WE NO LONGER FORCE APPEND AT THE END ---
-    let finalResponse = reply;
-
-    res.json({ text: finalResponse });
+    res.json({ text: reply });
   } catch (err) {
     console.error("Server-side fetch error:", err);
     res.status(500).json({ error: err.message });

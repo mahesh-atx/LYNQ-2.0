@@ -23,7 +23,8 @@ const API_URL = "/api/generate";
 const CHAT_API_BASE = "/api/chats"; // New base URL for chat CRUD
 let isResponding = false;
 let currentController = null;
-let currentSelectedModel = "openai/gpt-oss-120b"; // Default model
+let currentSelectedModel = "llama-3.1-8b-instant"; // Default model (can be updated by fetch)
+let availableModels = []; // To store fetched models
 let systemPromptCache = null; // Cache for the loaded system prompt
 
 // --- SHARED DOM ELEMENTS ---
@@ -1081,11 +1082,75 @@ function selectInputModel(element, modelId, displayName) {
 
   // Close dropdown
   document.getElementById("input-model-dropdown")?.classList.remove("active");
-  document.getElementById("input-model-btn")?.classList.remove("active");
+  const modelBtn = document.getElementById("input-model-btn");
+  if (modelBtn) modelBtn.classList.remove("active");
 
   // Show confirmation
   // Toast removed for cleaner UX
 }
+
+async function fetchAvailableModels() {
+  try {
+    const response = await fetch("/api/models");
+    if (!response.ok) throw new Error("Failed to fetch models");
+    availableModels = await response.json();
+    renderModelDropdown(availableModels);
+  } catch (error) {
+    console.warn("Could not fetch models:", error);
+    // Fallback render if needed, or leave empty/default
+  }
+}
+
+function renderModelDropdown(models) {
+  const container = document.getElementById("input-model-dropdown");
+  if (!container) return;
+
+  container.innerHTML = ""; // Clear existing
+
+  models.forEach(model => {
+    // Map icons from config to Lucide icon names if needed
+    // Config icons: 'bolt', 'star', etc. -> Lucide: 'zap', 'star', etc.
+    let iconName = "box"; // default
+    let iconColor = model.color || "#ccc";
+
+    if (model.icon === "bolt" || model.icon === "zap") iconName = "zap";
+    else if (model.icon === "star") iconName = "star";
+    else if (model.icon === "diamond") iconName = "diamond"; // specific lucide icon? 'diamond' exists
+    else if (model.icon === "flask") iconName = "flask-conical";
+    else if (model.icon === "feather") iconName = "feather";
+    else if (model.icon === "eye") iconName = "eye";
+    else if (model.icon === "flame") iconName = "flame";
+
+    const div = document.createElement("div");
+    div.className = `input-model-option ${model.id === currentSelectedModel ? "selected" : ""}`;
+    div.onclick = () => selectInputModel(div, model.id, model.name); // Using model.name as display text
+
+    div.innerHTML = `
+      <i data-lucide="${iconName}" style="color: ${iconColor}; width: 16px; height: 16px;"></i>
+      <span>${model.name}</span>
+      <i data-lucide="check" class="model-check" style="width: 14px; height: 14px;"></i>
+    `;
+    
+    container.appendChild(div);
+  });
+
+  // Re-initialize icons for the new elements
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+  
+  // Update the main button text to the current model name
+  const currentModelObj = models.find(m => m.id === currentSelectedModel);
+  if (currentModelObj) {
+      const modelNameEl = document.getElementById("input-model-name");
+      if (modelNameEl) modelNameEl.textContent = currentModelObj.name;
+  }
+}
+
+// Initial Fetch
+document.addEventListener("DOMContentLoaded", () => {
+    fetchAvailableModels();
+});
 
 /* --- SELECTED TOOL INDICATOR FUNCTIONS --- */
 let currentSelectedTool = null;
