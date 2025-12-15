@@ -37,6 +37,24 @@ const TOOL_PARAMS = {
     emailtemplates: 'tool=emailtemplates'
 };
 
+// Tool metadata (names and icons) - used by chat.js and tools.js
+const TOOL_INFO = {
+    canvas: { name: "Canvas", icon: "fa-solid fa-file-invoice" },
+    websearch: { name: "Web Search", icon: "fa-solid fa-earth-americas" },
+    dataanalysis: { name: "Data Analysis", icon: "fa-solid fa-chart-line" },
+    webscraper: { name: "Web Scraper", icon: "fa-solid fa-spider" },
+    writer: { name: "Writer", icon: "fa-solid fa-pen-nib" },
+    regexbuilder: { name: "Regex", icon: "fa-solid fa-asterisk" },
+    sqlgenerator: { name: "SQL", icon: "fa-solid fa-database" },
+    apitester: { name: "API Tester", icon: "fa-solid fa-plug" },
+    resumebuilder: { name: "Resume", icon: "fa-solid fa-file-lines" },
+    emailtemplates: { name: "Email", icon: "fa-solid fa-envelope" },
+    deepresearch: { name: "Deep Research", icon: "fa-solid fa-microscope" },
+    imagegen: { name: "Create Image", icon: "fa-solid fa-paintbrush" },
+    thinking: { name: "Thinking", icon: "fa-solid fa-brain" },
+    shoppingresearch: { name: "Shopping", icon: "fa-solid fa-bag-shopping" }
+};
+
 /**
  * Activates a tool by navigating to the home page with the tool parameter
  * @param {string} toolId - The tool identifier

@@ -13,22 +13,36 @@ let fileUploadInput;
 let attachmentPreviewContainer;
 
 /**
- * Handles the file upload event, specifically for PDFs.
+ * Handles the file upload event for PDFs, Images, and Data files.
  */
 async function handlePdfUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Check for PDF or Image
-    if (file.type !== "application/pdf" && !file.type.startsWith("image/")) {
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type;
+    
+    // Determine file category
+    const isPDF = fileType === "application/pdf";
+    const isImage = fileType.startsWith("image/");
+    const isCSV = fileType === "text/csv" || fileName.endsWith('.csv');
+    const isJSON = fileType === "application/json" || fileName.endsWith('.json');
+    const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || 
+                    fileType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const isDataFile = isCSV || isJSON || isExcel;
+
+    // Validate file type
+    if (!isPDF && !isImage && !isDataFile) {
         if (typeof showToast === "function")
-            showToast("Only PDF and Image files are supported.");
+            showToast("Supported files: PDF, Images, CSV, JSON, Excel");
         fileUploadInput.value = "";
         return;
     }
 
-    const isImage = file.type.startsWith("image/");
-    const loadingIcon = isImage ? '<i class="fa-solid fa-image fa-bounce"></i>' : '<i class="fa-solid fa-spinner fa-spin"></i>';
+    // Choose loading icon based on file type
+    let loadingIcon = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    if (isImage) loadingIcon = '<i class="fa-solid fa-image fa-bounce"></i>';
+    if (isDataFile) loadingIcon = '<i class="fa-solid fa-table fa-bounce"></i>';
     
     const pill = createAttachmentPill(
         `${loadingIcon} Processing "${file.name}"...`,
@@ -38,10 +52,54 @@ async function handlePdfUpload(event) {
     attachmentPreviewContainer.appendChild(pill);
 
     try {
+        // Handle Data Files (CSV, JSON, Excel)
+        if (isDataFile) {
+            if (typeof processDataFile !== 'function') {
+                throw new Error('Data analysis module not loaded');
+            }
+            
+            const parsedData = await processDataFile(file);
+            
+            // Generate AI summary
+            const aiSummary = typeof generateDataSummaryForAI === 'function' 
+                ? generateDataSummaryForAI(parsedData) 
+                : '';
+            
+            currentAttachment = {
+                name: file.name,
+                text: aiSummary,
+                type: "data",
+                parsedData: parsedData,
+                stats: parsedData.stats
+            };
+            
+            // DEBUG: Log data attachment creation
+            console.log("📊 DATA FILE ATTACHED:", {
+                fileName: file.name,
+                rows: parsedData.stats.rowCount,
+                cols: parsedData.stats.columnCount,
+                summaryLength: aiSummary.length,
+                summaryPreview: aiSummary.substring(0, 200)
+            });
+            
+            pill.remove();
+            createDataFilePill(file.name, parsedData.stats);
+            
+            if (typeof showToast === "function")
+                showToast(`📊 Loaded ${parsedData.stats.rowCount} rows from "${file.name}"`);
+            
+            // Focus chat input
+            if (typeof chatInput !== "undefined" && chatInput) {
+                chatInput.focus();
+                chatInput.placeholder = "Ask me to analyze this data...";
+            }
+            return;
+        }
+
+        // Handle Images
         const fileReader = new FileReader();
         fileReader.onload = async function () {
             if (isImage) {
-                 // Image Handling
                 const base64Data = this.result; // Data URL
                 currentAttachment = {
                     name: file.name,
@@ -95,12 +153,52 @@ async function handlePdfUpload(event) {
 
     } catch (error) {
         console.error("Error processing file:", error);
-        if (typeof showToast === "function") showToast("Failed to process file.");
+        if (typeof showToast === "function") showToast(`Failed: ${error.message}`);
         pill.remove();
         currentAttachment = null;
     } finally {
         fileUploadInput.value = "";
     }
+}
+
+/**
+ * Creates a special attachment pill for data files with stats
+ */
+function createDataFilePill(fileName, stats) {
+    const pill = document.createElement("div");
+    pill.className = "attachment-pill data-file";
+
+    const icon = '<i class="fa-solid fa-table"></i>';
+    const statsInfo = `${stats.rowCount} rows × ${stats.columnCount} cols`;
+    
+    pill.innerHTML = `
+        ${icon}
+        <div class="pill-info">
+            <span class="pill-name">${fileName}</span>
+            <span class="pill-stats">${statsInfo}</span>
+        </div>
+    `;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "close-btn";
+    closeBtn.innerHTML = "&times;";
+    closeBtn.title = "Remove file";
+    closeBtn.onclick = () => {
+        currentAttachment = null;
+        if (typeof clearDataSet === 'function') clearDataSet();
+        pill.remove();
+        if (typeof showToast === "function") showToast("Data file removed.");
+        // Reset placeholder
+        if (typeof chatInput !== "undefined" && chatInput) {
+            chatInput.placeholder = "Ask LYNQ anything...";
+        }
+    };
+    pill.appendChild(closeBtn);
+
+    attachmentPreviewContainer.innerHTML = "";
+    attachmentPreviewContainer.appendChild(pill);
+    
+    return pill;
 }
 
 /**

@@ -38,8 +38,6 @@ let CANVAS_SYSTEM_PROMPT = "";
 try {
   CANVAS_SYSTEM_PROMPT = fs.readFileSync(canvasPromptPath, "utf-8");
   console.log("✅ Canvas prompt loaded from config/canvasprompt.txt");
-  CANVAS_SYSTEM_PROMPT = fs.readFileSync(canvasPromptPath, "utf-8");
-  console.log("✅ Canvas prompt loaded from config/canvasprompt.txt");
 } catch (err) {
   console.warn("⚠️ Could not load canvasprompt.txt, canvas mode will use default.");
 }
@@ -303,127 +301,373 @@ app.delete("/api/chats", verifyAuthToken, async (req, res) => {
   }
 });
 
-// --- Scrape URL Helper Function ---
-async function scrapeUrl(url) {
+// ============================================
+// WEB SEARCH ENHANCEMENT SYSTEM
+// ============================================
+
+// --- SEARCH CACHE (5-minute TTL) ---
+const searchCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+// --- RATE LIMITER (Protect API Quota) ---
+const rateLimiter = {
+  requests: [],
+  maxRequestsPerMinute: 10,
+  maxRequestsPerDay: 100,
+  dailyCount: 0,
+  lastDayReset: Date.now(),
+
+  canMakeRequest() {
+    const now = Date.now();
+    
+    // Reset daily counter at midnight
+    if (now - this.lastDayReset > 24 * 60 * 60 * 1000) {
+      this.dailyCount = 0;
+      this.lastDayReset = now;
+      console.log("📅 Daily rate limit reset");
+    }
+
+    // Check daily limit
+    if (this.dailyCount >= this.maxRequestsPerDay) {
+      console.warn("⚠️ Daily API quota exhausted (100/day)");
+      return false;
+    }
+
+    // Clean old requests (older than 1 minute)
+    this.requests = this.requests.filter(time => now - time < 60000);
+
+    // Check per-minute limit
+    if (this.requests.length >= this.maxRequestsPerMinute) {
+      console.warn("⚠️ Rate limit: Too many requests per minute");
+      return false;
+    }
+
+    return true;
+  },
+
+  recordRequest() {
+    this.requests.push(Date.now());
+    this.dailyCount++;
+    console.log(`📊 API Usage: ${this.dailyCount}/${this.maxRequestsPerDay} daily, ${this.requests.length}/${this.maxRequestsPerMinute} per minute`);
+  }
+};
+
+// --- SOURCE AUTHORITY SCORING ---
+const SOURCE_AUTHORITY = {
+  // Highest authority (score: 100)
+  highAuthority: ['.gov', '.edu', 'wikipedia.org', 'britannica.com'],
+  // High authority (score: 80)
+  techAuthority: ['github.com', 'stackoverflow.com', 'developer.mozilla.org', 'docs.microsoft.com', 'cloud.google.com', 'aws.amazon.com'],
+  // News authority (score: 70)
+  newsAuthority: ['reuters.com', 'bbc.com', 'nytimes.com', 'theguardian.com', 'techcrunch.com', 'theverge.com', 'wired.com', 'arstechnica.com'],
+  // Medium authority (score: 50)
+  mediumAuthority: ['medium.com', 'dev.to', 'freecodecamp.org', 'geeksforgeeks.org', 'tutorialspoint.com']
+};
+
+function getSourceAuthorityScore(url) {
+  const urlLower = url.toLowerCase();
+  
+  for (const domain of SOURCE_AUTHORITY.highAuthority) {
+    if (urlLower.includes(domain)) return { score: 100, tier: '🏛️ Official' };
+  }
+  for (const domain of SOURCE_AUTHORITY.techAuthority) {
+    if (urlLower.includes(domain)) return { score: 80, tier: '💻 Tech Authority' };
+  }
+  for (const domain of SOURCE_AUTHORITY.newsAuthority) {
+    if (urlLower.includes(domain)) return { score: 70, tier: '📰 News' };
+  }
+  for (const domain of SOURCE_AUTHORITY.mediumAuthority) {
+    if (urlLower.includes(domain)) return { score: 50, tier: '📝 Community' };
+  }
+  
+  return { score: 30, tier: '🌐 Web' };
+}
+
+// --- ENHANCED SCRAPE FUNCTION ---
+async function scrapeUrl(url, options = {}) {
+  const { maxLength = 3500, timeout = 8000 } = options;
+  
+  // Skip video URLs (can't scrape)
+  if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')) {
+    return null;
+  }
+
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
       },
     });
-    clearTimeout(timeout);
+    clearTimeout(timeoutId);
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.log(`⚠️ Scrape failed for ${url}: HTTP ${response.status}`);
+      return null;
+    }
 
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Remove unwanted elements
-    $("script, style, nav, footer, iframe, noscript").remove();
+    // Remove unwanted elements (expanded list)
+    $("script, style, nav, footer, iframe, noscript, aside, .sidebar, .advertisement, .ad, .ads, .cookie-banner, .popup, .modal, header, .nav, .menu, .comments, .related-posts").remove();
 
-    // Extract main text
-    let text = $("body").text();
+    // Try to extract main content first (more relevant text)
+    let text = "";
+    const mainSelectors = ['article', 'main', '.content', '.post-content', '.article-body', '.entry-content', '#content', '.main-content'];
+    
+    for (const selector of mainSelectors) {
+      const mainContent = $(selector).text();
+      if (mainContent && mainContent.length > 200) {
+        text = mainContent;
+        break;
+      }
+    }
+
+    // Fallback to body if no main content found
+    if (!text || text.length < 200) {
+      text = $("body").text();
+    }
+
+    // Clean up whitespace
     text = text.replace(/\s+/g, " ").trim();
 
-    // Limit length
-    return text.substring(0, 1500); // Return first 1500 chars
+    // Extract metadata for context
+    const metaDescription = $('meta[name="description"]').attr('content') || '';
+    const pageTitle = $('title').text() || '';
+
+    // Combine metadata with content
+    let enrichedContent = '';
+    if (metaDescription) {
+      enrichedContent += `Summary: ${metaDescription}\n\n`;
+    }
+    enrichedContent += text.substring(0, maxLength);
+
+    console.log(`✅ Scraped ${url.substring(0, 50)}... (${enrichedContent.length} chars)`);
+    return enrichedContent;
+
   } catch (error) {
-    console.error(`Error scraping ${url}:`, error.message);
+    if (error.name === 'AbortError') {
+      console.log(`⏱️ Scrape timeout for ${url}`);
+    } else {
+      console.error(`❌ Scrape error for ${url}:`, error.message);
+    }
     return null;
   }
 }
 
-// --- Web Search Helper Function ---
+// --- CACHE HELPER FUNCTIONS ---
+function getCacheKey(query) {
+  return query.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function getCachedResult(query) {
+  const key = getCacheKey(query);
+  const cached = searchCache.get(key);
+  
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    console.log(`📦 Cache HIT for: "${query.substring(0, 30)}..."`);
+    return cached.data;
+  }
+  
+  if (cached) {
+    searchCache.delete(key); // Clean expired cache
+  }
+  
+  return null;
+}
+
+function setCachedResult(query, data) {
+  const key = getCacheKey(query);
+  searchCache.set(key, { data, timestamp: Date.now() });
+  
+  // Limit cache size (max 50 entries)
+  if (searchCache.size > 50) {
+    const oldestKey = searchCache.keys().next().value;
+    searchCache.delete(oldestKey);
+  }
+  
+  console.log(`💾 Cached result for: "${query.substring(0, 30)}..." (cache size: ${searchCache.size})`);
+}
+
+// --- ENHANCED WEB SEARCH FUNCTION ---
 async function performWebSearch(query) {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
   const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
 
   if (!apiKey || !cx) {
-    console.log("❌ Keys missing! Aborting search.");
+    console.log("❌ Google Search API keys missing! Aborting search.");
     return null;
   }
 
-  // --- UPDATED LOGIC: Boost YouTube results for learning queries ---
-  let finalQuery = query;
-  let isVideoMode = false; // <--- NEW: Flag to track if we are in video mode
-
-  if (query.toLowerCase().match(/(tutorial|learning|guide|course|how to)/)) {
-    finalQuery += " youtube";
-    isVideoMode = true; // <--- Set flag
-    console.log(
-      `🎥 Educational query detected. Adding 'youtube' to search: "${finalQuery}"`
-    );
+  // Check cache first
+  const cachedResult = getCachedResult(query);
+  if (cachedResult) {
+    return cachedResult;
   }
-  // ----------------------------------------------------------------
+
+  // Check rate limits
+  if (!rateLimiter.canMakeRequest()) {
+    console.log("⚠️ Rate limited - returning cached or null");
+    return null;
+  }
+
+  // --- QUERY ENHANCEMENT ---
+  let finalQuery = query;
+  let isVideoMode = false;
+  let queryIntent = 'general';
+
+  // Detect query intent for better handling
+  const queryLower = query.toLowerCase();
+  
+  if (queryLower.match(/(tutorial|learning|guide|course|how to|learn)/)) {
+    finalQuery += " youtube";
+    isVideoMode = true;
+    queryIntent = 'educational';
+    console.log(`🎥 Educational query detected: "${finalQuery}"`);
+  } else if (queryLower.match(/(news|latest|today|breaking|update)/)) {
+    queryIntent = 'news';
+    console.log(`📰 News query detected: "${query}"`);
+  } else if (queryLower.match(/(buy|price|review|best|vs|comparison|deal)/)) {
+    queryIntent = 'shopping';
+    console.log(`🛒 Shopping/comparison query detected: "${query}"`);
+  } else if (queryLower.match(/(code|programming|developer|api|library|framework)/)) {
+    queryIntent = 'technical';
+    console.log(`💻 Technical query detected: "${query}"`);
+  }
 
   try {
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
+    // Record API request
+    rateLimiter.recordRequest();
+    
+    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
       finalQuery
-    )}&num=6&gl=in`;
+    )}&num=8&gl=in&safe=active`;
 
-    const response = await fetch(url);
+    console.log(`🔎 Searching: "${finalQuery}"`);
+    const response = await fetch(searchUrl);
     const data = await response.json();
 
-    if (!data.items || data.items.length === 0) return null;
+    if (data.error) {
+      console.error("❌ Google API Error:", data.error.message);
+      return null;
+    }
 
-    let markdownOutput = "### 🌐 Real-Time Web Results\n\n";
+    if (!data.items || data.items.length === 0) {
+      console.log("❌ No search results found");
+      return null;
+    }
 
-    data.items.forEach((item) => {
-      const title = item.title || "No Title";
-      const link = item.link;
-      const snippet = item.snippet || "";
+    // --- SCORE AND SORT RESULTS BY AUTHORITY ---
+    const scoredResults = data.items.map(item => ({
+      ...item,
+      authorityInfo: getSourceAuthorityScore(item.link)
+    })).sort((a, b) => b.authorityInfo.score - a.authorityInfo.score);
 
-      let imageUrl = "";
+    // --- BUILD IMAGE CAROUSEL DATA ---
+    const images = [];
+    scoredResults.forEach((item) => {
       if (item.pagemap) {
+        let imageUrl = null;
+        let imageAlt = item.title || 'Image';
+        
+        // Try multiple image sources
         if (item.pagemap.cse_image?.length > 0) {
           imageUrl = item.pagemap.cse_image[0].src;
         } else if (item.pagemap.metatags?.[0]?.["og:image"]) {
           imageUrl = item.pagemap.metatags[0]["og:image"];
+        } else if (item.pagemap.cse_thumbnail?.length > 0) {
+          imageUrl = item.pagemap.cse_thumbnail[0].src;
+        }
+
+        // Get better alt text from og:title or page title
+        if (item.pagemap.metatags?.[0]?.["og:title"]) {
+          imageAlt = item.pagemap.metatags[0]["og:title"];
+        }
+
+        if (imageUrl && !imageUrl.includes('placeholder') && images.length < 6) {
+          images.push({ url: imageUrl, alt: imageAlt, source: item.link });
         }
       }
+    });
 
+    // --- BUILD MARKDOWN OUTPUT ---
+    let markdownOutput = "";
+
+    // Add images section (for non-video queries)
+    if (images.length > 0 && !isVideoMode) {
+      markdownOutput += "### 🖼️ Related Images\n\n";
+      markdownOutput += `**IMAGE_CAROUSEL_DATA:** ${JSON.stringify(images)}\n\n`;
+    }
+
+    markdownOutput += "### 🌐 Web Results (Sorted by Authority)\n\n";
+
+    scoredResults.slice(0, 6).forEach((item, index) => {
+      const title = item.title || "No Title";
+      const link = item.link;
+      const snippet = item.snippet || "";
       const isVideo = link.includes("youtube.com") || link.includes("youtu.be");
+      const authorityBadge = item.authorityInfo.tier;
 
-      markdownOutput += `### [${title}](${link})\n`;
+      markdownOutput += `#### ${index + 1}. [${title}](${link})\n`;
+      markdownOutput += `${authorityBadge} | Score: ${item.authorityInfo.score}/100\n\n`;
 
       if (isVideo) {
         markdownOutput += `**▶ Watch Video:** ${link}\n\n`;
-      } else if (imageUrl && !isVideoMode) {
-        // --- FIX: SUPPRESS IMAGES IN VIDEO MODE ---
-        // If we are in "Video Mode" (isVideoMode = true), we intentionally SKIP adding the static image.
-        // This prevents duplicate thumbnails appearing alongside the video players.
-        markdownOutput += `![Image](${imageUrl})\n`;
       }
 
       markdownOutput += `> ${snippet}\n\n`;
-      markdownOutput += `---\n`;
+      markdownOutput += `---\n\n`;
     });
 
+    // --- DEEP RESEARCH: Scrape top 3 authoritative results ---
+    console.log("🕵️ Deep Research: Scraping top 3 authoritative results...");
+    
+    // Filter out video URLs for scraping, take top 3
+    const scrapableResults = scoredResults
+      .filter(item => !item.link.includes('youtube.com') && !item.link.includes('youtu.be'))
+      .slice(0, 3);
 
-    // --- DEEP RESEARCH MODE: Scrape top 2 results ---
-    console.log("🕵️ Deep Research: Scraping top 2 results...");
-    const topResults = data.items.slice(0, 2);
-    const scrapePromises = topResults.map((item) => scrapeUrl(item.link));
+    const scrapePromises = scrapableResults.map((item) => 
+      scrapeUrl(item.link, { maxLength: 3500, timeout: 8000 })
+    );
     const scrapedContents = await Promise.all(scrapePromises);
 
     markdownOutput += `\n### 🕵️ Deep Research Insights\n\n`;
 
-    topResults.forEach((item, index) => {
+    let insightsAdded = 0;
+    scrapableResults.forEach((item, index) => {
       const content = scrapedContents[index];
-      if (content) {
-        markdownOutput += `#### Extracted from [${item.title}](${item.link}):\n`;
-        markdownOutput += `> "${content}..."\n\n`;
+      if (content && content.length > 100) {
+        markdownOutput += `#### From [${item.title}](${item.link}) ${item.authorityInfo.tier}\n`;
+        markdownOutput += `${content}\n\n`;
+        insightsAdded++;
       }
     });
 
+    if (insightsAdded === 0) {
+      markdownOutput += `> No detailed content could be extracted from the sources.\n\n`;
+    }
+
+    // Add query metadata for AI context
+    markdownOutput += `\n---\n**Query Metadata:**\n`;
+    markdownOutput += `- Query Intent: ${queryIntent}\n`;
+    markdownOutput += `- Results Retrieved: ${scoredResults.length}\n`;
+    markdownOutput += `- Sources Scraped: ${insightsAdded}\n`;
+    markdownOutput += `- Images Found: ${images.length}\n`;
+
+    // Cache the result
+    setCachedResult(query, markdownOutput);
+
     return markdownOutput;
+
   } catch (error) {
-    console.error("Web search error:", error);
+    console.error("❌ Web search error:", error);
     return null;
   }
 }
@@ -444,11 +688,12 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
   }
 
-  // --- TOOL PROMPT INJECTION ---
+  // --- TOOL PROMPT INJECTION (APPEND TO PRESERVE CONTEXT) ---
+  // Tool-specific prompts are APPENDED to preserve any context (like uploaded data)
   if (toolId && TOOL_PROMPTS[toolId]) {
-    console.log(`🔧 Injecting system prompt for tool: ${toolId}`);
-    // Append the tool prompt to the system message
-    finalSystemMessage += `\n\nSYSTEM_INSTRUCTION:\n${TOOL_PROMPTS[toolId]}`;
+    // APPEND tool prompt to existing system message (which may contain data context)
+    finalSystemMessage = finalSystemMessage + "\n\n---\n\n" + TOOL_PROMPTS[toolId];
+    console.log(`🔧 Tool Mode Active: "${toolId}" - Appended specialized prompt (${TOOL_PROMPTS[toolId].length} chars)`);
   }
 
   let searchResults = null;

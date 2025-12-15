@@ -26,29 +26,9 @@ let currentToolId = null; // --- NEW: Track the active tool ID ---
 // The backend now injects the correct prompt based on the toolId sent in the request.
 const TOOL_SYSTEM_PROMPTS = {}; // Kept empty object to avoid reference errors
 
-// --- NEW: Tool Welcome Messages ---
-const TOOL_WELCOME_MESSAGES = {
-  canvas:
-    "🎨 **You are in Canvas mode!**\n\nI can generate code with a live preview. Try asking me to:\n- Create a landing page\n- Build a React component\n- Design a dashboard UI\n\nWhat would you like me to build?",
-  websearch:
-    "🌐 **You are in Web Search mode!**\n\nI have access to real-time web data. Ask me about:\n- Latest news and events\n- Current trends and statistics\n- Recent developments\n\nWhat would you like to know?",
-  dataanalysis:
-    "📊 **You are in Data Analysis mode!**\n\nI can help you analyze data and generate insights. Try:\n- Uploading a CSV or describing your data\n- Asking for statistical summaries\n- Requesting data visualizations\n\nWhat data would you like to analyze?",
-  webscraper:
-    "🔍 **You are in Web Scraper mode!**\n\nI can help extract structured data from websites. Provide me with:\n- A URL to scrape\n- The type of data you need\n- Output format preference\n\nWhat would you like to scrape?",
-  writer:
-    "✍️ **You are in Writing Assistant mode!**\n\nI can help you with:\n- Drafting emails and documents\n- Editing and proofreading\n- Content creation\n- Improving clarity and style\n\nWhat would you like me to write or improve?",
-  regexbuilder:
-    "🧩 **You are in Regex Builder mode!**\n\nDescribe what you want to match, and I'll generate the Regular Expression for you.\n\nExample: 'Match any email address ending in .com'",
-  sqlgenerator:
-    "🗄️ **You are in SQL Generator mode!**\n\nDescribe your data query in plain English, and I'll write the SQL for you.\n\nExample: 'Show me all users who signed up last week'",
-  apitester:
-    "🔌 **You are in API Tester mode!**\n\nI can help you construct and test API requests.\n\nTell me the endpoint and method, and I'll help you structure the request!",
-  resumebuilder:
-    "📄 **You are in Resume Builder mode!**\n\nI can help you craft a professional resume.\n\nTell me about your experience, or paste your current resume for improvements!",
-  emailtemplates:
-    "✉️ **You are in Email Templates mode!**\n\nI can generate professional emails for any situation.\n\nTell me who you're writing to and the purpose of the email!",
-};
+// --- Tool Welcome Messages ---
+// NOTE: TOOL_MESSAGES is now defined in tools.js (loaded before chat.js)
+// Using TOOL_MESSAGES instead of duplicate TOOL_WELCOME_MESSAGES
 
 // --- NEW: Inline Suggestion Prompts Pool (varied lengths) ---
 const INLINE_SUGGESTION_PROMPTS = [
@@ -264,18 +244,7 @@ function handleToolModeFromURL() {
 
   console.log("🔧 Tool mode detected:", toolParam);
 
-  const toolInfo = {
-    canvas: { name: "Canvas", icon: "fa-solid fa-file-invoice" },
-    websearch: { name: "Web Search", icon: "fa-solid fa-earth-americas" },
-    dataanalysis: { name: "Data Analysis", icon: "fa-solid fa-chart-line" },
-    webscraper: { name: "Web Scraper", icon: "fa-solid fa-spider" },
-    writer: { name: "Writer", icon: "fa-solid fa-pen-nib" },
-    regexbuilder: { name: "Regex", icon: "fa-solid fa-asterisk" },
-    sqlgenerator: { name: "SQL", icon: "fa-solid fa-database" },
-    apitester: { name: "API Tester", icon: "fa-solid fa-plug" },
-    resumebuilder: { name: "Resume", icon: "fa-solid fa-file-lines" },
-    emailtemplates: { name: "Email", icon: "fa-solid fa-envelope" },
-  };
+  // Use global TOOL_INFO from tools.js (loaded before chat.js)
 
   switch (toolParam) {
     case "canvas":
@@ -295,16 +264,16 @@ function handleToolModeFromURL() {
     toolsWrapper.style.display = "none";
   }
 
-  if (toolInfo[toolParam] && typeof showSelectedToolIndicator === "function") {
+  if (TOOL_INFO[toolParam] && typeof showSelectedToolIndicator === "function") {
     showSelectedToolIndicator(
       toolParam,
-      toolInfo[toolParam].icon,
-      toolInfo[toolParam].name,
+      TOOL_INFO[toolParam].icon,
+      TOOL_INFO[toolParam].name,
       true
     );
   }
 
-  const welcomeMessage = TOOL_WELCOME_MESSAGES[toolParam];
+  const welcomeMessage = TOOL_MESSAGES[toolParam];
   if (welcomeMessage && welcomeScreen) {
     welcomeScreen.style.display = "none";
     addMessage(welcomeMessage, "ai", true);
@@ -402,27 +371,52 @@ async function buildContextualSystemMessage(attachment) {
   let contextAddon = "";
 
   if (attachment && attachment.text) {
-    let pdfContext = attachment.text;
+    let contextText = attachment.text;
+    const attachmentType = attachment.type || 'pdf';
 
-    if (pdfContext.length > TOKEN_LIMIT * 4) {
-      pdfContext = pdfContext.substring(0, TOKEN_LIMIT * 4);
+    // Truncate if too long
+    if (contextText.length > TOKEN_LIMIT * 4) {
+      contextText = contextText.substring(0, TOKEN_LIMIT * 4);
       if (typeof showToast === "function")
-        showToast("Note: The PDF is very large and was truncated.");
+        showToast("Note: The file content was truncated due to size.");
     }
 
-    contextAddon = `
+    // Use different context labels based on file type
+    if (attachmentType === 'data') {
+      // Data file (CSV, JSON, Excel) - use format that matches tool_prompts.json
+      contextAddon = `
+--- UPLOADED DATA FILE ---
+The user has uploaded a data file for analysis. Here is the parsed data:
+
+${contextText}
+--- END UPLOADED DATA FILE ---
+
+IMPORTANT: Use the ACTUAL data above. Do NOT use mock or sample data. Quote specific numbers from this dataset.
+`;
+    } else {
+      // PDF or other text documents
+      contextAddon = `
 --- CONTEXT: ATTACHED PDF DOCUMENT ---
 The user has provided the following text extracted from a PDF document.
 
 PDF CONTENT:
-${pdfContext}
+${contextText}
 --- END PDF CONTEXT ---
 `;
+    }
   }
 
   if (currentToolId) {
     console.log(`🔧 Tool active: ${currentToolId}`);
   }
+
+  // DEBUG: Log context being built
+  console.log("📝 CONTEXT BEING BUILT:", {
+    hasAttachment: !!attachment,
+    attachmentType: attachment?.type,
+    contextAddonLength: contextAddon.length,
+    contextAddonPreview: contextAddon.substring(0, 300)
+  });
 
   return getSystemMessage(contextAddon);
 }
@@ -819,6 +813,9 @@ async function streamTextToBubble(textToStream, bubble) {
     .querySelectorAll("pre code")
     .forEach((block) => hljs.highlightElement(block));
   enhanceCodeBlocks(bubble);
+  
+  // Render any chartdata blocks as interactive charts
+  renderChartBlocks(bubble);
 }
 
 /**
@@ -943,6 +940,161 @@ function formatLanguageName(lang) {
     languageMap[lang.toLowerCase()] ||
     lang.charAt(0).toUpperCase() + lang.slice(1)
   );
+}
+
+/**
+ * Renders chart blocks from AI responses
+ * Detects ```chartdata blocks and replaces with Chart.js charts
+ */
+function renderChartBlocks(container) {
+  // Find all code blocks with 'chartdata' language
+  const codeBlocks = container.querySelectorAll('pre code.language-chartdata, pre code.hljs.language-chartdata');
+  
+  codeBlocks.forEach((codeBlock, index) => {
+    try {
+      const jsonStr = codeBlock.textContent.trim();
+      const chartConfig = JSON.parse(jsonStr);
+      
+      // Create chart container
+      const chartId = `chart-${Date.now()}-${index}`;
+      const chartContainer = document.createElement('div');
+      chartContainer.className = 'chart-container';
+      chartContainer.id = chartId;
+      chartContainer.style.cssText = 'height: 300px; width: 100%; margin: 16px 0; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px;';
+      
+      const canvas = document.createElement('canvas');
+      chartContainer.appendChild(canvas);
+      
+      // Replace the pre block with chart container
+      const preBlock = codeBlock.closest('pre');
+      const wrapper = preBlock.closest('.code-block-wrapper');
+      if (wrapper) {
+        wrapper.replaceWith(chartContainer);
+      } else {
+        preBlock.replaceWith(chartContainer);
+      }
+      
+      // Render chart using Chart.js
+      if (typeof Chart !== 'undefined') {
+        const ctx = canvas.getContext('2d');
+        
+        // Build Chart.js config from our format
+        const chartData = {
+          labels: chartConfig.labels || [],
+          datasets: (chartConfig.datasets || []).map((ds, i) => ({
+            label: ds.label || `Dataset ${i + 1}`,
+            data: ds.data || [],
+            backgroundColor: ds.backgroundColor || getChartColor(i, 0.7),
+            borderColor: ds.borderColor || getChartColor(i, 1),
+            borderWidth: 2,
+            tension: 0.3
+          }))
+        };
+        
+        new Chart(ctx, {
+          type: chartConfig.type || 'bar',
+          data: chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: { color: '#e5e7eb', font: { family: 'Inter, sans-serif' } }
+              },
+              title: {
+                display: !!chartConfig.title,
+                text: chartConfig.title || '',
+                color: '#f3f4f6'
+              }
+            },
+            scales: chartConfig.type !== 'pie' && chartConfig.type !== 'doughnut' ? {
+              x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+              y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } }
+            } : undefined
+          }
+        });
+        
+        console.log('📊 Chart rendered:', chartConfig.type);
+      } else {
+        chartContainer.innerHTML = '<p style="color: #ef4444; text-align: center;">Chart.js not loaded</p>';
+      }
+    } catch (err) {
+      console.error('Chart render error:', err);
+    }
+  });
+  
+  // Also check for chartdata in raw text (triple backticks with chartdata)
+  const rawChartMatch = container.innerHTML.match(/```chartdata\s*([\s\S]*?)```/g);
+  if (rawChartMatch) {
+    rawChartMatch.forEach((match, index) => {
+      try {
+        const jsonStr = match.replace(/```chartdata\s*/, '').replace(/```$/, '').trim();
+        const chartConfig = JSON.parse(jsonStr);
+        
+        const chartId = `chart-raw-${Date.now()}-${index}`;
+        const chartHTML = `
+          <div class="chart-container" id="${chartId}" style="height: 300px; width: 100%; margin: 16px 0; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px;">
+            <canvas></canvas>
+          </div>
+        `;
+        
+        container.innerHTML = container.innerHTML.replace(match, chartHTML);
+        
+        // Render after DOM update
+        setTimeout(() => {
+          const chartDiv = document.getElementById(chartId);
+          if (chartDiv && typeof Chart !== 'undefined') {
+            const canvas = chartDiv.querySelector('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            new Chart(ctx, {
+              type: chartConfig.type || 'bar',
+              data: {
+                labels: chartConfig.labels || [],
+                datasets: (chartConfig.datasets || []).map((ds, i) => ({
+                  label: ds.label || `Dataset ${i + 1}`,
+                  data: ds.data || [],
+                  backgroundColor: getChartColor(i, 0.7),
+                  borderColor: getChartColor(i, 1),
+                  borderWidth: 2
+                }))
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'top', labels: { color: '#e5e7eb' } }
+                },
+                scales: chartConfig.type !== 'pie' ? {
+                  x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
+                  y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } }
+                } : undefined
+              }
+            });
+          }
+        }, 100);
+        
+      } catch (err) {
+        console.error('Raw chart parse error:', err);
+      }
+    });
+  }
+}
+
+/**
+ * Get chart color by index
+ */
+function getChartColor(index, alpha = 1) {
+  const colors = [
+    `rgba(102, 126, 234, ${alpha})`,  // Purple-blue
+    `rgba(245, 158, 11, ${alpha})`,   // Orange
+    `rgba(16, 185, 129, ${alpha})`,   // Green
+    `rgba(236, 72, 153, ${alpha})`,   // Pink
+    `rgba(139, 92, 246, ${alpha})`,   // Purple
+    `rgba(6, 182, 212, ${alpha})`     // Cyan
+  ];
+  return colors[index % colors.length];
 }
 
 function copyToClipboard(text, btnElement) {
