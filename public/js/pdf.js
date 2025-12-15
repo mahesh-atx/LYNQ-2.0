@@ -73,15 +73,6 @@ async function handlePdfUpload(event) {
                 stats: parsedData.stats
             };
             
-            // DEBUG: Log data attachment creation
-            console.log("📊 DATA FILE ATTACHED:", {
-                fileName: file.name,
-                rows: parsedData.stats.rowCount,
-                cols: parsedData.stats.columnCount,
-                summaryLength: aiSummary.length,
-                summaryPreview: aiSummary.substring(0, 200)
-            });
-            
             pill.remove();
             createDataFilePill(file.name, parsedData.stats);
             

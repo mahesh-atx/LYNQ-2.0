@@ -410,14 +410,6 @@ ${contextText}
     console.log(`🔧 Tool active: ${currentToolId}`);
   }
 
-  // DEBUG: Log context being built
-  console.log("📝 CONTEXT BEING BUILT:", {
-    hasAttachment: !!attachment,
-    attachmentType: attachment?.type,
-    contextAddonLength: contextAddon.length,
-    contextAddonPreview: contextAddon.substring(0, 300)
-  });
-
   return getSystemMessage(contextAddon);
 }
 

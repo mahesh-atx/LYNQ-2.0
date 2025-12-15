@@ -651,7 +651,7 @@ body:not(.dark-mode) .guest-banner-content i {
   margin: 12px 0;
   /* NEW: Added text wrapping to remove horizontal scrollbar */
   white-space: pre-wrap;
-  word-break: break-all;
+  /* word-break: break-all; */
 }
 
 .bubble ul,
