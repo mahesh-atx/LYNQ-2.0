@@ -1,46 +1,31 @@
-﻿/*
+/*
   script.js
   This file contains shared logic and state used across ALL pages.
   
-  --- UPDATED: Fixed Auth Flicker & Theme Logic ---
+  --- UPDATED: Refactored for modular architecture ---
+  Global state is now managed by store.js
+  Sidebar logic moved to sidebar.js
+  Theme logic moved to theme.js
+  Model selection moved to model-selector.js
+  Chat list moved to chat-list.js
 */
 
-// --- GLOBAL STATE & API CONFIG ---
-let mainChatHistory = [];
-
-// Firebase config is now centralized in auth.js (FIREBASE_CONFIG)
-
-let currentUser = null; // Store the logged-in Firebase user object
-
-// recentChats will be populated asynchronously
-let recentChats = [];
-let isNewChat = true;
-// activeChatId tracks the chatId (Number from Date.now())
-let activeChatId = null;
+// --- GLOBAL STATE ---
+// NOTE: These variables are now provided by store.js via backward compatibility proxies
+// Do NOT redeclare them here - they are accessed via window.mainChatHistory, window.currentUser, etc.
 
 // --- API Configuration ---
 const API_URL = "/api/generate";
 const CHAT_API_BASE = "/api/chats"; // New base URL for chat CRUD
-let isResponding = false;
-let currentController = null;
-let currentSelectedModel = "llama-3.1-8b-instant"; // Default model (can be updated by fetch)
-let availableModels = []; // To store fetched models
-let systemPromptCache = null; // Cache for the loaded system prompt
 
 // --- SHARED DOM ELEMENTS ---
+// NOTE: sidebar, mobileOverlay, and swipe variables are now in sidebar.js
 let body;
 let toast;
 let confirmDeleteModal;
 let confirmDeleteText;
 let confirmDeleteCancelBtn;
 let confirmDeleteConfirmBtn;
-let sidebar;
-let mobileOverlay;
-
-// --- NEW: SWIPE AND CLICK OUTSIDE LOGIC GLOBALS ---
-let touchStartX = 0;
-let touchEndX = 0;
-const SWIPE_THRESHOLD = 50; // Minimum distance for a recognized swipe
 
 // --- NEW: Auth Helper ---
 function handleAuthError() {
@@ -334,6 +319,29 @@ async function getApiResponse(
     }
   }
 
+  // Determine effective canvas mode (web vs doc)
+  let effectiveCanvasMode = canvasMode;
+  
+  if (canvasMode) {
+    const p = prompt.toLowerCase();
+    // Keywords indicating document/text intent rather than app/web intent
+    if (
+        p.includes("resume") || 
+        p.includes("essay") || 
+        p.includes("article") || 
+        p.includes("cover letter") || 
+        p.includes("summary") || 
+        p.includes("report") || 
+        p.includes("blog post") ||
+        (p.includes("markdown") && !p.includes("html"))
+    ) {
+        effectiveCanvasMode = "doc";
+        console.log("📝 Canvas Intent: Document Mode Detected");
+    } else {
+        effectiveCanvasMode = "web"; // Default to web/app mode
+    }
+    window.currentCanvasMode = effectiveCanvasMode; // EXPOSE GLOBAL
+  }
 
   try {
     const response = await fetch(API_URL, {
@@ -344,9 +352,10 @@ async function getApiResponse(
         systemMessage: systemMessage,
         history: history,
         model: currentSelectedModel,
+        max_tokens: 4000,
         // Use the button state instead of the keyword guess
         webSearch: webSearchActive,
-        canvasMode: canvasMode, // NEW: Pass canvas mode flag
+        canvasMode: effectiveCanvasMode, // Use detected mode
         toolId: toolId, // NEW: Pass toolId
         attachment: attachment // NEW: Pass attachment
       }),
@@ -1153,7 +1162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* --- SELECTED TOOL INDICATOR FUNCTIONS --- */
-let currentSelectedTool = null;
+// NOTE: currentSelectedTool is now managed by store.js
 
 function showSelectedToolIndicator(toolId, iconClass, toolName, hideXButton = false) {
   const indicator = document.getElementById("selected-tool-indicator");
@@ -1382,120 +1391,11 @@ function handleMobileAction(action) {
 }
 
 /* --- MOBILE MODEL SHEET FUNCTIONS --- */
-
-// Swipe tracking for model sheet
-let modelSheetTouchStartY = 0;
-let modelSheetTouchCurrentY = 0;
-
-/**
- * Toggles the mobile model sheet visibility
- */
-function toggleMobileModelSheet(show) {
-  const sheet = document.getElementById("mobile-model-sheet");
-  const overlay = document.getElementById("mobile-model-overlay");
-
-  if (show) {
-    sheet.classList.add("active");
-    overlay.classList.add("active");
-    // Initialize swipe-to-close
-    initModelSheetSwipe(sheet);
-  } else {
-    sheet.classList.remove("active");
-    overlay.classList.remove("active");
-    sheet.style.transform = ''; // Reset any drag transform
-  }
-}
-
-/**
- * Initialize swipe-to-close for model sheet
- */
-function initModelSheetSwipe(sheet) {
-  if (sheet._swipeInitialized) return;
-  sheet._swipeInitialized = true;
-
-  sheet.addEventListener('touchstart', (e) => {
-    modelSheetTouchStartY = e.touches[0].clientY;
-    modelSheetTouchCurrentY = modelSheetTouchStartY;
-    sheet.style.transition = 'none';
-  }, { passive: true });
-
-  sheet.addEventListener('touchmove', (e) => {
-    modelSheetTouchCurrentY = e.touches[0].clientY;
-    const diff = modelSheetTouchCurrentY - modelSheetTouchStartY;
-    
-    // Only allow dragging down
-    if (diff > 0) {
-      sheet.style.transform = `translateY(${diff}px)`;
-    }
-  }, { passive: true });
-
-  sheet.addEventListener('touchend', () => {
-    sheet.style.transition = 'transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)';
-    const diff = modelSheetTouchCurrentY - modelSheetTouchStartY;
-    
-    // Close if dragged more than 100px down
-    if (diff > 100) {
-      toggleMobileModelSheet(false);
-    } else {
-      sheet.style.transform = 'translateY(0)';
-    }
-  }, { passive: true });
-}
-
-/**
- * Selects a model from the mobile model sheet
- */
-function selectMobileSheetModel(element, modelId, displayName) {
-  // Update selected state in sheet
-  const options = document.querySelectorAll('.model-sheet-option');
-  options.forEach(opt => opt.classList.remove('selected'));
-  element.classList.add('selected');
-
-  // Define icons mapping
-  const modelIcons = {
-    'llama-3.1-8b-instant': { faIcon: 'fa-bolt', color: '#f59e0b' },
-    'openai/gpt-oss-20b': { faIcon: 'fa-cube', color: '#10b981' },
-    'openai/gpt-oss-120b': { faIcon: 'fa-fire', color: '#8b5cf6' }
-  };
-
-  const iconData = modelIcons[modelId] || { faIcon: 'fa-cube', color: '#a1a1aa' };
-
-  // Update input model name button
-  const inputModelName = document.getElementById('input-model-name');
-  if (inputModelName) {
-    inputModelName.parentElement.innerHTML = `
-      <span id="input-model-name" style="display: flex; align-items: center; gap: 6px;">
-        <i class="fa-solid ${iconData.faIcon}" style="color: ${iconData.color}; font-size: 0.8rem;"></i>
-        ${displayName}
-      </span>
-      <i class="fa-solid fa-chevron-down" style="margin-left: 4px;"></i>
-    `;
-  }
-
-  // Also update desktop model selector to stay in sync
-  const desktopOptions = document.querySelectorAll('.input-model-option');
-  desktopOptions.forEach(opt => {
-    opt.classList.remove('selected');
-    if (opt.getAttribute('onclick')?.includes(modelId)) {
-      opt.classList.add('selected');
-    }
-  });
-
-  // Store selected model globally
-  currentSelectedModel = modelId;
-
-  // Close sheet after selection with slight delay for visual feedback
-  setTimeout(() => toggleMobileModelSheet(false), 200);
-}
-
-/**
- * Opens the model sheet when clicking on model button (mobile only)
- */
-function handleMobileModelClick() {
-  if (window.innerWidth <= 768) {
-    toggleMobileModelSheet(true);
-  }
-}
+// NOTE: Mobile model sheet functions moved to model-selector.js
+// - toggleMobileModelSheet()
+// - initModelSheetSwipe()
+// - selectMobileSheetModel()
+// - handleMobileModelClick()
 
 // ============================================
 // === PROFILE AVATAR PICKER FUNCTIONALITY ===

@@ -519,6 +519,50 @@
                   <span>Preview</span>
                 </button>
               </div>
+
+              <!-- Fixed Formatting Toolbar -->
+              <div
+                id="formatting-toolbar"
+                class="formatting-toolbar disabled"
+                style="
+                  display: flex;
+                  gap: 5px;
+                  margin-left: 20px;
+                  transition: opacity 0.3s;
+                  opacity: 0.5;
+                  pointer-events: none;
+                "
+              >
+                <button
+                  title="Bold"
+                  data-format="bold"
+                  class="tool-btn-round little"
+                >
+                  <i class="fa-solid fa-bold"></i>
+                </button>
+                <button
+                  title="Italic"
+                  data-format="italic"
+                  class="tool-btn-round little"
+                >
+                  <i class="fa-solid fa-italic"></i>
+                </button>
+                <button
+                  title="Heating"
+                  data-format="heading"
+                  class="tool-btn-round little"
+                >
+                  <i class="fa-solid fa-heading"></i>
+                </button>
+                <button
+                  title="List"
+                  data-format="list"
+                  class="tool-btn-round little"
+                >
+                  <i class="fa-solid fa-list-ul"></i>
+                </button>
+              </div>
+
               <div class="canvas-actions">
                 <button
                   class="tool-btn-round"
@@ -601,11 +645,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Monaco Editor -->
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <!-- Monaco Editor: Lazy loaded when Canvas mode is activated (see canvas.js) -->
 
     <script src="js/components.js"></script>
     <script src="js/auth.js"></script>
+    <!-- NEW: Modular files extracted from script.js -->
+    <script src="js/store.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/model-selector.js"></script>
+    <script src="js/chat-list.js"></script>
     <script src="js/script.js"></script>
     <!-- Modular Chat Page Scripts (split from home.js) -->
     <script src="js/canvas.js"></script>
@@ -614,6 +663,10 @@
     <script src="js/data-analysis.js"></script>
     <script src="js/chart-generator.js"></script>
     <script src="js/tools.js"></script>
+    <!-- NEW: Modular files extracted from chat.js -->
+    <script src="js/message-renderer.js"></script>
+    <script src="js/stream-handler.js"></script>
+    <script src="js/chat-actions.js"></script>
     <script src="js/chat.js"></script>
     <script>
       // Initialize shared components
@@ -799,5 +852,6 @@
       class="mobile-sheet-overlay"
       onclick="toggleMobileModelSheet(false)"
     ></div>
+    <script src="js/canvas-toolbar.js"></script>
   </body>
 </html>

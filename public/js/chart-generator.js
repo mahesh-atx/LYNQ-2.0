@@ -18,7 +18,7 @@ const CHART_COLORS = [
 const CHART_BORDERS = CHART_COLORS.map(c => c.replace('0.8', '1'));
 
 // Store chart instances for cleanup
-const chartInstances = new Map();
+const dataChartInstances = new Map();
 
 /**
  * Detect best chart type based on data characteristics
@@ -77,8 +77,8 @@ function createChart(containerId, chartType, data, options = {}) {
   }
   
   // Clean up existing chart
-  if (chartInstances.has(containerId)) {
-    chartInstances.get(containerId).destroy();
+  if (dataChartInstances.has(containerId)) {
+    dataChartInstances.get(containerId).destroy();
   }
   
   // Create canvas if not exists
@@ -97,7 +97,7 @@ function createChart(containerId, chartType, data, options = {}) {
     options: getChartOptions(chartType, options)
   });
   
-  chartInstances.set(containerId, chart);
+  dataChartInstances.set(containerId, chart);
   return chart;
 }
 
@@ -248,8 +248,8 @@ function generateChartHTML(chartId, height = 300) {
  * Destroy all chart instances
  */
 function destroyAllCharts() {
-  chartInstances.forEach(chart => chart.destroy());
-  chartInstances.clear();
+  dataChartInstances.forEach(chart => chart.destroy());
+  dataChartInstances.clear();
 }
 
 // Export for global access

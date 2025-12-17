@@ -22,6 +22,54 @@ let canvasCloseBtn;
 // --- Canvas State ---
 let isCanvasModeActive = false; // State for canvas mode toggle
 let monacoLoaded = false; // Track if Monaco is loaded
+let monacoLoadPromise = null; // Track loading promise to prevent duplicate loads
+let isUpdatingFromPreview = false; // Flag to prevent cyclic updates during WYSIWYG edit
+
+// ============================================
+// MONACO EDITOR LAZY LOADING
+// ============================================
+
+/**
+ * Lazy loads Monaco Editor only when needed
+ * Returns a promise that resolves when Monaco is ready
+ */
+async function loadMonacoEditor() {
+  // Already loaded
+  if (monacoLoaded) return Promise.resolve();
+  
+  // Already loading
+  if (monacoLoadPromise) return monacoLoadPromise;
+  
+  console.log("📦 Loading Monaco Editor...");
+  
+  monacoLoadPromise = new Promise((resolve, reject) => {
+    // Create and inject the Monaco loader script
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js';
+    
+    script.onload = () => {
+      console.log("✅ Monaco loader loaded");
+      // Initialize Monaco after loader is ready
+      initMonacoEditor();
+      resolve();
+    };
+    
+    script.onerror = () => {
+      const error = new Error("Failed to load Monaco Editor");
+      console.error(error);
+      monacoLoadPromise = null; // Reset so it can be retried
+      reject(error);
+    };
+    
+    document.head.appendChild(script);
+  });
+  
+  return monacoLoadPromise;
+}
+
+// ============================================
+// MONACO EDITOR INITIALIZATION
+// ============================================
 
 /**
  * Initializes Monaco Editor
@@ -101,8 +149,16 @@ function initMonacoEditor() {
         monacoLoaded = true;
         console.log("✅ Monaco Editor initialized");
 
+        // Initialize Fixed Formatting Toolbar
+        if (typeof CanvasToolbar !== 'undefined') {
+            CanvasToolbar.init(monacoEditor);
+        }
+
         // Listen for changes to update preview
+
         monacoEditor.onDidChangeModelContent(() => {
+            if (isUpdatingFromPreview) return; // Skip if update came from preview
+
             if (canvasPreviewWrapper && canvasPreviewWrapper.style.display !== "none") {
                 updateCanvasPreview();
             }
@@ -133,6 +189,36 @@ function setMonacoCode(code, language = "html") {
     const model = monacoEditor.getModel();
     if (model) {
         monaco.editor.setModelLanguage(model, language);
+    }
+
+    // Apply specific settings for Markdown (Notepad Mode)
+    if (language === 'markdown') {
+        monacoEditor.updateOptions({
+            lineNumbers: 'off',
+            minimap: { enabled: false },
+            wordWrap: 'on',
+            renderValidationDecorations: 'off',
+            overviewRulerBorder: false,
+            hideCursorInOverviewRuler: true,
+            lineDecorationsWidth: 0,
+            folding: false,
+            renderLineHighlight: "none",
+            matchBrackets: "never"
+        });
+    } else {
+        // Reset to Code Editor Mode
+        monacoEditor.updateOptions({
+            lineNumbers: 'on',
+            minimap: { enabled: false },
+            wordWrap: 'on', // Keep wrap for code too, usually better
+            renderValidationDecorations: 'on',
+            overviewRulerBorder: true,
+            hideCursorInOverviewRuler: false,
+            lineDecorationsWidth: 10,
+            folding: true,
+            renderLineHighlight: "all", // or default
+            matchBrackets: "always"
+        });
     }
 
     // Set the value
@@ -173,7 +259,7 @@ function updateCanvasPreview() {
 /**
  * Toggles the Canvas mode state (and visibility if forced false).
  */
-function toggleCanvasMode(forceState) {
+async function toggleCanvasMode(forceState) {
     const newState = forceState ?? !isCanvasModeActive;
 
     // Close the tools dropdown when toggling
@@ -191,6 +277,22 @@ function toggleCanvasMode(forceState) {
             deselectTool();
         }
     } else {
+        // Lazy load Monaco Editor if not already loaded
+        if (!monacoLoaded) {
+            if (typeof showToast === "function") {
+                showToast("Loading code editor...");
+            }
+            try {
+                await loadMonacoEditor();
+            } catch (error) {
+                console.error("Failed to load Monaco Editor:", error);
+                if (typeof showToast === "function") {
+                    showToast("Failed to load code editor");
+                }
+                return; // Don't activate canvas mode if Monaco failed to load
+            }
+        }
+        
         isCanvasModeActive = true;
         if (canvasToggleBtn) canvasToggleBtn.classList.add("active");
         // Show tool indicator (this also hides the tools wrapper)
@@ -260,7 +362,94 @@ function generatePreview() {
 </html>
         `;
 
-        if (
+        // Check if language is Markdown
+        const model = monacoEditor ? monacoEditor.getModel() : null;
+        const lang = model ? model.getLanguageId() : '';
+
+        if (lang === 'markdown') {
+             const mdContent = typeof marked !== 'undefined' 
+                ? marked.parse(code) 
+                : `<pre>${code}</pre>`;
+
+            finalHtmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Preview</title>
+    <!-- Use GitHub Markdown CSS for professional document look -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css" />
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+    <style>
+        body { 
+            box-sizing: border-box; 
+            min-width: 200px; 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 40px;
+            background-color: white; /* Always white paper */
+        }
+        @media (max-width: 767px) {
+            body { padding: 15px; }
+        }
+        .markdown-body {
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+            font-size: 16px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            outline: none; /* No outline when editing */
+        }
+        /* Hint for editable area */
+        .markdown-body:hover {
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+        }
+        .markdown-body:focus {
+            box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.3);
+        }
+    </style>
+</head>
+<body class="markdown-body" contenteditable="true">
+    ${mdContent}
+
+    <script>
+        const turndownService = new TurndownService({
+            headingStyle: 'atx',
+            codeBlockStyle: 'fenced'
+        });
+
+        const body = document.body;
+        let debounceTimer;
+
+        body.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const markdown = turndownService.turndown(body.innerHTML);
+                window.parent.postMessage({ type: 'preview-update', markdown: markdown }, '*');
+            }, 800); // 800ms debounce
+        });
+        
+        // Prevent generic formatting shortcuts if we want (optional)
+
+        // --- Toolbar Support ---
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            const hasSelection = selection && !selection.isCollapsed;
+            window.parent.postMessage({ type: 'preview-selection', hasSelection: hasSelection }, '*');
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'apply-format') {
+                const { format, value } = event.data;
+                document.execCommand(format, false, value);
+                // Trigger input event to sync changes back to Monaco
+                body.dispatchEvent(new Event('input'));
+            }
+        });
+    </script>
+</body>
+</html>`;
+        } else if (
             trimmedCode.toLowerCase().startsWith("<!doctype html") ||
             trimmedCode.toLowerCase().startsWith("<html")
         ) {
@@ -324,16 +513,40 @@ ${baseHtmlEnd}`;
 function downloadCanvasCode() {
     const code = getMonacoCode();
     if (!code || code.trim() === "") {
-        if (typeof showToast === "function") showToast("No code to download.");
+        if (typeof showToast === "function") showToast("No content to process.");
         return;
     }
 
+    const model = monacoEditor.getModel();
+    const lang = model ? model.getLanguageId() : '';
+
+    // PRINT Mode for Documents
+    if (lang === 'markdown') {
+        // Ensure preview exists, if not generate it
+        if (!canvasPreviewIframe.srcdoc || canvasPreviewIframe.srcdoc === "") {
+            generatePreview();
+        }
+
+        // Trigger Print on the iframe
+        setTimeout(() => {
+            if (canvasPreviewIframe && canvasPreviewIframe.contentWindow) {
+                canvasPreviewIframe.contentWindow.print();
+            }
+        }, 300); // Small delay to ensure render
+        return;
+    }
+
+    // DOWNLOAD Mode for Code
     const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "lynq-ai-canvas.txt";
+    // Extension based on language
+    const extMap = { javascript: 'js', python: 'py', html: 'html', css: 'css', json: 'json' };
+    const ext = extMap[lang] || 'txt';
+    a.download = `lynq-ai-canvas.${ext}`;
+    
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -401,6 +614,8 @@ async function streamCodeToCanvas(codeString, lang) {
         typescript: "typescript",
         ts: "typescript",
         plaintext: "plaintext",
+        markdown: "markdown",
+        md: "markdown"
     };
     const monacoLang = langMap[lang] || "plaintext";
 
@@ -419,9 +634,68 @@ async function streamCodeToCanvas(codeString, lang) {
         monaco.editor.setModelLanguage(model, monacoLang);
     }
 
+    // Apply specific settings for Markdown (Notepad Mode)
+    if (monacoLang === 'markdown') {
+        monacoEditor.updateOptions({
+            lineNumbers: 'off',
+            minimap: { enabled: false },
+            wordWrap: 'on',
+            renderValidationDecorations: 'off',
+            overviewRulerBorder: false,
+            hideCursorInOverviewRuler: true,
+            lineDecorationsWidth: 0,
+            folding: false,
+            renderLineHighlight: "none",
+            matchBrackets: "never"
+        });
+    } else {
+         // Reset to Code Editor Mode
+         monacoEditor.updateOptions({
+            lineNumbers: 'on',
+            minimap: { enabled: false },
+            wordWrap: 'on',
+            renderValidationDecorations: 'on',
+            overviewRulerBorder: true,
+            hideCursorInOverviewRuler: false,
+            lineDecorationsWidth: 10,
+            folding: true,
+            renderLineHighlight: "all",
+            matchBrackets: "always"
+        });
+    }
+
     // Stream line-by-line for realistic typing effect
     const lines = codeString.split('\n');
     let currentCode = "";
+
+    // If Markdown, show preview immediately for "Formatted View"
+    if (monacoLang === 'markdown') {
+        if (typeof switchCanvasTab === "function") switchCanvasTab("preview");
+
+        // Hide Code Tab for Documents (User Request)
+        if (canvasTabCode) canvasTabCode.style.display = 'none';
+
+        // Force update preview after short delay to ensure content is rendered
+        setTimeout(() => {
+             if (typeof updateCanvasPreview === "function") updateCanvasPreview();
+        }, 100);
+        
+        // Update Download Button to Print Button
+        if (canvasDownloadBtn) {
+            canvasDownloadBtn.innerHTML = '<i class="fa-solid fa-print"></i>';
+            canvasDownloadBtn.title = "Print Document";
+        }
+    } else {
+        // Show Code Tab for Web Apps/Code
+        if (canvasTabCode) canvasTabCode.style.display = 'flex';
+
+        // Reset to Download Button
+        if (canvasDownloadBtn) {
+            canvasDownloadBtn.innerHTML = '<i class="fa-solid fa-download"></i>';
+            canvasDownloadBtn.title = "Download Code";
+        }
+    }
+
 
     for (let i = 0; i < lines.length; i++) {
         if (!isResponding) {
@@ -461,8 +735,8 @@ function initCanvasElements() {
     canvasPreviewIframe = document.getElementById("canvas-preview-iframe");
     canvasPreviewPlaceholder = document.getElementById("canvas-preview-placeholder");
 
-    // Initialize Monaco Editor
-    initMonacoEditor();
+    // Monaco Editor will be lazy loaded when Canvas mode is activated
+    console.log("✅ Canvas elements initialized (Monaco will load on demand)");
 }
 
 /**
@@ -489,4 +763,18 @@ function initCanvasListeners() {
     if (canvasDownloadBtn) {
         canvasDownloadBtn.addEventListener("click", downloadCanvasCode);
     }
+
+    // Listen for preview updates (WYSIWYG)
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'preview-update') {
+            if (monacoEditor) {
+                // Prevent loop: Don't re-render preview when updating from preview
+                isUpdatingFromPreview = true;
+                const scrollPos = monacoEditor.getScrollTop();
+                monacoEditor.setValue(event.data.markdown);
+                monacoEditor.setScrollTop(scrollPos);
+                isUpdatingFromPreview = false;
+            }
+        }
+    });
 }

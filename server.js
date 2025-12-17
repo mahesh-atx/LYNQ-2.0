@@ -32,14 +32,25 @@ try {
   console.warn("⚠️ Could not load systemprompt.txt, using default prompt.");
 }
 
-// --- Load Canvas Prompt from config file ---
-const canvasPromptPath = path.join(__dirname, "config", "canvasprompt.txt");
-let CANVAS_SYSTEM_PROMPT = "";
+// --- Load Canvas Prompts from config files (Web & Doc Modes) ---
+const canvasWebPromptPath = path.join(__dirname, "config", "canvas_web_prompt.txt");
+const canvasDocPromptPath = path.join(__dirname, "config", "canvas_doc_prompt.txt");
+let CANVAS_WEB_PROMPT = "";
+let CANVAS_DOC_PROMPT = "";
+
 try {
-  CANVAS_SYSTEM_PROMPT = fs.readFileSync(canvasPromptPath, "utf-8");
-  console.log("✅ Canvas prompt loaded from config/canvasprompt.txt");
+  CANVAS_WEB_PROMPT = fs.readFileSync(canvasWebPromptPath, "utf-8");
+  console.log("✅ Canvas WEB prompt loaded from config/canvas_web_prompt.txt");
 } catch (err) {
-  console.warn("⚠️ Could not load canvasprompt.txt, canvas mode will use default.");
+  console.warn("⚠️ Could not load canvas_web_prompt.txt, using fallback.");
+  CANVAS_WEB_PROMPT = "You are an expert web developer. Output HTML/CSS/JS applications.";
+}
+
+try {
+  CANVAS_DOC_PROMPT = fs.readFileSync(canvasDocPromptPath, "utf-8");
+  console.log("✅ Canvas DOC prompt loaded from config/canvas_doc_prompt.txt");
+} catch (err) {
+  console.warn("⚠️ Could not load canvas_doc_prompt.txt, doc mode will be limited.");
 }
 
 // --- Load Tool Prompts from config file ---
@@ -701,10 +712,31 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
 
   // Determine the system message based on mode
   let finalSystemMessage;
-  if (canvasMode && CANVAS_SYSTEM_PROMPT) {
-    // Use canvas-specific prompt when canvas mode is active
-    finalSystemMessage = CANVAS_SYSTEM_PROMPT;
-    console.log("🎨 Canvas Mode: Using canvasprompt.txt");
+  
+  if (canvasMode) {
+    let baseCanvasPrompt;
+    if (canvasMode === 'doc') {
+       // Document Mode (Resume, Essays, Markdown)
+       baseCanvasPrompt = CANVAS_DOC_PROMPT || CANVAS_WEB_PROMPT; 
+       console.log("🎨 Canvas Mode: Using DOC prompt (Resume/Text)");
+    } else {
+       // Web/App Mode (Default for Canvas)
+       baseCanvasPrompt = CANVAS_WEB_PROMPT;
+       console.log("🎨 Canvas Mode: Using WEB prompt (HTML/App)");
+    }
+
+    // CRITICAL: If the frontend sent a systemMessage (likely containing FILE CONTEXT), 
+    // we must combine it with the Canvas Prompt, otherwise the AI ignores the file.
+    if (systemMessage && systemMessage !== DEFAULT_SYSTEM_PROMPT && systemMessage.length > 100) {
+        console.log("📎 Combining Canvas Prompt with File Context/System Message");
+        finalSystemMessage = baseCanvasPrompt + "\n\n" + 
+            "## 📎 CONTEXT & DATA\n" + 
+            "The user has provided the following context (files/data). USE THIS DATA to generate the document:\n\n" + 
+            systemMessage;
+    } else {
+        finalSystemMessage = baseCanvasPrompt;
+    }
+
   } else {
     finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
   }

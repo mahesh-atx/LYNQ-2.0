@@ -20,6 +20,16 @@ let isWebSearchActive = false;
 // --- HOME/CHAT PAGE STATE ---
 const TOKEN_LIMIT = 2000; // Define context limit once
 let currentToolId = null; // --- NEW: Track the active tool ID ---
+let FILE_CONTEXT_PROMPTS = {}; // Stores file-specific system prompts loaded from JSON
+
+// Fetch file prompts configuration
+fetch('config/file_prompts.json')
+  .then(response => response.json())
+  .then(data => {
+    FILE_CONTEXT_PROMPTS = data;
+    console.log('✅ File prompts loaded:', Object.keys(data).join(', '));
+  })
+  .catch(err => console.error('❌ Failed to load file prompts:', err));
 
 // --- Tool-Specific System Prompts ---
 // Optimization: Prompts moved to backend (config/tool_prompts.json) to reduce bundle size.
@@ -183,21 +193,24 @@ function sendSuggestion(text) {
  * Resets the current chat view and state to a new chat.
  */
 function resetChat() {
-  // 1. Show Welcome Screen & Clear Messages
+  // Destroy all chart instances before clearing messages (prevent memory leaks)
+  if (messagesWrapper && typeof destroyChartsInElement === "function") {
+    destroyChartsInElement(messagesWrapper);
+  }
+  
+  if (messagesWrapper) messagesWrapper.innerHTML = "";
   if (welcomeScreen) {
     welcomeScreen.style.display = "flex";
     welcomeScreen.style.animation = "fadeIn 0.4s ease forwards";
   }
-  if (messagesWrapper) messagesWrapper.innerHTML = "";
 
-  // Show spotlight when returning to welcome screen
   const spotlightBg = document.querySelector(".hero-spotlight-bg");
   if (spotlightBg) {
     spotlightBg.style.transition = "opacity 0.5s ease";
     spotlightBg.style.opacity = "1";
   }
 
-  // Hide the topbar new chat button when in hero section
+  // Hide the topbar new chat button when resetting
   const topbarNewChatBtn = document.getElementById("topbar-new-chat-btn");
   if (topbarNewChatBtn) {
     topbarNewChatBtn.style.display = "none";
@@ -215,6 +228,11 @@ function resetChat() {
   // Reset active tool
   currentToolId = null;
 
+  if (chatInput) {
+    chatInput.value = "";
+    chatInput.style.height = "auto";
+  }
+
   // 4. Refresh Sidebar UI
   if (typeof renderRecentChats === "function") renderRecentChats();
 
@@ -222,6 +240,12 @@ function resetChat() {
   if (window.history && window.history.pushState) {
     const newUrl = window.location.pathname;
     history.pushState({}, document.title, newUrl);
+  }
+
+  if (typeof updateInlineSuggestions === "function") {
+    setTimeout(() => {
+      updateInlineSuggestions();
+    }, 200);
   }
 
   // Close sidebar on mobile
@@ -367,13 +391,20 @@ async function loadChat(chatId) {
 /**
  * Builds the system message with context.
  */
+
 async function buildContextualSystemMessage(attachment) {
   let contextAddon = "";
 
   if (attachment && attachment.text) {
     let contextText = attachment.text;
-    const attachmentType = attachment.type || 'pdf';
-
+    
+    // Determine file type category
+    let type = 'text'; // Default
+    if (attachment.type === 'data') type = 'data';
+    else if (attachment.type === 'pdf') type = 'pdf';
+    else if (attachment.fileType && attachment.fileType.includes('image')) type = 'image';
+    else if (attachment.fileType && (attachment.fileType.includes('javascript') || attachment.fileType.includes('python') || attachment.fileType.includes('html'))) type = 'code';
+    
     // Truncate if too long
     if (contextText.length > TOKEN_LIMIT * 4) {
       contextText = contextText.substring(0, TOKEN_LIMIT * 4);
@@ -381,37 +412,38 @@ async function buildContextualSystemMessage(attachment) {
         showToast("Note: The file content was truncated due to size.");
     }
 
-    // Use different context labels based on file type
-    if (attachmentType === 'data') {
-      // Data file (CSV, JSON, Excel) - use format that matches tool_prompts.json
-      contextAddon = `
---- UPLOADED DATA FILE ---
-The user has uploaded a data file for analysis. Here is the parsed data:
-
-${contextText}
---- END UPLOADED DATA FILE ---
-
-IMPORTANT: Use the ACTUAL data above. Do NOT use mock or sample data. Quote specific numbers from this dataset.
-`;
-    } else {
-      // PDF or other text documents
-      contextAddon = `
---- CONTEXT: ATTACHED PDF DOCUMENT ---
-The user has provided the following text extracted from a PDF document.
-
-PDF CONTENT:
-${contextText}
---- END PDF CONTEXT ---
-`;
+    // Get prompt template from loaded config, fallback to default if missing
+    let promptTemplate = FILE_CONTEXT_PROMPTS[type] || FILE_CONTEXT_PROMPTS['text'];
+    
+    // Fallback if config failed to load
+    if (!promptTemplate) {
+        if (type === 'data') promptTemplate = "DATA: {{CONTENT}}";
+        else promptTemplate = "CONTEXT: {{CONTENT}}";
     }
+
+    // Replace placeholder with actual content
+    contextAddon = promptTemplate.replace('{{CONTENT}}', contextText);
+    
+    console.log(`📎 ${type.toUpperCase()} attached (${contextText.length} chars)`);
   }
 
   if (currentToolId) {
     console.log(`🔧 Tool active: ${currentToolId}`);
   }
 
-  return getSystemMessage(contextAddon);
+  const finalSystemMessage = getSystemMessage(contextAddon);
+  
+  // Log the complete system prompt being sent to AI
+  if (attachment && attachment.text) {
+    console.log("📨 System Prompt with File Context:");
+    console.log("─".repeat(80));
+    console.log(finalSystemMessage);
+    console.log("─".repeat(80));
+  }
+
+  return finalSystemMessage;
 }
+
 
 /**
  * Handles sending the user's message.
@@ -620,474 +652,37 @@ async function handleSend() {
   }
 }
 
-/**
- * Stops the current API response stream.
- */
-function stopResponse() {
-  if (currentController) {
-    currentController.abort();
-    currentController = null;
-  }
-  isResponding = false;
-  if (sendBtn) sendBtn.style.display = "flex";
-  if (stopBtn) {
-    stopBtn.style.display = "none";
-    stopBtn.classList.remove("generating");
-    const toolbarRight = stopBtn.closest(".toolbar-right");
-    if (toolbarRight) toolbarRight.classList.remove("generating");
-  }
-}
+// ============================================
+// STREAM HANDLER FUNCTIONS
+// ============================================
+// NOTE: The following functions have been moved to stream-handler.js:
+// - stopResponse()
+// - showThinking()
+// - streamResponse()
+// - streamTextToBubble()
 
-/**
- * Shows the "thinking" bubble in the chat.
- */
-function showThinking() {
-  const msgDiv = document.createElement("div");
-  msgDiv.className = `message ai thinking`;
+// ============================================
+// MESSAGE RENDERER FUNCTIONS
+// ============================================
+// NOTE: The following functions have been moved to message-renderer.js:
+// - enhanceCodeBlocks()
+// - formatLanguageName()
+// - renderChartBlocks()
+// - getChartColor()
+// - embedYouTubeVideos()
+// - createVideoPlayer()
+// - addMessage()
 
-  const avatar = document.createElement("div");
-  avatar.className = `avatar ai`;
-  avatar.innerHTML = '<i class="fa-solid fa-bolt"></i>';
+// ============================================
+// CHAT ACTIONS FUNCTIONS
+// ============================================
+// NOTE: The following functions have been moved to chat-actions.js:
+// - copyToClipboard()
+// - shareResponse()
+// - toggleEdit()
+// - regenerateMessage()
+// - regenerateResponseAfterEdit()
 
-  const contentWrapper = document.createElement("div");
-  contentWrapper.className = "msg-content-wrapper";
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-  bubble.innerHTML =
-    '<div class="thinking-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-
-  contentWrapper.appendChild(bubble);
-  msgDiv.appendChild(avatar);
-  msgDiv.appendChild(contentWrapper);
-  if (messagesWrapper) messagesWrapper.appendChild(msgDiv);
-
-  const chatContainer = document.getElementById("chat-container");
-  if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
-
-  return msgDiv;
-}
-
-/**
- * Streams the response text to the chat bubble and the code to the canvas.
- */
-async function streamResponse(fullText) {
-  const bubble = addMessage("", "ai", true);
-  let textToStream = fullText;
-  let codeToCanvas = "";
-  let codeNeedsStreaming = false;
-
-  if (typeof isCanvasModeActive !== "undefined" && isCanvasModeActive) {
-    const { code, text } = parseCodeFromResponse(fullText);
-
-    if (code) {
-      if (typeof canvasPane !== "undefined" && canvasPane)
-        canvasPane.classList.add("active");
-      codeToCanvas = code;
-      codeNeedsStreaming = true;
-
-      if (!text.trim()) {
-        textToStream =
-          "I've sent the generated code to the canvas. Take a look at the code or preview tab!";
-      } else {
-        textToStream = text;
-      }
-    }
-  }
-
-  if (codeNeedsStreaming) {
-    const newCode = codeToCanvas;
-    let lang = "plaintext";
-    if (newCode.includes("<") || newCode.includes(">")) {
-      lang = "html";
-    } else if (newCode.includes("function") || newCode.includes("const")) {
-      lang = "javascript";
-    }
-
-    if (typeof monacoEditorContainer !== "undefined" && monacoEditorContainer) {
-      monacoEditorContainer.style.display = "block";
-    }
-    if (typeof canvasPlaceholder !== "undefined" && canvasPlaceholder) {
-      canvasPlaceholder.style.display = "none";
-    }
-    if (typeof monacoEditor !== "undefined" && monacoEditor) {
-      monacoEditor.setValue("// Loading code...\n");
-    }
-    if (typeof switchCanvasTab === "function") switchCanvasTab("code");
-
-    const codeStreamPromise =
-      typeof streamCodeToCanvas === "function"
-        ? streamCodeToCanvas(codeToCanvas, lang)
-        : Promise.resolve();
-
-    await streamTextToBubble(textToStream, bubble);
-    await codeStreamPromise;
-  } else {
-    await streamTextToBubble(fullText, bubble);
-  }
-
-  const sendBtn = document.getElementById("send-btn");
-  const stopBtn = document.getElementById("stop-btn");
-
-  embedYouTubeVideos(bubble);
-
-  if (sendBtn) sendBtn.style.display = "flex";
-  if (stopBtn) {
-    stopBtn.style.display = "none";
-    stopBtn.classList.remove("generating");
-    const toolbarRight = stopBtn.closest(".toolbar-right");
-    if (toolbarRight) toolbarRight.classList.remove("generating");
-  }
-  isResponding = false;
-
-  const parentWrapper = bubble.parentElement;
-  const actionsDiv = parentWrapper.querySelector(".message-actions");
-
-  const copyBtn = actionsDiv.querySelector(".fa-copy").parentElement;
-  copyBtn.onclick = () => {
-    const textToCopy = codeToCanvas || fullText;
-    copyToClipboard(textToCopy, copyBtn);
-  };
-
-  const shareBtn = actionsDiv.querySelector(".fa-share-nodes").parentElement;
-  shareBtn.onclick = () => shareResponse(fullText);
-}
-
-/**
- * Helper function to stream text to the chat bubble.
- */
-async function streamTextToBubble(textToStream, bubble) {
-  const words = textToStream.split(" ");
-  let currentText = "";
-  let lastCodeBlockCount = 0;
-
-  for (let i = 0; i < words.length; i++) {
-    if (!isResponding) {
-      currentText += words[i] + " ";
-      break;
-    }
-
-    currentText += words[i] + " ";
-    let displayHtml = marked.parse(currentText);
-    bubble.innerHTML = displayHtml;
-
-    const currentCodeBlocks = bubble.querySelectorAll("pre code");
-
-    if (currentCodeBlocks.length > lastCodeBlockCount) {
-      currentCodeBlocks.forEach((block, index) => {
-        if (index >= lastCodeBlockCount) {
-          hljs.highlightElement(block);
-        }
-      });
-      enhanceCodeBlocks(bubble);
-      lastCodeBlockCount = currentCodeBlocks.length;
-    }
-
-    const chatContainer = document.getElementById("chat-container");
-    if (chatContainer) {
-      const isUserAtBottom =
-        chatContainer.scrollHeight -
-          chatContainer.scrollTop -
-          chatContainer.clientHeight <
-        50;
-      if (isUserAtBottom) {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
-    }
-
-    await new Promise((r) =>
-      setTimeout(r, Math.floor(Math.random() * 30) + 30)
-    );
-  }
-
-  bubble.innerHTML = marked.parse(currentText.trim());
-  bubble
-    .querySelectorAll("pre code")
-    .forEach((block) => hljs.highlightElement(block));
-  enhanceCodeBlocks(bubble);
-  
-  // Render any chartdata blocks as interactive charts
-  renderChartBlocks(bubble);
-}
-
-/**
- * Enhances code blocks with a header containing language name and copy button.
- */
-function enhanceCodeBlocks(container) {
-  const codeBlocks = container.querySelectorAll("pre");
-
-  codeBlocks.forEach((pre) => {
-    if (pre.parentElement.classList.contains("code-block-wrapper")) return;
-
-    const code = pre.querySelector("code");
-    if (!code) return;
-
-    let language = "plaintext";
-    const classNames = code.className.split(" ");
-    for (const cls of classNames) {
-      if (cls.startsWith("language-")) {
-        language = cls.replace("language-", "");
-        break;
-      } else if (cls.startsWith("hljs-")) {
-        continue;
-      } else if (cls && cls !== "hljs") {
-        language = cls;
-        break;
-      }
-    }
-
-    const displayLang = formatLanguageName(language);
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "code-block-wrapper";
-
-    const header = document.createElement("div");
-    header.className = "code-block-header";
-
-    const langLabel = document.createElement("span");
-    langLabel.className = "code-language";
-    langLabel.textContent = displayLang;
-
-    const copyBtn = document.createElement("button");
-    copyBtn.className = "code-copy-btn";
-    copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
-    copyBtn.onclick = () => {
-      const textToCopy = code.textContent;
-      navigator.clipboard
-        .writeText(textToCopy)
-        .then(() => {
-          copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-          copyBtn.classList.add("copied");
-          setTimeout(() => {
-            copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
-            copyBtn.classList.remove("copied");
-          }, 2000);
-        })
-        .catch(() => {
-          if (typeof showToast === "function") showToast("Failed to copy code");
-        });
-    };
-
-    header.appendChild(langLabel);
-    header.appendChild(copyBtn);
-
-    pre.parentNode.insertBefore(wrapper, pre);
-    wrapper.appendChild(header);
-    wrapper.appendChild(pre);
-  });
-}
-
-/**
- * Formats language name for display
- */
-function formatLanguageName(lang) {
-  const languageMap = {
-    javascript: "JavaScript",
-    js: "JavaScript",
-    typescript: "TypeScript",
-    ts: "TypeScript",
-    python: "Python",
-    py: "Python",
-    java: "Java",
-    cpp: "C++",
-    c: "C",
-    csharp: "C#",
-    cs: "C#",
-    html: "HTML",
-    css: "CSS",
-    scss: "SCSS",
-    sass: "Sass",
-    json: "JSON",
-    xml: "XML",
-    yaml: "YAML",
-    yml: "YAML",
-    markdown: "Markdown",
-    md: "Markdown",
-    bash: "Bash",
-    sh: "Shell",
-    shell: "Shell",
-    powershell: "PowerShell",
-    sql: "SQL",
-    php: "PHP",
-    ruby: "Ruby",
-    rb: "Ruby",
-    go: "Go",
-    rust: "Rust",
-    swift: "Swift",
-    kotlin: "Kotlin",
-    dart: "Dart",
-    r: "R",
-    plaintext: "Code",
-    text: "Text",
-    jsx: "JSX",
-    tsx: "TSX",
-    vue: "Vue",
-    svelte: "Svelte",
-    graphql: "GraphQL",
-    dockerfile: "Dockerfile",
-    nginx: "Nginx",
-    apache: "Apache",
-  };
-  return (
-    languageMap[lang.toLowerCase()] ||
-    lang.charAt(0).toUpperCase() + lang.slice(1)
-  );
-}
-
-/**
- * Renders chart blocks from AI responses
- * Detects ```chartdata blocks and replaces with Chart.js charts
- */
-function renderChartBlocks(container) {
-  // Find all code blocks with 'chartdata' language
-  const codeBlocks = container.querySelectorAll('pre code.language-chartdata, pre code.hljs.language-chartdata');
-  
-  codeBlocks.forEach((codeBlock, index) => {
-    try {
-      const jsonStr = codeBlock.textContent.trim();
-      const chartConfig = JSON.parse(jsonStr);
-      
-      // Create chart container
-      const chartId = `chart-${Date.now()}-${index}`;
-      const chartContainer = document.createElement('div');
-      chartContainer.className = 'chart-container';
-      chartContainer.id = chartId;
-      chartContainer.style.cssText = 'height: 300px; width: 100%; margin: 16px 0; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px;';
-      
-      const canvas = document.createElement('canvas');
-      chartContainer.appendChild(canvas);
-      
-      // Replace the pre block with chart container
-      const preBlock = codeBlock.closest('pre');
-      const wrapper = preBlock.closest('.code-block-wrapper');
-      if (wrapper) {
-        wrapper.replaceWith(chartContainer);
-      } else {
-        preBlock.replaceWith(chartContainer);
-      }
-      
-      // Render chart using Chart.js
-      if (typeof Chart !== 'undefined') {
-        const ctx = canvas.getContext('2d');
-        
-        // Build Chart.js config from our format
-        const chartData = {
-          labels: chartConfig.labels || [],
-          datasets: (chartConfig.datasets || []).map((ds, i) => ({
-            label: ds.label || `Dataset ${i + 1}`,
-            data: ds.data || [],
-            backgroundColor: ds.backgroundColor || getChartColor(i, 0.7),
-            borderColor: ds.borderColor || getChartColor(i, 1),
-            borderWidth: 2,
-            tension: 0.3
-          }))
-        };
-        
-        new Chart(ctx, {
-          type: chartConfig.type || 'bar',
-          data: chartData,
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'top',
-                labels: { color: '#e5e7eb', font: { family: 'Inter, sans-serif' } }
-              },
-              title: {
-                display: !!chartConfig.title,
-                text: chartConfig.title || '',
-                color: '#f3f4f6'
-              }
-            },
-            scales: chartConfig.type !== 'pie' && chartConfig.type !== 'doughnut' ? {
-              x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
-              y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } }
-            } : undefined
-          }
-        });
-        
-        console.log('📊 Chart rendered:', chartConfig.type);
-      } else {
-        chartContainer.innerHTML = '<p style="color: #ef4444; text-align: center;">Chart.js not loaded</p>';
-      }
-    } catch (err) {
-      console.error('Chart render error:', err);
-    }
-  });
-  
-  // Also check for chartdata in raw text (triple backticks with chartdata)
-  const rawChartMatch = container.innerHTML.match(/```chartdata\s*([\s\S]*?)```/g);
-  if (rawChartMatch) {
-    rawChartMatch.forEach((match, index) => {
-      try {
-        const jsonStr = match.replace(/```chartdata\s*/, '').replace(/```$/, '').trim();
-        const chartConfig = JSON.parse(jsonStr);
-        
-        const chartId = `chart-raw-${Date.now()}-${index}`;
-        const chartHTML = `
-          <div class="chart-container" id="${chartId}" style="height: 300px; width: 100%; margin: 16px 0; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px;">
-            <canvas></canvas>
-          </div>
-        `;
-        
-        container.innerHTML = container.innerHTML.replace(match, chartHTML);
-        
-        // Render after DOM update
-        setTimeout(() => {
-          const chartDiv = document.getElementById(chartId);
-          if (chartDiv && typeof Chart !== 'undefined') {
-            const canvas = chartDiv.querySelector('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            new Chart(ctx, {
-              type: chartConfig.type || 'bar',
-              data: {
-                labels: chartConfig.labels || [],
-                datasets: (chartConfig.datasets || []).map((ds, i) => ({
-                  label: ds.label || `Dataset ${i + 1}`,
-                  data: ds.data || [],
-                  backgroundColor: getChartColor(i, 0.7),
-                  borderColor: getChartColor(i, 1),
-                  borderWidth: 2
-                }))
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { position: 'top', labels: { color: '#e5e7eb' } }
-                },
-                scales: chartConfig.type !== 'pie' ? {
-                  x: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } },
-                  y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#9ca3af' } }
-                } : undefined
-              }
-            });
-          }
-        }, 100);
-        
-      } catch (err) {
-        console.error('Raw chart parse error:', err);
-      }
-    });
-  }
-}
-
-/**
- * Get chart color by index
- */
-function getChartColor(index, alpha = 1) {
-  const colors = [
-    `rgba(102, 126, 234, ${alpha})`,  // Purple-blue
-    `rgba(245, 158, 11, ${alpha})`,   // Orange
-    `rgba(16, 185, 129, ${alpha})`,   // Green
-    `rgba(236, 72, 153, ${alpha})`,   // Pink
-    `rgba(139, 92, 246, ${alpha})`,   // Purple
-    `rgba(6, 182, 212, ${alpha})`     // Cyan
-  ];
-  return colors[index % colors.length];
-}
 
 function copyToClipboard(text, btnElement) {
   const plainText = text.replace(/<[^>]*>?/gm, "");
@@ -1584,7 +1179,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (toolsDropdown && toolsDropdown.classList.contains("active")) {
       if (
         !toolsDropdown.contains(event.target) &&
-        !toolsToggleBtn.contains(event.target)
+        (!toolsToggleBtn || !toolsToggleBtn.contains(event.target))
       ) {
         toggleToolsDropdown(false);
       }

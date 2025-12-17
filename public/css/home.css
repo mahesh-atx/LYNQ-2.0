@@ -2195,10 +2195,11 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
     align-items: center;
     gap: 12px;
     transition: all 0.2s ease;
+
     flex-direction: row;
     justify-content: flex-start;
-    height: auto;
   }
+
 
   /* Sheet Model Option - Left Aligned */
   .sheet-model-option {
@@ -2321,4 +2322,38 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 
 .header-profile-avatar:hover {
   animation: profilePulse 1.5s infinite;
+}
+
+/* --- FIXED FORMATTING TOOLBAR --- */
+.formatting-toolbar {
+    display: flex;
+    flex-direction: row; /* Force horizontal */
+    align-items: center;
+    gap: 8px;
+    margin-left: 20px;
+    transition: opacity 0.2s ease;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.formatting-toolbar.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(100%);
+}
+
+.tool-btn-round.little {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tool-btn-round.little:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
 }

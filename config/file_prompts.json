@@ -1,0 +1,11 @@
+{
+  "pdf": "--- CONTEXT: ATTACHED PDF DOCUMENT ---\nThe user has provided the following text extracted from a PDF document.\n\nPDF CONTENT:\n{{CONTENT}}\n--- END PDF CONTEXT ---\n\nINSTRUCTIONS:\n- Use the information above to answer the user's questions.\n- If the answer is not in the document, state that clearly.\n- Quote specific sections if relevant.",
+  
+  "data": "--- UPLOADED DATA FILE ---\nThe user has uploaded a data file for analysis. Here is the parsed data:\n\n{{CONTENT}}\n--- END UPLOADED DATA FILE ---\n\nIMPORTANT INSTRUCTIONS:\n- Use the ACTUAL data above. Do NOT use mock or sample data.\n- Quote specific numbers and statistics from this dataset.\n- If asked for visualization, provide the chart configuration.",
+  
+  "code": "--- UPLOADED CODE FILE ---\nThe user has uploaded a code file. Here is the content:\n\n{{CONTENT}}\n--- END CODE FILE ---\n\nINSTRUCTIONS:\n- Analyze the code structure and logic.\n- If asked to debug, identify specific issues.\n- If asked to explain, break down the functionality step-by-step.",
+  
+  "image": "--- ATTACHED IMAGE CONTEXT ---\nThe user has attached an image. Here is the description/text extracted from it:\n\n{{CONTENT}}\n--- END IMAGE CONTEXT ---\n\nINSTRUCTIONS:\n- Use this description to understand what the user is looking at.\n- Combine this visual context with the user's prompt.",
+  
+  "text": "--- ATTACHED TEXT FILE ---\nThe user has attached a text file. Content:\n\n{{CONTENT}}\n--- END TEXT FILE ---\n\nINSTRUCTIONS:\n- Use the provided text as context for your response."
+}

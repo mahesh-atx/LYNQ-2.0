@@ -1,0 +1,227 @@
+/*
+  stream-handler.js
+  Stream response handling extracted from chat.js
+  Handles streaming text to chat bubbles and managing response state
+*/
+
+// ============================================
+// STOP RESPONSE
+// ============================================
+
+/**
+ * Stops the current API response stream.
+ */
+function stopResponse() {
+  if (currentController) {
+    currentController.abort();
+    currentController = null;
+  }
+  isResponding = false;
+  
+  const sendBtn = document.getElementById("send-btn");
+  const stopBtn = document.getElementById("stop-btn");
+  
+  if (sendBtn) sendBtn.style.display = "flex";
+  if (stopBtn) {
+    stopBtn.style.display = "none";
+    stopBtn.classList.remove("generating");
+    const toolbarRight = stopBtn.closest(".toolbar-right");
+    if (toolbarRight) toolbarRight.classList.remove("generating");
+  }
+}
+
+// ============================================
+// SHOW THINKING INDICATOR
+// ============================================
+
+/**
+ * Shows the "thinking" bubble in the chat.
+ */
+function showThinking() {
+  const msgDiv = document.createElement("div");
+  msgDiv.className = `message ai thinking`;
+
+  const avatar = document.createElement("div");
+  avatar.className = `avatar ai`;
+  avatar.innerHTML = '<i class="fa-solid fa-bolt"></i>';
+
+  const contentWrapper = document.createElement("div");
+  contentWrapper.className = "msg-content-wrapper";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML =
+    '<div class="thinking-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+
+  contentWrapper.appendChild(bubble);
+  msgDiv.appendChild(avatar);
+  msgDiv.appendChild(contentWrapper);
+  if (messagesWrapper) messagesWrapper.appendChild(msgDiv);
+
+  const chatContainer = document.getElementById("chat-container");
+  if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+
+  return msgDiv;
+}
+
+// ============================================
+// STREAM TEXT TO BUBBLE
+// ============================================
+
+/**
+ * Helper function to stream text to the chat bubble.
+ */
+async function streamTextToBubble(textToStream, bubble) {
+  const words = textToStream.split(" ");
+  let currentText = "";
+  let lastCodeBlockCount = 0;
+
+  for (let i = 0; i < words.length; i++) {
+    if (!isResponding) {
+      currentText += words[i] + " ";
+      break;
+    }
+
+    currentText += words[i] + " ";
+    let displayHtml = marked.parse(currentText);
+    bubble.innerHTML = displayHtml;
+
+    const currentCodeBlocks = bubble.querySelectorAll("pre code");
+
+    if (currentCodeBlocks.length > lastCodeBlockCount) {
+      currentCodeBlocks.forEach((block, index) => {
+        if (index >= lastCodeBlockCount) {
+          hljs.highlightElement(block);
+        }
+      });
+      enhanceCodeBlocks(bubble);
+      lastCodeBlockCount = currentCodeBlocks.length;
+    }
+
+    const chatContainer = document.getElementById("chat-container");
+    if (chatContainer) {
+      const isUserAtBottom =
+        chatContainer.scrollHeight -
+          chatContainer.scrollTop -
+          chatContainer.clientHeight <
+        50;
+      if (isUserAtBottom) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }
+
+    await new Promise((r) =>
+      setTimeout(r, Math.floor(Math.random() * 30) + 30)
+    );
+  }
+
+  bubble.innerHTML = marked.parse(currentText.trim());
+  bubble
+    .querySelectorAll("pre code")
+    .forEach((block) => hljs.highlightElement(block));
+  enhanceCodeBlocks(bubble);
+  
+  // Render any chartdata blocks as interactive charts
+  renderChartBlocks(bubble);
+}
+
+// ============================================
+// STREAM RESPONSE
+// ============================================
+
+/**
+ * Streams the response text to the chat bubble and the code to the canvas.
+ */
+async function streamResponse(fullText) {
+  const bubble = addMessage("", "ai", true);
+  let textToStream = fullText;
+  let codeToCanvas = "";
+  let codeNeedsStreaming = false;
+
+  if (typeof isCanvasModeActive !== "undefined" && isCanvasModeActive) {
+    let { code, text } = parseCodeFromResponse(fullText);
+
+    // FORCE CONTENT TO CANVAS IN DOC MODE
+    // If no code block detected, but we are in 'doc' mode, treat entire response as the document
+    if (window.currentCanvasMode === 'doc' && !code && fullText.length > 20) {
+        console.log("📝 forcing full text to canvas (doc mode)");
+        code = fullText;
+        text = "I've drafted the document in the Canvas.";
+    }
+
+    if (code) {
+      if (typeof canvasPane !== "undefined" && canvasPane)
+        canvasPane.classList.add("active");
+      codeToCanvas = code;
+      codeNeedsStreaming = true;
+
+      if (!text.trim()) {
+        textToStream =
+          "I've sent the generated code to the canvas. Take a look at the code or preview tab!";
+      } else {
+        textToStream = text;
+      }
+    }
+  }
+
+  if (codeNeedsStreaming) {
+    const newCode = codeToCanvas;
+    let lang = "plaintext";
+
+    // FORCE MARKDOWN LANGUAGE IN DOC MODE
+    if (window.currentCanvasMode === 'doc') {
+        lang = "markdown";
+    } else if (newCode.includes("<") || newCode.includes(">")) {
+      lang = "html";
+    } else if (newCode.includes("function") || newCode.includes("const")) {
+      lang = "javascript";
+    }
+
+    if (typeof monacoEditorContainer !== "undefined" && monacoEditorContainer) {
+      monacoEditorContainer.style.display = "block";
+    }
+    if (typeof canvasPlaceholder !== "undefined" && canvasPlaceholder) {
+      canvasPlaceholder.style.display = "none";
+    }
+    if (typeof monacoEditor !== "undefined" && monacoEditor) {
+      monacoEditor.setValue("// Loading code...\n");
+    }
+    if (typeof switchCanvasTab === "function") switchCanvasTab("code");
+
+    const codeStreamPromise =
+      typeof streamCodeToCanvas === "function"
+        ? streamCodeToCanvas(codeToCanvas, lang)
+        : Promise.resolve();
+
+    await streamTextToBubble(textToStream, bubble);
+    await codeStreamPromise;
+  } else {
+    await streamTextToBubble(fullText, bubble);
+  }
+
+  const sendBtn = document.getElementById("send-btn");
+  const stopBtn = document.getElementById("stop-btn");
+
+  embedYouTubeVideos(bubble);
+
+  if (sendBtn) sendBtn.style.display = "flex";
+  if (stopBtn) {
+    stopBtn.style.display = "none";
+    stopBtn.classList.remove("generating");
+    const toolbarRight = stopBtn.closest(".toolbar-right");
+    if (toolbarRight) toolbarRight.classList.remove("generating");
+  }
+  isResponding = false;
+
+  const parentWrapper = bubble.parentElement;
+  const actionsDiv = parentWrapper.querySelector(".message-actions");
+
+  const copyBtn = actionsDiv.querySelector(".fa-copy").parentElement;
+  copyBtn.onclick = () => {
+    const textToCopy = codeToCanvas || fullText;
+    copyToClipboard(textToCopy, copyBtn);
+  };
+
+  const shareBtn = actionsDiv.querySelector(".fa-share-nodes").parentElement;
+  shareBtn.onclick = () => shareResponse(fullText);
+}
