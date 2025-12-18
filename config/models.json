@@ -1,5 +1,4 @@
 [
-
   {
     "id": "llama-3.3-70b-versatile",
     "name": "Llama 3.3 70B",
@@ -11,7 +10,18 @@
     "color": "#f59e0b",
     "limits": "Groq Free Tier limits"
   },
-    {
+  {
+    "id": "groq/compound",
+    "name": "Compound AI",
+    "provider": "groq",
+    "contextWindow": 128000,
+    "maxOutputTokens": 8192,
+    "description": "Groq's compound AI system with tool use capabilities.",
+    "icon": "layers",
+    "color": "#8b5cf6",
+    "limits": "Groq Free Tier limits"
+  },
+  {
     "id": "llama-3.1-8b-instant",
     "name": "Llama 3.1 8B",
     "provider": "groq",
@@ -34,58 +44,47 @@
     "limits": "Groq Free Tier limits"
   },
   {
-    "id": "gemini-2.5-pro",
-    "name": "Gemini 2.5 Pro",
-    "provider": "google",
-    "contextWindow": 2097152,
+    "id": "tngtech/deepseek-r1t-chimera:free",
+    "name": "DeepSeek R1T Chimera",
+    "provider": "openrouter",
+    "contextWindow": 64000,
     "maxOutputTokens": 8192,
-    "description": "High-reasoning model for complex tasks.",
-    "icon": "diamond",
-    "color": "#4285F4",
-    "limits": "5 RPM, 125k TPM, 100 RPD"
+    "description": "Advanced reasoning model with strong coding capabilities.",
+    "icon": "brain",
+    "color": "#06b6d4",
+    "limits": "OpenRouter Free: 50 req/day"
   },
   {
-    "id": "gemini-2.5-flash",
-    "name": "Gemini 2.5 Flash",
-    "provider": "google",
-    "contextWindow": 1048576,
-    "maxOutputTokens": 8192,
-    "description": "Fast and efficient multimodal model.",
-    "icon": "bolt",
-    "color": "#4285F4",
-    "limits": "10 RPM, 250k TPM, 250 RPD"
-  },
-  {
-    "id": "openai/gpt-oss-120b",
-    "name": "GPT-OSS 120B",
-    "provider": "groq",
-    "contextWindow": 8192,
-    "maxOutputTokens": 4096,
-    "description": "High-performance open model.",
-    "icon": "flame",
-    "color": "#ea580c",
-    "limits": "Groq Free Tier limits"
-  },
-  {
-    "id": "openai/gpt-oss-20b",
-    "name": "GPT-OSS 20B",
-    "provider": "groq",
-    "contextWindow": 8192,
-    "maxOutputTokens": 4096,
-    "description": "Efficient open model.",
-    "icon": "zap",
-    "color": "#f59e0b",
-    "limits": "Groq Free Tier limits"
-  },
-  {
-    "id": "qwen/qwen3-32b",
-    "name": "Qwen3 32B",
-    "provider": "groq",
+    "id": "qwen/qwen3-coder:free",
+    "name": "Qwen3 Coder 480B",
+    "provider": "openrouter",
     "contextWindow": 32768,
     "maxOutputTokens": 8192,
-    "description": "Balanced performance and speed.",
-    "icon": "box",
-    "color": "#10b981",
-    "limits": "Groq Free Tier limits"
+    "description": "Specialized for agentic coding and long-context reasoning.",
+    "icon": "code",
+    "color": "#8b5cf6",
+    "limits": "OpenRouter Free: 50 req/day"
+  },
+  {
+    "id": "mistralai/devstral-2512:free",
+    "name": "Mistral Devstral 2",
+    "provider": "openrouter",
+    "contextWindow": 256000,
+    "maxOutputTokens": 8192,
+    "description": "State-of-the-art coding model for multi-file changes.",
+    "icon": "wind",
+    "color": "#f97316",
+    "limits": "OpenRouter Free: 50 req/day"
+  },
+  {
+    "id": "google/gemma-3-27b-it:free",
+    "name": "Gemma 3 27B",
+    "provider": "openrouter",
+    "contextWindow": 8192,
+    "maxOutputTokens": 8192,
+    "description": "Optimized for low-resource deployment with strong reasoning.",
+    "icon": "gem",
+    "color": "#4285F4",
+    "limits": "OpenRouter Free: 50 req/day"
   }
 ]

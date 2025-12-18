@@ -34,6 +34,15 @@ function stopResponse() {
 // SHOW THINKING INDICATOR
 // ============================================
 
+const THINKING_PHRASES = [
+  "Thinking...", 
+  "Analyzing...", 
+  "Reasoning...", 
+  "Processing...", 
+  "Reviewing Context...",
+  "Generating Response..."
+];
+
 /**
  * Shows the "thinking" bubble in the chat.
  */
@@ -50,8 +59,23 @@ function showThinking() {
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
-  bubble.innerHTML =
-    '<div class="thinking-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  
+  // Create shimmering text element instead of dots
+  const thinkingText = document.createElement("span");
+  thinkingText.className = "thinking-text";
+  thinkingText.innerText = THINKING_PHRASES[0];
+  
+  bubble.appendChild(thinkingText);
+
+  // Cycle through phrases
+  let phraseIndex = 0;
+  const intervalId = setInterval(() => {
+    phraseIndex = (phraseIndex + 1) % THINKING_PHRASES.length;
+    thinkingText.innerText = THINKING_PHRASES[phraseIndex];
+  }, 3000); // Change phrase every 3 seconds
+
+  // Attach interval ID to the bubble element for easy cleanup
+  msgDiv._thinkingInterval = intervalId;
 
   contentWrapper.appendChild(bubble);
   msgDiv.appendChild(avatar);

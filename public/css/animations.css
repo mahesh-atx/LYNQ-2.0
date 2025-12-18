@@ -135,6 +135,18 @@
     }
 }
 
+.thinking-text {
+    font-weight: 500;
+    font-size: 0.95rem;
+    background: linear-gradient(90deg, var(--text-secondary) 0%, var(--text-heading) 50%, var(--text-secondary) 100%);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 2s linear infinite;
+    display: inline-block;
+}
+
 /* Pulse glow for highlights */
 @keyframes pulseGlow {
 

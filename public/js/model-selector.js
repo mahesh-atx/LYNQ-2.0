@@ -169,6 +169,10 @@ async function fetchAvailableModels() {
     if (!response.ok) throw new Error("Failed to fetch models");
     availableModels = await response.json();
     renderModelDropdown(availableModels);
+    // Also render mobile model sheet
+    if (typeof renderMobileModelSheet === "function") {
+      renderMobileModelSheet(availableModels);
+    }
   } catch (error) {
     console.warn("Could not fetch models:", error);
   }
@@ -180,30 +184,95 @@ function renderModelDropdown(models) {
 
   container.innerHTML = "";
 
-  models.forEach(model => {
-    let iconName = "box";
-    let iconColor = model.color || "#ccc";
+  // Group models by provider
+  const groqModels = models.filter(m => m.provider === "groq");
+  const openrouterModels = models.filter(m => m.provider === "openrouter");
 
-    if (model.icon === "bolt" || model.icon === "zap") iconName = "zap";
-    else if (model.icon === "star") iconName = "star";
-    else if (model.icon === "diamond") iconName = "diamond";
-    else if (model.icon === "flask") iconName = "flask-conical";
-    else if (model.icon === "feather") iconName = "feather";
-    else if (model.icon === "eye") iconName = "eye";
-    else if (model.icon === "flame") iconName = "flame";
+  // Helper function to get icon name
+  function getIconName(model) {
+    const iconMap = {
+      "bolt": "zap", "zap": "zap", "star": "star", "diamond": "diamond",
+      "flask": "flask-conical", "feather": "feather", "eye": "eye",
+      "flame": "flame", "brain": "brain", "code": "code", "layers": "layers",
+      "wind": "wind", "sparkles": "sparkles", "gem": "gem", "image": "image"
+    };
+    return iconMap[model.icon] || "box";
+  }
 
+  // Helper function to create model option
+  function createModelOption(model) {
     const div = document.createElement("div");
     div.className = `input-model-option ${model.id === currentSelectedModel ? "selected" : ""}`;
-    div.onclick = () => selectInputModel(div, model.id, model.name);
-
+    div.onclick = (e) => {
+      e.stopPropagation();
+      selectInputModel(div, model.id, model.name);
+      // Close submenus
+      document.querySelectorAll(".provider-submenu").forEach(sm => sm.classList.remove("active"));
+    };
     div.innerHTML = `
-      <i data-lucide="${iconName}" style="color: ${iconColor}; width: 16px; height: 16px;"></i>
+      <i data-lucide="${getIconName(model)}" style="color: ${model.color || '#ccc'}; width: 16px; height: 16px;"></i>
       <span>${model.name}</span>
       <i data-lucide="check" class="model-check" style="width: 14px; height: 14px;"></i>
     `;
-    
-    container.appendChild(div);
-  });
+    return div;
+  }
+
+  // Helper to create provider section with inline models + submenu for more
+  function createProviderSection(providerName, providerIcon, providerColor, providerModels) {
+    if (providerModels.length === 0) return null;
+
+    const section = document.createElement("div");
+    section.className = "provider-section";
+
+    // Provider header (clickable to show more)
+    const header = document.createElement("div");
+    header.className = "provider-header";
+    const hasMore = providerModels.length > 2;
+    header.innerHTML = `
+      <i data-lucide="${providerIcon}" style="color: ${providerColor}; width: 14px; height: 14px;"></i>
+      <span>${providerName}</span>
+      ${hasMore ? '<i data-lucide="chevron-down" class="more-chevron" style="width: 12px; height: 12px; opacity: 0.5;"></i>' : ''}
+    `;
+    section.appendChild(header);
+
+    // Inline models container (first 2)
+    const inlineModels = document.createElement("div");
+    inlineModels.className = "inline-models";
+    providerModels.slice(0, 2).forEach(model => {
+      inlineModels.appendChild(createModelOption(model));
+    });
+    section.appendChild(inlineModels);
+
+    // Submenu for remaining models (if more than 2)
+    if (hasMore) {
+      const submenu = document.createElement("div");
+      submenu.className = "provider-submenu";
+      providerModels.slice(2).forEach(model => {
+        submenu.appendChild(createModelOption(model));
+      });
+      section.appendChild(submenu);
+
+      // Toggle submenu on header click or hover
+      header.addEventListener("click", (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".provider-submenu").forEach(sm => {
+          if (sm !== submenu) sm.classList.remove("active");
+        });
+        submenu.classList.toggle("active");
+        header.querySelector(".more-chevron")?.classList.toggle("rotated");
+      });
+    }
+
+    return section;
+  }
+
+  // Create Groq section
+  const groqSection = createProviderSection("Groq", "zap", "#f59e0b", groqModels);
+  if (groqSection) container.appendChild(groqSection);
+
+  // Create OpenRouter section
+  const orSection = createProviderSection("OpenRouter", "globe", "#8b5cf6", openrouterModels);
+  if (orSection) container.appendChild(orSection);
 
   // Re-initialize Lucide icons
   if (window.lucide) {
@@ -284,6 +353,54 @@ function selectMobileSheetModel(element, modelId, displayName) {
 
   // Close sheet
   toggleMobileModelSheet(false);
+}
+
+// Dynamic mobile model sheet rendering
+function renderMobileModelSheet(models) {
+  const listContainer = document.querySelector(".model-sheet-list");
+  if (!listContainer) return;
+
+  listContainer.innerHTML = "";
+
+  const groqModels = models.filter(m => m.provider === "groq");
+  const openrouterModels = models.filter(m => m.provider === "openrouter");
+
+  function createCompactOption(model) {
+    const btn = document.createElement("button");
+    btn.className = `model-sheet-option-compact ${model.id === currentSelectedModel ? "selected" : ""}`;
+    btn.dataset.modelId = model.id;
+    btn.onclick = () => selectMobileSheetModel(btn, model.id, model.name);
+    btn.innerHTML = `
+      <i class="fa-solid fa-${model.icon === 'zap' ? 'bolt' : model.icon === 'brain' ? 'brain' : model.icon === 'code' ? 'code' : model.icon === 'layers' ? 'layer-group' : model.icon === 'gem' ? 'gem' : model.icon === 'wind' ? 'wind' : model.icon === 'eye' ? 'eye' : 'cube'}" style="color: ${model.color || '#ccc'}"></i>
+      <span>${model.name}</span>
+      <i class="fa-solid fa-check model-check-icon"></i>
+    `;
+    return btn;
+  }
+
+  // Groq section
+  if (groqModels.length > 0) {
+    const groqHeader = document.createElement("div");
+    groqHeader.className = "mobile-provider-header";
+    groqHeader.innerHTML = `<i class="fa-solid fa-bolt" style="color: #f59e0b"></i> Groq`;
+    listContainer.appendChild(groqHeader);
+
+    groqModels.forEach(model => {
+      listContainer.appendChild(createCompactOption(model));
+    });
+  }
+
+  // OpenRouter section
+  if (openrouterModels.length > 0) {
+    const orHeader = document.createElement("div");
+    orHeader.className = "mobile-provider-header";
+    orHeader.innerHTML = `<i class="fa-solid fa-globe" style="color: #8b5cf6"></i> OpenRouter`;
+    listContainer.appendChild(orHeader);
+
+    openrouterModels.forEach(model => {
+      listContainer.appendChild(createCompactOption(model));
+    });
+  }
 }
 
 // ============================================

@@ -749,6 +749,14 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     console.log(`🔧 Tool Mode Active: "${toolId}" - Appended specialized prompt (${TOOL_PROMPTS[toolId].length} chars)`);
   }
 
+  // --- OPENROUTER REASONING SUPPRESSION ---
+  // Add instruction to hide chain-of-thought reasoning for OpenRouter models
+  const selectedModelConfig = AVAILABLE_MODELS.find(m => m.id === model) || { provider: "groq" };
+  if (selectedModelConfig.provider === "openrouter") {
+    finalSystemMessage += "\n\n---\nIMPORTANT: Provide ONLY your final answer. Do NOT show your thinking process, chain-of-thought, reasoning steps, or internal thoughts. Give direct, clean responses without any <thinking>, <reasoning>, or similar tags.";
+    console.log("🧠 OpenRouter: Added reasoning suppression prompt");
+  }
+
   let searchResults = null;
 
   // --- WEB SEARCH LOGIC ---
@@ -846,11 +854,23 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
     let apiUrl = "https://api.groq.com/openai/v1/chat/completions";
     let apiKey = process.env.API_KEY;
 
-    if (selectedModelConfig.provider === "google") {
+    if (selectedModelConfig.provider === "groq") {
+        apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+        apiKey = process.env.GROQ_API_KEY || process.env.API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({ error: "Groq API Key is missing in server environment." });
+        }
+    } else if (selectedModelConfig.provider === "google") {
         apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
         apiKey = process.env.GOOGLE_GENERATIVE_AI_KEY;
         if (!apiKey) {
             return res.status(500).json({ error: "Google Generative AI Key is missing in server environment." });
+        }
+    } else if (selectedModelConfig.provider === "openrouter") {
+        apiUrl = "https://openrouter.ai/api/v1/chat/completions";
+        apiKey = process.env.OPENROUTER_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({ error: "OpenRouter API Key is missing. Get one at openrouter.ai" });
         }
     }
     
@@ -907,26 +927,79 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
         return rest;
     });
 
-    // Build request body
     const requestBody = {
       model: model,
       messages: finalMessages,
       ...(max_tokens && { max_tokens: parseInt(max_tokens, 10) }),
     };
 
-    const response = await fetch(
-      apiUrl,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(requestBody),
-      }
-    );
+    // Prepare headers
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    };
 
-    const data = await response.json();
+    // Add OpenRouter-specific headers
+    if (selectedModelConfig.provider === "openrouter") {
+      headers["HTTP-Referer"] = "https://lynq.ai"; // Your site URL
+      headers["X-Title"] = "LYNQ AI"; // Your app name
+    }
+
+    // --- RETRY LOGIC: Retry for up to 10 seconds ---
+    const MAX_RETRY_TIME_MS = 10000; // 10 seconds
+    const startTime = Date.now();
+    let lastError = null;
+    let response = null;
+    let data = null;
+    let retryCount = 0;
+
+    while (Date.now() - startTime < MAX_RETRY_TIME_MS) {
+      try {
+        response = await fetch(
+          apiUrl,
+          {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(requestBody),
+          }
+        );
+
+        data = await response.json();
+
+        // If successful response, break out of retry loop
+        if (response.ok && data?.choices?.[0]?.message?.content) {
+          break;
+        }
+
+        // If rate limited or server error, retry
+        if (response.status === 429 || response.status >= 500) {
+          retryCount++;
+          const waitTime = Math.min(1000 * retryCount, 3000); // Exponential backoff, max 3s
+          console.log(`⏳ API failed (${response.status}), retrying in ${waitTime}ms... (Attempt ${retryCount})`);
+          await new Promise(r => setTimeout(r, waitTime));
+          continue;
+        }
+
+        // For other errors, don't retry
+        break;
+
+      } catch (fetchError) {
+        lastError = fetchError;
+        retryCount++;
+        const waitTime = Math.min(1000 * retryCount, 3000);
+        console.log(`⏳ Fetch error, retrying in ${waitTime}ms... (Attempt ${retryCount})`);
+        await new Promise(r => setTimeout(r, waitTime));
+      }
+    }
+
+    if (retryCount > 0) {
+      console.log(`🔄 Total retry attempts: ${retryCount}`);
+    }
+
+    if (!response || !data) {
+      throw lastError || new Error("Failed to get response after retries");
+    }
+
     if (!response.ok) {
       console.error(`${selectedModelConfig.provider} API error:`, data);
       
@@ -963,7 +1036,25 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
       return res.status(500).json({ error: "No reply from model" });
     }
 
-    res.json({ text: reply });
+    // --- POST-PROCESS: Strip reasoning/thinking tags from response ---
+    // Some OpenRouter models (like DeepSeek R1T) include <thinking> tags
+    let cleanReply = reply;
+    if (selectedModelConfig.provider === "openrouter") {
+      // Remove <thinking>...</thinking> blocks
+      cleanReply = cleanReply.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+      // Remove <reasoning>...</reasoning> blocks
+      cleanReply = cleanReply.replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '');
+      // Remove <thought>...</thought> blocks
+      cleanReply = cleanReply.replace(/<thought>[\s\S]*?<\/thought>/gi, '');
+      // Clean up any leftover whitespace
+      cleanReply = cleanReply.trim();
+      
+      if (cleanReply !== reply) {
+        console.log("🧹 OpenRouter: Stripped reasoning tags from response");
+      }
+    }
+
+    res.json({ text: cleanReply });
   } catch (err) {
     console.error("Server-side fetch error:", err);
     res.status(500).json({ error: err.message });

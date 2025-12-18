@@ -122,6 +122,11 @@ body {
   z-index: 999;
 }
 
+/* Light mode sidebar background */
+body:not(.dark-mode) #sidebar {
+  background-color: #fdfdfd;
+}
+
 /* Desktop Collapsed */
 #sidebar.collapsed {
   width: 0;
@@ -3057,6 +3062,74 @@ body.dark-mode .pro-badge {
   color: var(--text-accent);
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+/* Compact Mobile Model Option */
+.model-sheet-option-compact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.model-sheet-option-compact:active {
+  background: var(--bg-primary);
+}
+
+.model-sheet-option-compact i:first-child {
+  font-size: 0.9rem;
+  width: 18px;
+  text-align: center;
+}
+
+.model-sheet-option-compact span {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.model-sheet-option-compact .model-check-icon {
+  opacity: 0;
+  font-size: 0.8rem;
+  color: #10b981;
+}
+
+.model-sheet-option-compact.selected .model-check-icon {
+  opacity: 1;
+}
+
+.model-sheet-option-compact.selected {
+  background: var(--bg-primary);
+}
+
+/* Mobile Provider Header */
+.mobile-provider-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.mobile-provider-header:first-child {
+  margin-top: 0;
+}
+
+.mobile-provider-header i {
+  font-size: 0.65rem;
 }
 
 .model-sheet-option.selected {

@@ -2119,6 +2119,63 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   margin: 6px 0;
 }
 
+/* --- PROVIDER SECTION STYLES (Grouped Model Dropdown) --- */
+.provider-section {
+  margin-bottom: 8px;
+}
+
+.provider-section:last-child {
+  margin-bottom: 0;
+}
+
+.provider-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.provider-header:hover {
+  color: var(--text-heading);
+}
+
+.provider-header span {
+  flex: 1;
+}
+
+.more-chevron {
+  transition: transform 0.2s ease;
+}
+
+.more-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.inline-models {
+  display: flex;
+  flex-direction: column;
+}
+
+.provider-submenu {
+  display: none;
+  flex-direction: column;
+  padding-left: 0;
+  margin-top: 2px;
+  border-top: 1px solid var(--border-primary);
+  padding-top: 4px;
+}
+
+.provider-submenu.active {
+  display: flex;
+}
+
 /* Note: @keyframes fadeIn is defined in style.css */
 
 /* --- MOBILE REDESIGN (GEMINI STYLE) --- */

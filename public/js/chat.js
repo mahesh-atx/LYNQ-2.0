@@ -620,7 +620,12 @@ async function handleSend() {
       currentChat.history = mainChatHistory;
     }
 
-    if (thinkingBubble) thinkingBubble.remove();
+    if (thinkingBubble) {
+      if (thinkingBubble._thinkingInterval) {
+        clearInterval(thinkingBubble._thinkingInterval);
+      }
+      thinkingBubble.remove();
+    }
     if (isResponding) {
       await streamResponse(response);
     }
