@@ -352,7 +352,7 @@ async function getApiResponse(
         systemMessage: systemMessage,
         history: history,
         model: currentSelectedModel,
-        max_tokens: 4000,
+        max_tokens: 6000,
         // Use the button state instead of the keyword guess
         webSearch: webSearchActive,
         canvasMode: effectiveCanvasMode, // Use detected mode

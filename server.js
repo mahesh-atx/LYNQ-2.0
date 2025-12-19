@@ -9,6 +9,8 @@ import mongoose from "mongoose";
 import admin from "firebase-admin";
 import * as cheerio from "cheerio";
 import https from "https";
+// --- NEW: RAG Dependencies ---
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // --- NEW: Setup for __dirname in ES Modules ---
 const __filename = fileURLToPath(import.meta.url);
@@ -327,7 +329,130 @@ app.delete("/api/chats", verifyAuthToken, async (req, res) => {
   }
 });
 
-    // ... (rest of search/scrape code)
+// ============================================
+// RAG SYSTEM (Long-term Memory)
+// ============================================
+
+const VECTOR_STORE_PATH = path.join(__dirname, "data", "vector_store.json");
+let VECTOR_STORE = [];
+
+// Negative phrases to block from auto-memory
+const NEGATIVE_MEMORY_PHRASES = [
+  "unknown", "not known", "don't know", "do not know", 
+  "not specify", "not specified", "no information", "not shared",
+  "not registered", "doesn't have", "does not have", 
+  "no name", "not mentioned", "n/a"
+];
+
+// Initialize Google Generative AI for Embeddings
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_KEY);
+const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+
+// Load Vector Store
+function loadVectorStore() {
+  try {
+    if (fs.existsSync(VECTOR_STORE_PATH)) {
+      const data = fs.readFileSync(VECTOR_STORE_PATH, "utf-8");
+      VECTOR_STORE = JSON.parse(data);
+      console.log(`🧠 Loaded ${VECTOR_STORE.length} memories from vector store.`);
+    } else {
+      console.log("🧠 No vector store found. Starting fresh.");
+      VECTOR_STORE = [];
+    }
+  } catch (err) {
+    console.error("❌ Failed to load vector store:", err);
+    VECTOR_STORE = []; // Fallback
+  }
+}
+
+// Save Vector Store
+function saveVectorStore() {
+  try {
+    fs.writeFileSync(VECTOR_STORE_PATH, JSON.stringify(VECTOR_STORE, null, 2));
+    // console.log("💾 Vector store saved.");
+  } catch (err) {
+    console.error("❌ Failed to save vector store:", err);
+  }
+}
+
+// Generate Embedding
+async function getEmbedding(text) {
+  try {
+    if (!text || typeof text !== 'string') return null;
+    const result = await embeddingModel.embedContent(text);
+    return result.embedding.values;
+  } catch (err) {
+    console.error("❌ Embedding Error:", err.message);
+    return null;
+  }
+}
+
+// Cosine Similarity
+function cosineSimilarity(vecA, vecB) {
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+// Add to Memory
+async function addToMemory(text, metadata = {}) {
+  const vector = await getEmbedding(text);
+  if (vector) {
+    const memory = {
+      id: Date.now().toString(),
+      text,
+      vector,
+      metadata,
+      createdAt: new Date().toISOString()
+    };
+    VECTOR_STORE.push(memory);
+    saveVectorStore();
+    console.log(`🧠 Added to memory: "${text.substring(0, 30)}..."`);
+    return memory.id;
+  }
+  return null;
+}
+
+// Search Memory
+async function searchMemory(query, topK = 3) {
+  const queryVector = await getEmbedding(query);
+  if (!queryVector) return [];
+
+  const scored = VECTOR_STORE.map(memory => ({
+    ...memory,
+    score: cosineSimilarity(queryVector, memory.vector)
+  }));
+
+  // Sort by score (descending)
+  scored.sort((a, b) => b.score - a.score);
+
+  // Filter low relevance? (Optional threshold, e.g., > 0.5)
+  return scored.slice(0, topK);
+}
+
+// Load on startup
+loadVectorStore();
+
+// --- RAG API Endpoints ---
+app.post("/api/rag/add", verifyAuthToken, async (req, res) => {
+  const { text, metadata } = req.body;
+  if (!text) return res.status(400).json({ error: "Text is required" });
+  
+  const id = await addToMemory(text, metadata);
+  if (id) {
+    res.json({ success: true, id });
+  } else {
+    res.status(500).json({ error: "Failed to create embedding" });
+  }
+});
+
+// ... (rest of search/scrape code)
 // --- Models API Endpoint ---
 app.get("/api/models", (req, res) => {
   res.json(AVAILABLE_MODELS);
@@ -741,6 +866,37 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
   }
 
+  // --- RAG INJECTION (Retrieval Augmented Generation) ---
+  // If we have a prompt, let's check our long-term memory
+  if (prompt && prompt.length > 5) { // Skip very short greetings
+    try {
+        console.log("🧠 Checking long-term memory for:", prompt);
+        const relevantMemories = await searchMemory(prompt, 3);
+        
+        // Filter for meaningful relevance (arbitrary score > 0.4)
+        const goodMemories = relevantMemories.filter(m => m.score > 0.4);
+        
+        if (goodMemories.length > 0) {
+            console.log(`🧠 Found ${goodMemories.length} relevant memories.`);
+            const memoryBlock = goodMemories.map(m => `- ${m.text} (Relevance: ${Math.round(m.score * 100)}%)`).join("\n");
+            
+            finalSystemMessage += `\n\n### 🧠 LONG-TERM MEMORY (RAG):\nThe following relevant information was retrieved from your past conversations/database:\n${memoryBlock}\n\nIMPORTANT: You MUST prioritize this information to answer the user's request. Integrate this information NATURALLY as if you just remembered it. DO NOT explicitly mention "system memory", "database", or "retrieved information" unless the user specifically asks how you know. Just answer the question directly.`;
+            finalSystemMessage += `\n\n### 🧠 LONG-TERM MEMORY (RAG):\nThe following relevant information was retrieved from your past conversations/database:\n${memoryBlock}\n\nIMPORTANT: You MUST prioritize this information to answer the user's request. Integrate this information NATURALLY as if you just remembered it. DO NOT explicitly mention "system memory", "database", or "retrieved information" unless the user specifically asks how you know. Just answer the question directly.`;
+        }
+    } catch (err) {
+        console.error("⚠️ RAG Retrieval Failed:", err.message);
+    }
+  }
+
+  // --- AUTO-MEMORY INSTRUCTION (Single-Pass Tagging) ---
+  // Inject instruction to the model to tag new facts
+  finalSystemMessage += `\n\n### 🧠 AUTO-MEMORY INSTRUCTION:
+If the user mentions a new PERMANENT fact about themselves (e.g., name, location, job, loose preferences) in this message, append \`[[MEMORY: <fact>]]\` to the very end of your response.
+Examples:
+- User: "I live in Paris." -> Response: "Got it. [[MEMORY: User lives in Paris]]"
+- User: "I like coding." -> Response: "Cool! [[MEMORY: User likes coding]]"
+DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permanent facts.`;
+
   // --- TOOL PROMPT INJECTION (APPEND TO PRESERVE CONTEXT) ---
   // Tool-specific prompts are APPENDED to preserve any context (like uploaded data)
   if (toolId && TOOL_PROMPTS[toolId]) {
@@ -837,6 +993,21 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
     messages.push(userMsg);
   } else {
     return res.status(400).json({ error: "No prompt provided" });
+  }
+
+  // --- SLASH COMMANDS INTERCEPTION ---
+  if (prompt && prompt.trim().startsWith("/remember")) {
+    const memoryText = prompt.replace("/remember", "").trim();
+    if (memoryText.length < 5) {
+        return res.json({ text: "⚠️ Please provide a longer usage: `/remember My wifi password is 123`" });
+    }
+    
+    try {
+        await addToMemory(memoryText, { source: "user_slash_command" });
+        return res.json({ text: `🧠 **Memory Stored!**\nI have saved: "_${memoryText}_" to my long-term database.` });
+    } catch (err) {
+        return res.json({ text: `❌ Failed to save memory: ${err.message}` });
+    }
   }
 
   try {
@@ -1054,6 +1225,30 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
       }
     }
 
+    // --- AUTO-MEMORY EXTRACTION (Server-Side) ---
+    // Check for [[MEMORY: ...]] tag in the response
+    const memoryRegex = /\[\[MEMORY:\s*(.*?)\]\]/i;
+    const memoryMatch = cleanReply.match(memoryRegex);
+
+    if (memoryMatch) {
+        let fact = memoryMatch[1].trim();
+        console.log(`🧠 Auto-extracted fact: "${fact}"`);
+        
+        // --- NEGATIVE FILTERING ---
+        // Block facts that are actually the AI saying "I don't know" or "User is unknown"
+        const isNegative = NEGATIVE_MEMORY_PHRASES.some(phrase => fact.toLowerCase().includes(phrase));
+        
+        if (isNegative) {
+             console.log(`⚠️ Blocked negative memory: "${fact}"`);
+        } else {
+            // Save to memory (async, don't block response too much)
+            addToMemory(fact, { source: "auto_extraction" }).catch(err => console.error("❌ Auto-save failed:", err));
+        }
+
+        // Remove the tag from the user's view
+        cleanReply = cleanReply.replace(memoryMatch[0], "").trim();
+    }
+
     res.json({ text: cleanReply });
   } catch (err) {
     console.error("Server-side fetch error:", err);
@@ -1099,3 +1294,4 @@ app.listen(port, () => {
     `LYNQ AI app (frontend and backend) listening on http://localhost:${port}`
   );
 });
+ 
