@@ -46,8 +46,14 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
     />
 
+    <link rel="stylesheet" href="css/design-system.css" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/z-index-system.css" />
+    <link rel="stylesheet" href="css/accessibility.css" />
+    <link rel="stylesheet" href="css/loading-states.css" />
+    <link rel="stylesheet" href="css/performance.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
     <link rel="stylesheet" href="css/home.css" />
     <link rel="stylesheet" href="css/profile.css" />
   </head>
@@ -240,6 +246,7 @@
     <script src="js/theme.js"></script>
     <script src="js/model-selector.js"></script>
     <script src="js/chat-list.js"></script>
+    <script src="js/accessibility-utils.js"></script>
     <script src="js/script.js"></script>
     <!-- Note: Chat-specific scripts removed for performance -->
 
@@ -278,44 +285,8 @@
           );
           if (avatarInitialEl) avatarInitialEl.textContent = avatarInitial;
 
-          // Load saved avatar and apply it to profile page
-          const saved = localStorage.getItem("lynq-user-avatar");
-          if (saved) {
-            try {
-              const avatarData = JSON.parse(saved);
-              const profileAvatarEl = document.getElementById("profile-avatar");
-              const profileAvatarImg =
-                document.getElementById("profile-avatar-img");
-              const profileAvatarInitialEl = document.getElementById(
-                "profile-avatar-initial"
-              );
-
-              if (avatarData.type === "upload" && avatarData.dataUrl) {
-                if (profileAvatarImg) {
-                  profileAvatarImg.src = avatarData.dataUrl;
-                  profileAvatarImg.style.display = "block";
-                }
-                if (profileAvatarInitialEl)
-                  profileAvatarInitialEl.style.display = "none";
-                if (profileAvatarEl)
-                  profileAvatarEl.style.background = "transparent";
-              } else if (
-                avatarData.type === "preset" ||
-                avatarData.type === "emoji"
-              ) {
-                if (profileAvatarImg) profileAvatarImg.style.display = "none";
-                if (profileAvatarInitialEl) {
-                  profileAvatarInitialEl.style.display = "flex";
-                  profileAvatarInitialEl.textContent = avatarData.emoji;
-                  profileAvatarInitialEl.style.fontSize = "3rem";
-                }
-                if (profileAvatarEl)
-                  profileAvatarEl.style.background = avatarData.bg;
-              }
-            } catch (e) {
-              console.error("Error loading avatar:", e);
-            }
-          }
+          // Load saved avatar - handled automatically by script.js's loadSavedAvatar
+          // which calls updateAvatarDisplays that handles #profile-avatar
 
           document.getElementById("profile-name").innerText = displayName;
           document.getElementById("profile-email").innerText = user.email;

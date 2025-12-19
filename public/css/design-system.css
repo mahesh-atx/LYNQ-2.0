@@ -1,0 +1,226 @@
+/*
+  Color System - Centralized Color Palette
+  Defines all color values as CSS variables for consistent theming
+*/
+
+:root {
+  /* Brand Colors */
+  --color-primary: #667eea;
+  --color-primary-dark: #764ba2;
+  --color-accent-purple: #8b5cf6;
+  --color-accent-blue: #4285f4;
+  --color-accent-pink: #d96570;
+  
+  /* Gold/Yellow */
+  --color-gold: #ffd700;
+  --color-gold-dark: #fdb931;
+  --color-gold-darker: #d4a800;
+  
+  /* Semantic Colors */
+  --color-success: #10b981;
+  --color-success-light: #38ef7d;
+  --color-warning: #f59e0b;
+  --color-danger: #d32f2f;
+  --color-danger-light: #ff8a80;
+  --color-info: #4facfe;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  --gradient-gold: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  --gradient-success: linear-gradient(135deg, #11998e 0%, var(--color-success-light) 100%);
+  --gradient-warning: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+  --gradient-info: linear-gradient(135deg, var(--color-info) 0%, #00f2fe 100%);
+  --gradient-hero: linear-gradient(135deg, var(--color-accent-blue), #9b72cb, var(--color-accent-pink));
+  
+  /* Border Radius System */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-full: 9999px;
+  
+  /* Spacing System (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Glassmorphism */
+  --glass-blur-sm: 4px;
+  --glass-blur-md: 12px;
+  --glass-blur-lg: 20px;
+  --glass-blur: var(--glass-blur-md);
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  
+  /* Shadows - Simplified for Performance */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  /* Animations & Transitions */
+  --transition-fast: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+  --transition-normal: transform 0.25s ease, opacity 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  --transition-slow: transform 0.4s ease, opacity 0.4s ease, background 0.4s ease;
+  
+  /* Shared Hover Effects */
+  --hover-lift: translateY(-1px);
+  --hover-scale: scale(1.02);
+  --hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  /* Layout Constants */
+  --sidebar-width: 280px;
+  --primary-padding: 5.2vw;
+  
+  /* Legacy compatibility */
+  --bg-gold: var(--gradient-gold);
+
+  /* Semantic Theme Variables - Light Mode (Default) */
+  --bg-primary: #efeded;
+  --bg-secondary: rgba(249, 248, 249, 0.85);
+  --bg-tertiary: #ffffff;
+  --bg-accent: #252425;
+  --bg-chat-bubble-user: #e0e0e0;
+  --bg-input: #f0f0f0;
+  --bg-danger: #ffebee;
+  --bg-success: #e8f5e9;
+
+  --text-primary: #363636;
+  --text-secondary: #555555;
+  --text-heading: #252425;
+  --text-accent: #f9f8f9;
+  --text-danger: #d32f2f;
+  --text-success: #2e7d32;
+
+  --border-primary: #dcdcdc;
+  --border-secondary: #c0c0c0;
+  --border-capsule: #f0f1ef;
+  
+  --bg-tertiary-rgb: 255, 255, 255;
+  --bg-secondary-rgb: 249, 248, 249;
+}
+
+/* --- THEME OVERRIDES --- */
+body.dark-mode {
+  --bg-primary: #121212;
+  --bg-secondary: rgba(30, 30, 30, 0.85);
+  --bg-tertiary: #2a2a2a;
+  --bg-accent: #f9f8f9;
+  --bg-chat-bubble-user: #333333;
+  --bg-input: #1a1a1a;
+  --bg-danger: #2c0b0e;
+  --bg-success: #1b5e20;
+
+  --text-primary: #b0b0b0;
+  --text-secondary: #dcdcdc;
+  --text-heading: #f9f8f9;
+  --text-accent: #1e1e1e;
+  --text-danger: #ff8a80;
+  --text-success: #a5d6a7;
+
+  --border-primary: #444444;
+  --border-secondary: #555555;
+  --border-capsule: #333333;
+
+  --bg-tertiary-rgb: 42, 42, 42;
+  --bg-secondary-rgb: 30, 30, 30;
+
+  --glass-bg: rgba(30, 30, 30, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+}
+
+/* Icon Colors - Use CSS variables instead of inline styles */
+.icon-primary { color: var(--color-primary) !important; }
+.icon-success { color: var(--color-success) !important; }
+.icon-warning { color: var(--color-warning) !important; }
+.icon-danger { color: var(--color-danger) !important; }
+.icon-gold { color: var(--color-gold) !important; }
+.icon-purple { color: var(--color-accent-purple) !important; }
+.icon-blue { color: var(--color-accent-blue) !important; }
+
+/* --- BUTTON HIERARCHY --- */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.95rem;
+  user-select: none;
+}
+
+.btn-primary {
+  background: var(--bg-accent);
+  color: var(--text-accent);
+}
+
+.btn-primary:hover {
+  transform: var(--hover-lift);
+  box-shadow: var(--hover-shadow);
+  opacity: 0.95;
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--text-heading);
+  transform: var(--hover-lift);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  background: rgba(128, 128, 128, 0.1);
+  color: var(--text-heading);
+}
+
+/* Standardized Toolbar Icons */
+.btn-icon-round {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  transition: var(--transition-normal);
+  border: 1px solid var(--border-primary);
+  cursor: pointer;
+}
+
+.btn-icon-round:hover {
+  transform: var(--hover-lift);
+  background: var(--bg-secondary);
+  color: var(--text-heading);
+  border-color: var(--text-secondary);
+}

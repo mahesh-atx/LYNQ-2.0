@@ -1,0 +1,93 @@
+/*
+  Performance Optimizations
+  Reduces backdrop blur usage and optimizes animations
+*/
+
+/* Conditional backdrop blur - only on capable devices */
+@supports (backdrop-filter: blur(10px)) {
+  @media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+    /* Only apply blur on desktop with no motion preference */
+    .blur-capable {
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  }
+}
+
+/* Fallback for non-supporting browsers */
+@supports not (backdrop-filter: blur(10px)) {
+  .tool-dropdown-menu,
+  .input-model-dropdown,
+  #sidebar {
+    background: var(--bg-tertiary);
+    opacity: 0.98;
+  }
+}
+
+/* Reduce blur on mobile for better performance */
+@media (max-width: 768px) {
+  #sidebar,
+  .tool-dropdown-menu,
+  .input-model-dropdown,
+  .pill-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--bg-tertiary);
+  }
+  
+  .guest-notice-banner {
+    backdrop-filter: none !important;
+    background: rgba(255, 215, 0, 0.15);
+  }
+  
+  body:not(.dark-mode) .guest-notice-banner {
+    background: rgba(255, 215, 0, 0.18);
+  }
+}
+
+/* Optimize transitions - avoid 'all' */
+.optimized-transition {
+  /* Only transition specific properties */
+  transition-property: opacity, transform;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Will-change for animations that need it */
+.sidebar-animating {
+  will-change: transform;
+}
+
+.sidebar-animating.complete {
+  will-change: auto;
+}
+
+/* Reduce animation complexity on lower-end devices */
+@media (prefers-reduced-motion: reduce), (max-width: 480px) {
+  .pill-card:hover,
+  .tool-btn-round:hover,
+  .nav-item:hover {
+    transform: none !important;
+  }
+  
+  .spotlight-glow {
+    animation: none !important;
+    opacity: 0.3 !important;
+  }
+}
+
+/* GPU acceleration for specific elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Debounce hover effects on mobile */
+@media (hover: none) {
+  .pill-card:hover,
+  .tool-btn-round:hover,
+  .action-icon:hover {
+    background: inherit;
+    transform: none;
+  }
+}

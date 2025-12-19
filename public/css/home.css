@@ -96,14 +96,28 @@
     transform: translateX(-50%) scale(1);
   }
   50% {
-    opacity: 0.9;
-    transform: translateX(-50%) scale(1.03);
+    opacity: 0.85;
+    transform: translateX(-50%) scale(1.02);
   }
 }
 
-/* Light mode - hide spotlight completely */
+.spotlight-glow {
+  will-change: opacity, transform;
+}
+
+/* Light mode - soft subtle glow */
 body:not(.dark-mode) .hero-spotlight-bg {
-  display: none;
+  display: block;
+  opacity: 0.3;
+  mix-blend-mode: soft-light;
+}
+
+body:not(.dark-mode) .spotlight-main {
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+}
+
+body:not(.dark-mode) .spotlight-accent {
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
 }
 
 /* Light mode input container styling */
@@ -166,7 +180,7 @@ body:not(.dark-mode) .tool-btn-round:hover {
   background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.8);
   border-color: var(--text-secondary);
   color: var(--text-heading);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
@@ -191,8 +205,12 @@ body:not(.dark-mode) .pill-card:hover {
 @media (max-width: 768px) {
   .hero-question {
     font-size: 2.2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     padding: 0 10px;
+  }
+  
+  .hero-description {
+    display: none;
   }
   
   .greeting-sub {
@@ -309,7 +327,7 @@ body:not(.dark-mode) .pill-card:hover {
 }
 
 /* --- VIEW SECTION (SCROLL FIX) --- */
-/* MODIFIED: Changed to row layout */
+/* Chat and canvas side-by-side layout */
 #home-view {
   overflow: hidden;
   /* Hide overflow on parent */
@@ -319,7 +337,7 @@ body:not(.dark-mode) .pill-card:hover {
   /* Make chat and canvas side-by-side */
 }
 
-/* NEW: Wrapper for chat column */
+/* Chat column wrapper */
 #chat-wrapper {
   position: relative; /* Anchor for absolute banner */
   flex: 1;
@@ -413,10 +431,9 @@ body:not(.dark-mode) .guest-banner-content i {
   /* padding: 20px var(--primary-padding); */
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  /* gap: 25px; */
   overflow-y: auto;
-  /* Chat container scrolls */
-  /* NEW: Custom scrollbar styling */
+  /* Custom scrollbar styling */
   scrollbar-width: thin;
   /* For Firefox */
   scrollbar-color: var(--border-secondary) var(--bg-primary);
@@ -474,8 +491,43 @@ body:not(.dark-mode) .guest-banner-content i {
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--text-heading);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   line-height: 1.1;
+  
+  /* Spotlight Effect */
+  background: linear-gradient(
+    to right,
+    var(--text-heading) 0%,
+    var(--text-heading) 40%,
+    var(--spotlight-accent-color, #8b5cf6) 50%,
+    var(--text-heading) 60%,
+    var(--text-heading) 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShine 5s linear infinite;
+}
+
+/* Light mode spotlight color */
+body:not(.dark-mode) .hero-question {
+  --spotlight-accent-color: #6366f1; /* Indigo for light mode */
+}
+
+/* Dark mode spotlight color */
+body.dark-mode .hero-question {
+  --spotlight-accent-color: #a78bfa; /* Lighter violet for dark mode */
+}
+
+@keyframes textShine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.hero-description {
+  display: none;
 }
 
 .welcome-text span#welcome-name-span {
@@ -496,7 +548,6 @@ body:not(.dark-mode) .guest-banner-content i {
 
 
 
-/* REMOVED: suggestion-grid and suggestion-card styles (using unified pills) */
 
 .message {
   display: flex;
@@ -560,12 +611,12 @@ body:not(.dark-mode) .guest-banner-content i {
   width: fit-content;
 }
 
-/* NEW: Hide bubble if it's empty (e.g., user only sent a file) */
+/* Hide bubble if it's empty (e.g., user only sent a file) */
 .bubble:empty {
   display: none;
 }
 
-/* NEW: Add margin between attachment and bubble */
+/* Add margin between attachment and bubble */
 .message-attachment-container + .bubble {
   margin-top: 10px;
 }
@@ -649,7 +700,7 @@ body:not(.dark-mode) .guest-banner-content i {
   padding: 15px;
   border-radius: 12px;
   margin: 12px 0;
-  /* NEW: Added text wrapping to remove horizontal scrollbar */
+  /* Text wrapping to prevent horizontal scroll */
   white-space: pre-wrap;
   /* word-break: break-all; */
 }
@@ -783,19 +834,31 @@ body.dark-mode .btn-cancel {
 .message-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
   background: var(--bg-tertiary);
   border: 1px solid var(--border-capsule);
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   width: fit-content;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .message:hover .message-actions {
   opacity: 1;
+}
+
+/* Always show on mobile/touch devices */
+@media (hover: none), (max-width: 768px) {
+  .message-actions {
+    opacity: 0.7;
+  }
+  
+  .message-actions:active,
+  .message:active .message-actions {
+    opacity: 1;
+  }
 }
 
 .action-icon {
@@ -894,6 +957,8 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   border: 1px solid transparent;
   width: 38px;
   height: 38px;
+  min-width: 38px;
+  min-height: 38px;
   border-radius: 50%;
   cursor: pointer;
   color: var(--text-secondary);
@@ -901,6 +966,8 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  aspect-ratio: 1;
 }
 
 .tool-btn-round:hover {
@@ -1325,7 +1392,7 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
     padding: 0;
   }
 
-  /* MODIFIED: Canvas pane responsive (fullscreen overlay) */
+  /* Canvas pane responsive (fullscreen overlay on mobile) */
   #canvas-pane {
     position: absolute;
     width: 100%;
@@ -1342,14 +1409,14 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
     opacity: 1 !important;
     /* No fade, just slide */
     transition: transform 0.3s ease-in-out;
-    /* NEW: Reset margin/radius for mobile overlay */
+    /* Reset margin/radius for mobile overlay */
     margin: 0 !important;
     border-radius: 0;
     height: 100%;
     border: none;
     box-shadow: none;
-    /* NEW: Ensure background matches for mobile */
-    background: #2e2e2e;
+    /* Ensure background matches for mobile */
+    background: var(--bg-primary);
     /* Dark background for mobile too */
   }
 
@@ -1359,7 +1426,6 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   }
 }
 
-/* --- MODIFIED: CANVAS PANE STYLES (Card-style from image) --- */
 #canvas-pane {
   flex-basis: 0;
   /* Start closed */
@@ -1368,7 +1434,7 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   margin: 10px 10px 10px 0;
   /* Margin on top/right/bottom */
 
-  /* NEW: Card appearance from image */
+  /* Card appearance */
   background: #2e2e2e;
   /* Dark content background */
   border-radius: 12px;
@@ -1470,7 +1536,7 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 
 /* --- END NEW CANVAS HEADER --- */
 
-/* MODIFIED: Canvas Content */
+/* Canvas Content */
 #canvas-content {
   flex: 1;
   /* Takes up available space */
@@ -1503,7 +1569,7 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   /* Styled by atom-one-dark theme */
 }
 
-/* MODIFIED: Canvas Placeholder */
+/* Canvas Placeholder */
 #canvas-placeholder {
   position: absolute;
   top: 50%;
@@ -1580,7 +1646,7 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
   /* 1. Fixed Input Area */
   /* Ensure chat container scrolls above the fixed input */
   #chat-container {
-    padding-bottom: 140px;
+    /* padding-bottom: 140px; */
     /* Increase padding so messages clear the fixed input */
     height: 100%;
     /* Ensure it takes full height of parent */
@@ -1590,14 +1656,13 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
     /* Prevents scroll chaining to parent */
   }
 
-  /* Make the input area fixed at the bottom on mobile */
+  /* Make the input area sticky at the bottom on mobile (better than fixed) */
   .input-area-wrapper.fixed-mobile-input {
-    position: fixed;
-    bottom: calc(20px + env(safe-area-inset-bottom));
-    /* FIX: iOS safe area support */
+    position: sticky;
+    bottom: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: var(--z-sticky);
 
     padding: 0 0;
     width: 100%;
@@ -1605,12 +1670,15 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
     background: var(--bg-primary);
     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
     margin: 0;
+    
+    /* iOS safe area support */
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* Input Container visual update */
   .input-container {
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
     padding: 5px 8px 1em 8px;
     border: none;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
@@ -1802,7 +1870,7 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 } */
 }
 
-/* FIX: Force the avatar to show in the top bar on mobile */
+/* Force avatar to show in top bar on mobile */
 .top-actions #top-profile-btn-user .avatar {
   display: flex !important;
   /* Override global hide */

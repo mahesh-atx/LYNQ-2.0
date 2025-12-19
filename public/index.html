@@ -68,99 +68,22 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
     </script>
 
+    <link rel="stylesheet" href="css/design-system.css" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/z-index-system.css" />
+    <link rel="stylesheet" href="css/accessibility.css" />
+    <link rel="stylesheet" href="css/loading-states.css" />
+    <link rel="stylesheet" href="css/performance.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
     <link rel="stylesheet" href="css/home.css" />
     <link rel="stylesheet" href="css/data-analysis-ui.css" />
-
-    <style>
-      .confirm-modal-overlay {
-        position: fixed;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.6);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      }
-
-      .confirm-modal-overlay.active {
-        display: flex;
-      }
-
-      .confirm-modal {
-        background-color: var(--bg-secondary);
-        border-radius: 12px;
-        padding: 24px;
-        width: 90%;
-        max-width: 400px;
-        border: 1px solid var(--border-primary);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        animation: modalFadeIn 0.2s ease-out;
-      }
-
-      .confirm-modal h3 {
-        margin-top: 0;
-        margin-bottom: 10px;
-        color: var(--text-primary);
-      }
-
-      .confirm-modal p {
-        margin-bottom: 20px;
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        line-height: 1.5;
-        word-break: break-word;
-      }
-
-      .confirm-modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-
-      .confirm-btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s;
-      }
-
-      .confirm-btn-cancel {
-        background-color: var(--bg-tertiary);
-        color: var(--text-secondary);
-      }
-
-      .confirm-btn-cancel:hover {
-        background-color: var(--border-primary);
-      }
-
-      .confirm-btn-delete {
-        background-color: #d9534f;
-        color: white;
-      }
-
-      .confirm-btn-delete:hover {
-        background-color: #c9302c;
-      }
-
-      @keyframes modalFadeIn {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-    </style>
   </head>
 
   <body class="dark-mode">
+    <!-- Skip to main content for keyboard navigation -->
+    <a href="#chat-input" class="skip-to-main">Skip to main content</a>
+
     <!-- Hero Spotlight Glow Background Effect -->
     <div class="hero-spotlight-bg" aria-hidden="true">
       <div class="spotlight-glow spotlight-main"></div>
@@ -251,30 +174,30 @@
                 >
                   <button
                     class="pill-card"
-                    onclick="sendSuggestion('Make a website digital agency with all sctions.')"
+                    onclick="sendSuggestion('Make a website digital agency with all sections.')"
                   >
-                    <i class="fa-solid fa-code" style="color: #667eea"></i>
+                    <i class="fa-solid fa-code icon-primary"></i>
                     website
                   </button>
                   <button
                     class="pill-card"
                     onclick="sendSuggestion('Generate a modern color palette for a SaaS dashboard.')"
                   >
-                    <i class="fa-solid fa-palette" style="color: #f59e0b"></i>
+                    <i class="fa-solid fa-palette icon-warning"></i>
                     Color Palette
                   </button>
                   <button
                     class="pill-card"
                     onclick="sendSuggestion('Write a Python script to automate file organization.')"
                   >
-                    <i class="fa-brands fa-python" style="color: #10b981"></i>
+                    <i class="fa-brands fa-python icon-success"></i>
                     Python Script
                   </button>
                   <button
                     class="pill-card"
                     onclick="sendSuggestion('Explain the key differences between SQL and NoSQL.')"
                   >
-                    <i class="fa-solid fa-database" style="color: #ec4899"></i>
+                    <i class="fa-solid fa-database icon-danger"></i>
                     SQL vs NoSQL
                   </button>
                 </div>
@@ -316,10 +239,16 @@
               <div class="input-container">
                 <div id="attachment-preview-container"></div>
 
+                <label for="chat-input" class="sr-only"
+                  >Chat message input</label
+                >
                 <textarea
                   id="chat-input"
                   rows="1"
                   placeholder="Ask LYNQ anything..."
+                  aria-label="Type your message to LYNQ AI"
+                  role="textbox"
+                  aria-multiline="true"
                 ></textarea>
                 <div class="input-toolbar">
                   <div class="toolbar-left">
@@ -329,6 +258,7 @@
                         class="tool-btn-round"
                         id="attach-file-btn"
                         title="Attach"
+                        aria-label="Attach files, photos, or camera"
                       >
                         <i class="fa-solid fa-plus"></i>
                       </button>
@@ -370,7 +300,12 @@
 
                     <!-- Tools Button with Dropdown -->
                     <div class="tools-dropdown-wrapper">
-                      <button class="tools-btn" id="tools-btn" title="Tools">
+                      <button
+                        class="tools-btn"
+                        id="tools-btn"
+                        title="Tools"
+                        aria-label="Open tools menu for Canvas, Web Search, and more"
+                      >
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                         <span>Tools</span>
                       </button>
@@ -465,6 +400,8 @@
                         class="input-model-btn"
                         id="input-model-btn"
                         onclick="toggleInputModelDropdown()"
+                        aria-label="Select AI model"
+                        aria-haspopup="true"
                       >
                         <span id="input-model-name">llama-3.1</span>
                         <i class="fa-solid fa-chevron-down"></i>
@@ -476,13 +413,18 @@
                         <!-- Dynamic content will be loaded here -->
                       </div>
                     </div>
-                    <button class="tool-btn-round" id="voice-btn">
+                    <button
+                      class="tool-btn-round"
+                      id="voice-btn"
+                      aria-label="Voice input"
+                    >
                       <i class="fa-solid fa-microphone-lines"></i>
                     </button>
                     <button
                       class="tool-btn-round send-btn"
                       id="send-btn"
                       onclick="handleSend()"
+                      aria-label="Send message"
                     >
                       <i class="fa-solid fa-arrow-up"></i>
                     </button>
@@ -548,7 +490,7 @@
                   <i class="fa-solid fa-italic"></i>
                 </button>
                 <button
-                  title="Heating"
+                  title="Heading"
                   data-format="heading"
                   class="tool-btn-round little"
                 >
@@ -592,6 +534,13 @@
               </div>
             </div>
 
+            <img
+              id="header-avatar-img"
+              src=""
+              alt="Profile"
+              style="display: none"
+              loading="lazy"
+            />
             <div id="canvas-preview-wrapper" style="display: none">
               <div id="canvas-preview-placeholder">
                 <i class="fa-solid fa-eye"></i>
@@ -655,6 +604,7 @@
     <script src="js/theme.js"></script>
     <script src="js/model-selector.js"></script>
     <script src="js/chat-list.js"></script>
+    <script src="js/accessibility-utils.js"></script>
     <script src="js/script.js"></script>
     <!-- Modular Chat Page Scripts (split from home.js) -->
     <script src="js/canvas.js"></script>
@@ -667,6 +617,7 @@
     <script src="js/message-renderer.js"></script>
     <script src="js/stream-handler.js"></script>
     <script src="js/chat-actions.js"></script>
+    <script src="js/welcome-personalization.js"></script>
     <script src="js/chat.js"></script>
     <script>
       // Initialize shared components

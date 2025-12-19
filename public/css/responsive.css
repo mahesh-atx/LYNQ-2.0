@@ -1,0 +1,108 @@
+/*
+  Responsive Design Enhancements
+  Handles tablet breakpoints, flexible constraints, and mobile-specific fixes
+*/
+
+/* --- #46 & #49: Tablet Breakpoints (768px - 1024px) --- */
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root {
+    --sidebar-width: 280px; /* Constrained for tablets */
+  }
+  
+  #sidebar:not(.collapsed) {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+  }
+  
+  #canvas-pane.active {
+    flex-basis: 50%; /* Adjust canvas width for tablets */
+  }
+  
+  .hero-question {
+    font-size: 3.5rem; /* Slightly smaller for tablets */
+  }
+}
+
+/* --- #47: Flexible Width Constraints --- */
+.container-fluid {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+@media (max-width: 1200px) {
+  .welcome-screen {
+    max-width: 90%;
+  }
+}
+
+/* --- #48: Mobile Action Sheet Polishing --- */
+@media (max-width: 768px) {
+  .sheet-container {
+    padding-bottom: env(safe-area-inset-bottom);
+    border-radius: 24px 24px 0 0 !important;
+  }
+  
+  /* Prevent overlap with the fixed input area */
+  .modal-overlay.active {
+    z-index: var(--z-modal);
+  }
+}
+
+/* --- #50: Mobile Vertical Spacing --- */
+@media (max-width: 768px) {
+  .welcome-screen {
+    min-height: 40vh; /* Reduced from 60vh to prevent excessive scrolling on small screens */
+    padding-top: 10vh;
+    padding-bottom: 20px;
+  }
+  
+  .hero-question {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .greeting-sub {
+    font-size: 1.25rem;
+  }
+  
+  .pill-card {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+}
+
+/* --- #51: Canvas Mobile Scaling --- */
+@media (max-width: 768px) {
+  #canvas-pane.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: var(--z-modal);
+    margin: 0;
+    border-radius: 0;
+    flex-basis: 100%;
+  }
+  
+  .canvas-header {
+    padding: 12px 16px;
+  }
+  
+  #monaco-editor-container {
+    height: calc(100% - 60px); /* Adjust for header */
+  }
+}
+
+/* Small Device Optimization (< 360px) */
+@media (max-width: 360px) {
+  .hero-question {
+    font-size: 2rem;
+  }
+  
+  .top-logo-container {
+    transform: scale(0.9);
+  }
+}

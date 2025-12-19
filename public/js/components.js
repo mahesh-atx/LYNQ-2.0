@@ -190,7 +190,7 @@ function injectTopBar(activePage = '') {
 
         <div class="header-profile-container" id="header-profile-container" style="display: none;">
           <button class="header-profile-avatar" id="header-profile-avatar" onclick="toggleHeaderProfileMenu()" title="Profile">
-            <img id="header-avatar-img" src="" alt="Profile" style="display: none;">
+            <img id="header-avatar-img" src="" alt="Profile" style="display: none;" loading="lazy">
             <span id="header-avatar-initial">U</span>
           </button>
           
@@ -198,7 +198,7 @@ function injectTopBar(activePage = '') {
           <div class="header-profile-dropdown" id="header-profile-dropdown">
             <div class="profile-dropdown-header">
               <div class="profile-dropdown-avatar" id="dropdown-avatar">
-                <img id="dropdown-avatar-img" src="" alt="Profile" style="display: none;">
+                <img id="dropdown-avatar-img" src="" alt="Profile" style="display: none;" loading="lazy">
                 <span id="dropdown-avatar-initial">U</span>
               </div>
               <div class="profile-dropdown-info">

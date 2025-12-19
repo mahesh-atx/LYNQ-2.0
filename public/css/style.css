@@ -1,72 +1,6 @@
-﻿/* --- VARIABLES --- */
-:root {
-  --primary-padding: 5.2vw;
-  --sidebar-width: 280px;
+﻿/* Body & Elements (Variables now in design-system.css) */
 
-  /* Light Theme - matching lynq improved */
-  --bg-primary: #efeded;
-  --bg-secondary: rgba(249, 248, 249, 0.85);
-  /* Glassy */
-  --bg-tertiary: #ffffff;
-  --bg-accent: #252425;
-  --bg-chat-bubble-user: #e0e0e0;
-  --bg-input: #f0f0f0;
-  --bg-gold: linear-gradient(135deg, #ffd700 0%, #fdb931 100%);
-  --bg-danger: #ffebee;
-  --bg-success: #e8f5e9;
-
-  /* Light mode text colors - matching lynq improved */
-  --text-primary: #363636;
-  --text-secondary: #555555;
-  --text-heading: #252425;
-  --text-accent: #f9f8f9;
-  --text-danger: #d32f2f;
-  --text-success: #2e7d32;
-
-  --border-primary: #dcdcdc;
-  --border-secondary: #c0c0c0;
-  --border-capsule: #f0f1ef;
-
-  --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-  --glass-blur: blur(16px);
-  
-  /* Light Theme RGB values for glassmorphism */
-  --bg-tertiary-rgb: 255, 255, 255;
-  --bg-secondary-rgb: 249, 248, 249;
-}
-
-body.dark-mode,
-html.dark-mode {
-  --bg-primary: #121212;
-  --bg-secondary: rgba(30, 30, 30, 0.85);
-  /* Glassy */
-  --bg-tertiary: #2a2a2a;
-  --bg-accent: #f9f8f9;
-  --bg-chat-bubble-user: #333333;
-  --bg-input: #1a1a1a;
-  --bg-danger: #2c0b0e;
-  --bg-success: #1b5e20;
-
-  --text-primary: #b0b0b0;
-  --text-secondary: #dcdcdc;
-  --text-heading: #f9f8f9;
-  --text-accent: #1e1e1e;
-  --text-danger: #ff8a80;
-  --text-success: #a5d6a7;
-
-  --border-primary: #444444;
-  --border-secondary: #555555;
-  --border-capsule: #333333;
-
-  --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
-  
-  /* Dark Theme RGB values for glassmorphism */
-  --bg-tertiary-rgb: 42, 42, 42;
-  --bg-secondary-rgb: 30, 30, 30;
-}
-
-/* --- IMPORTANT FIX: PRELOAD CLASS --- */
-/* Prevents transitions firing on page load */
+/* --- PRELOAD CLASS --- */
 .preload * {
   transition: none !important;
 }
@@ -84,8 +18,93 @@ body {
   width: 100%;
   overflow: hidden;
   background-color: var(--bg-primary);
-  /* REMOVED: transition: all 0.3s ease; (Caused theme flicker) */
   color: var(--text-primary);
+}
+
+/* ============================================
+   SHARED MODAL STYLES (Moved from index.html)
+   ============================================ */
+.confirm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-overlay);
+}
+
+.confirm-modal-overlay.active {
+  display: flex;
+}
+
+.confirm-modal {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-lg);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.confirm-modal h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+
+.confirm-modal p {
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.confirm-btn-cancel {
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.confirm-btn-cancel:hover {
+  background-color: var(--border-primary);
+}
+
+.confirm-btn-delete {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.confirm-btn-delete:hover {
+  background-color: #c9302c;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* --- LAYOUT --- */
@@ -112,19 +131,19 @@ body {
   padding: 20px;
   /* Border radius animation - starts rounded */
   border-radius: 0 24px 24px 0;
-  /* Keeping specific transitions for sidebar movement */
-  transition: transform 0.3s ease, min-width 0.3s ease, padding 0.3s ease,
-    border 0.3s ease, border-radius 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 100;
+  /* Simplified transitions for better performance */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: var(--z-sidebar);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   overflow-x: hidden;
-  z-index: 999;
 }
 
 /* Light mode sidebar background */
 body:not(.dark-mode) #sidebar {
   background-color: #fdfdfd;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05); /* Added depth */
 }
 
 /* Desktop Collapsed */
@@ -1282,11 +1301,9 @@ body.dark-mode .pro-badge {
     position: fixed;
     width: 80%;
     max-width: 320px;
-    /* FIX: Constrain sidebar width on tablets */
     margin-left: 0;
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-    z-index: 2000;
-    /* FIX: Normalized z-index */
+    z-index: var(--z-sidebar);
   }
 
   #sidebar.active {

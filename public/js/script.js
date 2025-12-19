@@ -148,10 +148,17 @@ function toggleProfilePopup(forceState) {
 
   // 3. Toggle Visibility
   if (forceState !== undefined) {
-    if (forceState) modalWrapper.classList.add("active");
-    else modalWrapper.classList.remove("active");
+    if (forceState) {
+      modalWrapper.classList.add("active");
+      if (window.AccessibilityUtils) window.AccessibilityUtils.trapFocus(modalWrapper);
+    } else {
+      modalWrapper.classList.remove("active");
+    }
   } else {
-    modalWrapper.classList.toggle("active");
+    const isActive = modalWrapper.classList.toggle("active");
+    if (isActive && window.AccessibilityUtils) {
+      window.AccessibilityUtils.trapFocus(modalWrapper);
+    }
   }
 }
 
@@ -215,59 +222,15 @@ async function getSystemMessage(taskSpecificContext) {
   return finalPrompt || null;
 }
 
-function saveSidebarState(isCollapsed) {
-  localStorage.setItem(
-    "lynq-sidebar-collapsed",
-    isCollapsed ? "true" : "false"
-  );
-}
+// function saveSidebarState removed - handles by sidebar.js
 
 async function loadState(loadChats = true) {
-  // Theme check
-  const savedTheme = localStorage.getItem("lynq-theme");
+  // 1. Initialize Theme and Sidebar from shared modules
+  if (typeof initTheme === "function") initTheme();
+  if (typeof initSidebar === "function") initSidebar();
 
-  // NOTE: Inline script handles body class. We just sync the toggle.
-  const settingsToggle = document.getElementById("settings-theme-toggle");
+  // 2. Extra page-specific state logic below
 
-  if (savedTheme === "light") {
-    document.body.classList.remove("dark-mode");
-    document.documentElement.classList.remove("dark-mode");
-    if (settingsToggle) settingsToggle.checked = false;
-  } else {
-    document.body.classList.add("dark-mode");
-    document.documentElement.classList.add("dark-mode");
-    localStorage.setItem("lynq-theme", "dark");
-    if (settingsToggle) settingsToggle.checked = true;
-  }
-  // --- Accent Color Check ---
-  const savedAccent = localStorage.getItem("lynq-accent-color");
-  if (savedAccent) {
-    // Apply to the global CSS variable
-    document.documentElement.style.setProperty("--bg-gold", savedAccent);
-
-    // Update spotlight colors to match accent
-    if (typeof window.updateSpotlightColors === "function") {
-      window.updateSpotlightColors(savedAccent);
-    }
-
-    // Optional: Try to update the Logo icon if it exists on this page
-    // (Wait slightly for DOM to be ready if needed, or apply directly)
-    setTimeout(() => {
-      const logoIcon = document.querySelector(".top-logo-title i.fa-bolt");
-      if (logoIcon) logoIcon.style.color = savedAccent;
-    }, 50);
-  }
-
-  // Sidebar state check - FORCE CLOSED DEFAULT
-  if (sidebar) {
-    if (window.innerWidth > 768) {
-      // Force collapsed class on desktop load
-      sidebar.classList.add("collapsed");
-    } else {
-      // Ensure inactive on mobile load
-      sidebar.classList.remove("active");
-    }
-  }
 
   // Check URL for active chat ID on initial load
   const urlParams = new URLSearchParams(window.location.search);
@@ -405,54 +368,9 @@ function showToast(message) {
   }, 3000);
 }
 
-function toggleTheme() {
-  if (!body) return;
-  body.classList.toggle("dark-mode");
-  document.documentElement.classList.toggle("dark-mode");
+/* toggleTheme removed - handled by theme.js */
 
-  if (body.classList.contains("dark-mode")) {
-    localStorage.setItem("lynq-theme", "dark");
-  } else {
-    localStorage.setItem("lynq-theme", "light");
-  }
-
-  const settingsToggle = document.getElementById("settings-theme-toggle");
-  if (settingsToggle) {
-    settingsToggle.checked = body.classList.contains("dark-mode");
-  }
-}
-
-function toggleSidebar() {
-  if (!sidebar) return;
-
-  if (window.innerWidth <= 768) {
-    // Mobile mode
-    const isActive = sidebar.classList.toggle("active");
-    if (mobileOverlay) {
-      mobileOverlay.classList.toggle("active", isActive);
-    }
-  } else {
-    // Desktop mode
-    const isCollapsed = sidebar.classList.toggle("collapsed");
-    saveSidebarState(isCollapsed); // Save the new state
-  }
-}
-
-function closeSidebar() {
-  if (!sidebar) return;
-
-  if (window.innerWidth <= 768) {
-    // Mobile mode
-    sidebar.classList.remove("active");
-    if (mobileOverlay) {
-      mobileOverlay.classList.remove("active");
-    }
-  } else {
-    // Desktop mode
-    sidebar.classList.add("collapsed");
-    saveSidebarState(true); // Save the new state
-  }
-}
+/* toggleSidebar and closeSidebar removed - handled by sidebar.js */
 
 function renderRecentChats() {
   const container = document.getElementById("recent-chats-container");
@@ -545,7 +463,12 @@ function renderRecentChats() {
 
 function togglePricing() {
   const modal = document.getElementById("pricing-modal");
-  if (modal) modal.classList.toggle("active");
+  if (modal) {
+    const isActive = modal.classList.toggle("active");
+    if (isActive && window.AccessibilityUtils) {
+      window.AccessibilityUtils.trapFocus(modal);
+    }
+  }
 }
 
 function toggleModelDropdown() {
@@ -599,6 +522,9 @@ function showDeleteConfirm(chatId, chatTitle) {
   };
 
   confirmDeleteModal.classList.add("active");
+  if (window.AccessibilityUtils) {
+    window.AccessibilityUtils.trapFocus(confirmDeleteModal);
+  }
 }
 
 async function executeDelete(chatId) {
@@ -876,20 +802,7 @@ function updateUIAfterAuth(user) {
 }
 
 // --- NEW: Sidebar Profile Menu Functions ---
-function toggleSidebarProfileMenu() {
-  const menu = document.getElementById("sidebar-profile-menu");
-  if (menu) {
-    const isVisible = menu.style.display === "flex";
-    menu.style.display = isVisible ? "none" : "flex";
-  }
-}
-
-function closeSidebarProfileMenu() {
-  const menu = document.getElementById("sidebar-profile-menu");
-  if (menu) {
-    menu.style.display = "none";
-  }
-}
+/* Sidebar Profile Menu functions removed - handled by sidebar.js */
 
 // --- NEW: Header Model Dropdown Functions ---
 // --- NEW: Header Model Dropdown Functions ---

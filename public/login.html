@@ -1,761 +1,820 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Login / Sign Up — LYNQ AI</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/design-system.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/z-index-system.css" />
+    <link rel="stylesheet" href="css/accessibility.css" />
+    <link rel="stylesheet" href="css/performance.css" />
+    <style>
+      /* --- RESET & BASE --- */
+      body {
+        background-color: var(--bg-primary);
+        transition: background-color 0.3s ease;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow-y: auto;
+        /* FIX: Allow scrolling when keyboard opens on mobile */
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Login / Sign Up — LYNQ AI</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="apple-touch-icon" sizes="180x180" href="./favicons/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png" />
-  <link rel="manifest" href="./favicons/site.webmanifest" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/animations.css" />
-  <style>
-    /* --- RESET & BASE --- */
-    body {
-      background-color: var(--bg-primary);
-      transition: background-color 0.3s ease;
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      overflow-y: auto;
-      /* FIX: Allow scrolling when keyboard opens on mobile */
-    }
+      body.dark-mode {
+        background-color: #121212;
+      }
 
-    body.dark-mode {
-      background-color: #121212;
-    }
+      /* --- MAIN WRAPPER (THE BACKDROP) --- */
+      .auth-wrapper {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        /* CENTER THE CARD */
+        align-items: center;
+        justify-content: center;
+        background-color: var(--bg-primary);
+        padding: 20px;
+      }
 
-    /* --- MAIN WRAPPER (THE BACKDROP) --- */
-    .auth-wrapper {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      /* CENTER THE CARD */
-      align-items: center;
-      justify-content: center;
-      background-color: var(--bg-primary);
-      padding: 20px;
-    }
-
-    /* --- FLOATING AUTH CARD --- */
-    .auth-card {
-      display: flex;
-      width: 100%;
-      max-width: 1000px;
-      /* Slightly narrower for compactness */
-      height: 80vh;
-      /* Slightly shorter */
-      max-height: 700px;
-      background: var(--bg-tertiary);
-      overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      border: 1px solid var(--border-primary);
-      position: relative;
-    }
-
-    /* --- LEFT SIDE: FORM --- */
-    .auth-left {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px;
-      /* Reduced padding */
-      position: relative;
-      /* overflow-y: auto;  Kept as fallback, but layout is compacted to avoid it */
-    }
-
-    .login-container {
-      width: 100%;
-      max-width: 380px;
-      background: transparent;
-      padding: 0;
-      text-align: center;
-      animation: fadeIn 0.5s ease;
-    }
-
-    .login-header {
-      margin-bottom: 20px;
-      /* Reduced margin */
-    }
-
-    .login-header .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      color: var(--text-heading);
-      margin-bottom: 10px;
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .login-header .logo i {
-      color: #ffd700;
-      font-size: 1.3rem;
-    }
-
-    .login-header h1 {
-      font-size: 1.8rem;
-      /* Smaller font */
-      color: var(--text-heading);
-      margin-bottom: 5px;
-      font-weight: 600;
-    }
-
-    .login-header p {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    /* --- FORM ELEMENTS --- */
-    .provider-buttons {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      /* Reduced margin */
-    }
-
-    .provider-btn {
-      flex: 1;
-      padding: 10px;
-      /* Smaller padding */
-      border-radius: 10px;
-      border: 1px solid var(--border-primary);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-weight: 500;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .provider-btn:hover {
-      background: var(--bg-secondary);
-      border-color: var(--text-heading);
-    }
-
-    .divider {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: var(--border-primary);
-    }
-
-    .login-form {
-      display: grid;
-      gap: 12px;
-      /* Reduced gap between inputs */
-      text-align: left;
-    }
-
-    .login-form label {
-      display: none;
-    }
-
-    .login-form input {
-      width: 100%;
-      padding: 12px;
-      /* Smaller input padding */
-      /* text-indent removed */
-      margin-bottom: 12px;
-      /* ADDED: Block (vertical) margin */
-      border-radius: 10px;
-      border: 1px solid var(--border-primary);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      outline: none;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-    }
-
-    .login-form input:focus {
-      border-color: var(--text-heading);
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .login-btn {
-      margin-top: 5px;
-      width: 100%;
-      padding: 12px;
-      /* Smaller button padding */
-      background: #000;
-      color: #fff;
-      border-radius: 10px;
-      border: none;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.2s;
-    }
-
-    body.dark-mode .login-btn {
-      background: #fff;
-      color: #000;
-    }
-
-    .login-btn:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
-    .toggle-link {
-      margin-top: 20px;
-      /* Reduced margin */
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .toggle-link a {
-      color: var(--text-heading);
-      font-weight: 600;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
-    /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
-    /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
-    .auth-right {
-      flex: 1;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: end;
-      align-items: center;
-      padding: 40px;
-      text-align: left;
-      /* Simple background now, we add the gradient overlay via a new class */
-      background: url(assets/download.jpeg);
-      background-size: cover;
-      background-position: center;
-      overflow: hidden;
-    }
-
-    /* --- NEW OVERLAY CLASS --- */
-    .image-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      /* Dark blue/black gradient for a more modern, deep contrast */
-      background: linear-gradient(180deg,
-          rgba(18, 18, 18, 0.2) 0%,
-          /* Lighter dark at the top */
-          rgba(18, 18, 18, 0.8) 100%
-          /* Heavier dark at the bottom where the text is */
-        );
-      z-index: 1;
-      /* Below the content (z-index: 2) */
-    }
-
-    .overlay-content {
-      position: relative;
-      z-index: 2;
-      color: white;
-      max-width: 600px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      /* align-items: center; */
-    }
-
-    .overlay-title {
-      font-size: 2.5rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      line-height: 1.1;
-    }
-
-    .overlay-sub {
-      font-size: 1rem;
-      opacity: 0.8;
-      margin-bottom: 30px;
-      max-width: 400px;
-    }
-
-    .steps-container {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .step-card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 14px;
-      padding: 15px;
-      flex: 1;
-      min-width: 100px;
-      max-width: 150px;
-      transition: 0.3s;
-      text-align: left;
-    }
-
-    .step-card.active {
-      background: white;
-      color: #000;
-    }
-
-    .step-number {
-      background: rgba(0, 0, 0, 0.2);
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      font-weight: bold;
-      margin-bottom: 15px;
-    }
-
-    .step-card.active .step-number {
-      background: #000;
-      color: #fff;
-    }
-
-    .step-text {
-      font-size: 0.8rem;
-      font-weight: 500;
-      line-height: 1.3;
-    }
-
-    /* --- UTILS --- */
-    .phone-group {
-      display: none;
-      gap: 8px;
-    }
-
-    .phone-group input {
-      flex: 1;
-    }
-
-    .phone-group button {
-      padding: 0 15px;
-      border-radius: 10px;
-      border: 1px solid var(--border-primary);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      cursor: pointer;
-    }
-
-    #error-message {
-      color: #d32f2f;
-      background: #ffebee;
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      display: none;
-      margin-top: 10px;
-      text-align: center;
-    }
-
-    #auth-loader {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-primary);
-      z-index: 9999;
-    }
-
-    /* --- RESPONSIVE --- */
-    @media (max-width: 900px) {
+      /* --- FLOATING AUTH CARD --- */
       .auth-card {
-        height: auto;
-        min-height: auto;
-        /* Let content dictate height on mobile */
-        max-width: 450px;
-        flex-direction: column;
+        display: flex;
+        width: 100%;
+        max-width: 1000px;
+        /* Slightly narrower for compactness */
+        height: 80vh;
+        /* Slightly shorter */
+        max-height: 700px;
+        background: var(--bg-tertiary);
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--border-primary);
+        position: relative;
       }
 
-      .auth-right {
-        display: none;
-        /* Hide image on tablet/mobile */
-      }
-
+      /* --- LEFT SIDE: FORM --- */
       .auth-left {
-        padding: 30px 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        /* Reduced padding */
+        position: relative;
+        /* overflow-y: auto;  Kept as fallback, but layout is compacted to avoid it */
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 380px;
+        background: transparent;
+        padding: 0;
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+      }
+
+      .login-header {
+        margin-bottom: 20px;
+        /* Reduced margin */
+      }
+
+      .login-header .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--text-heading);
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .login-header .logo i {
+        color: #ffd700;
+        font-size: 1.3rem;
       }
 
       .login-header h1 {
-        font-size: 1.6rem;
-      }
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
+        font-size: 1.8rem;
+        /* Smaller font */
+        color: var(--text-heading);
+        margin-bottom: 5px;
+        font-weight: 600;
       }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
+      .login-header p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
       }
-    }
-  </style>
-</head>
 
-<body class="dark-mode">
-  <script src="js/theme-init.js"></script>
+      /* --- FORM ELEMENTS --- */
+      .provider-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        /* Reduced margin */
+      }
 
-  <div id="auth-loader">
-    <div class="loading-spinner" style="
+      .provider-btn {
+        flex: 1;
+        padding: 10px;
+        /* Smaller padding */
+        border-radius: 10px;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .provider-btn:hover {
+        background: var(--bg-secondary);
+        border-color: var(--text-heading);
+      }
+
+      .divider {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border-primary);
+      }
+
+      .login-form {
+        display: grid;
+        gap: 12px;
+        /* Reduced gap between inputs */
+        text-align: left;
+      }
+
+      .login-form label {
+        display: none;
+      }
+
+      .login-form input {
+        width: 100%;
+        padding: 12px;
+        /* Smaller input padding */
+        /* text-indent removed */
+        margin-bottom: 12px;
+        /* ADDED: Block (vertical) margin */
+        border-radius: 10px;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        outline: none;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+
+      .login-form input:focus {
+        border-color: var(--text-heading);
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+      }
+
+      .login-btn {
+        margin-top: 5px;
+        width: 100%;
+        padding: 12px;
+        /* Smaller button padding */
+        background: #000;
+        color: #fff;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.2s;
+      }
+
+      body.dark-mode .login-btn {
+        background: #fff;
+        color: #000;
+      }
+
+      .login-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      .toggle-link {
+        margin-top: 20px;
+        /* Reduced margin */
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .toggle-link a {
+        color: var(--text-heading);
+        font-weight: 600;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
+      /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
+      /* --- RIGHT SIDE: IMAGE & OVERLAY --- */
+      .auth-right {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: center;
+        padding: 40px;
+        text-align: left;
+        /* Simple background now, we add the gradient overlay via a new class */
+        background: url(assets/download.jpeg);
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
+      }
+
+      /* --- NEW OVERLAY CLASS --- */
+      .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        /* Dark blue/black gradient for a more modern, deep contrast */
+        background: linear-gradient(
+          180deg,
+          rgba(18, 18, 18, 0.2) 0%,
+          /* Lighter dark at the top */ rgba(18, 18, 18, 0.8) 100%
+            /* Heavier dark at the bottom where the text is */
+        );
+        z-index: 1;
+        /* Below the content (z-index: 2) */
+      }
+
+      .overlay-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        max-width: 600px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        /* align-items: center; */
+      }
+
+      .overlay-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        line-height: 1.1;
+      }
+
+      .overlay-sub {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-bottom: 30px;
+        max-width: 400px;
+      }
+
+      .steps-container {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .step-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 15px;
+        flex: 1;
+        min-width: 100px;
+        max-width: 150px;
+        transition: 0.3s;
+        text-align: left;
+      }
+
+      .step-card.active {
+        background: white;
+        color: #000;
+      }
+
+      .step-number {
+        background: rgba(0, 0, 0, 0.2);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+
+      .step-card.active .step-number {
+        background: #000;
+        color: #fff;
+      }
+
+      .step-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+
+      /* --- UTILS --- */
+      .phone-group {
+        display: none;
+        gap: 8px;
+      }
+
+      .phone-group input {
+        flex: 1;
+      }
+
+      .phone-group button {
+        padding: 0 15px;
+        border-radius: 10px;
+        border: 1px solid var(--border-primary);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        cursor: pointer;
+      }
+
+      #error-message {
+        color: #d32f2f;
+        background: #ffebee;
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        display: none;
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      #auth-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-primary);
+        z-index: 9999;
+      }
+
+      /* --- RESPONSIVE --- */
+      @media (max-width: 900px) {
+        .auth-card {
+          height: auto;
+          min-height: auto;
+          /* Let content dictate height on mobile */
+          max-width: 450px;
+          flex-direction: column;
+        }
+
+        .auth-right {
+          display: none;
+          /* Hide image on tablet/mobile */
+        }
+
+        .auth-left {
+          padding: 30px 20px;
+        }
+
+        .login-header h1 {
+          font-size: 1.6rem;
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+
+  <body class="dark-mode">
+    <script src="js/theme-init.js"></script>
+
+    <div id="auth-loader">
+      <div
+        class="loading-spinner"
+        style="
           border: 3px solid rgba(128, 128, 128, 0.2);
           border-top-color: var(--text-heading);
           border-radius: 50%;
           width: 30px;
           height: 30px;
           animation: spin 1s linear infinite;
-        "></div>
-    <style>
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
+        "
+      ></div>
+      <style>
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
         }
-      }
-    </style>
-  </div>
+      </style>
+    </div>
 
-  <!-- MAIN WRAPPER -->
-  <div class="auth-wrapper" id="login-view" style="display: none">
-    <!-- FLOATING CARD CONTAINER -->
-    <div class="auth-card">
-      <!-- LEFT PANEL: Login Form -->
-      <div class="auth-left">
-        <div class="login-container">
-          <div class="login-header">
-            <div class="logo">
-              <i class="fa-solid fa-bolt"></i>
+    <!-- MAIN WRAPPER -->
+    <div class="auth-wrapper" id="login-view" style="display: none">
+      <!-- FLOATING CARD CONTAINER -->
+      <div class="auth-card">
+        <!-- LEFT PANEL: Login Form -->
+        <div class="auth-left">
+          <div class="login-container">
+            <div class="login-header">
+              <div class="logo">
+                <i class="fa-solid fa-bolt"></i>
+              </div>
+              <h1 id="form-title">Welcome back!</h1>
+              <p id="form-subtitle">
+                Your work, your team, your flow — all in one place.
+              </p>
             </div>
-            <h1 id="form-title">Welcome back!</h1>
-            <p id="form-subtitle">
-              Your work, your team, your flow — all in one place.
+
+            <div class="provider-buttons">
+              <button class="provider-btn" id="google-signin">
+                <i class="fa-brands fa-google"></i> Google
+              </button>
+              <button class="provider-btn" id="github-signin">
+                <i class="fa-brands fa-github"></i> GitHub
+              </button>
+              <button class="provider-btn" id="phone-signin-toggle">
+                <i class="fa-solid fa-phone"></i> Phone
+              </button>
+            </div>
+
+            <div class="divider">Or</div>
+
+            <form class="login-form" id="login-form">
+              <div id="email-group">
+                <div id="confirm-name-div" style="display: none">
+                  <input type="text" id="name" placeholder="Full Name" />
+                </div>
+                <div>
+                  <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <div>
+                  <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="phone-group" id="phone-group">
+                <input
+                  type="tel"
+                  id="phone-number"
+                  placeholder="+1 555-555-1234"
+                />
+                <button type="button" id="send-code-btn">Send</button>
+              </div>
+
+              <div class="phone-group" id="code-group">
+                <input
+                  type="text"
+                  id="verification-code"
+                  placeholder="Enter 6-digit code"
+                />
+              </div>
+
+              <div id="recaptcha-container"></div>
+              <div id="error-message"></div>
+
+              <button type="submit" class="login-btn" id="submit-btn">
+                Sign in with email
+              </button>
+            </form>
+
+            <p class="toggle-link">
+              Don't have an account?
+              <a href="#" id="toggle-form-link">Sign Up</a>
             </p>
-          </div>
 
-          <div class="provider-buttons">
-            <button class="provider-btn" id="google-signin">
-              <i class="fa-brands fa-google"></i> Google
-            </button>
-            <button class="provider-btn" id="github-signin">
-              <i class="fa-brands fa-github"></i> GitHub
-            </button>
-            <button class="provider-btn" id="phone-signin-toggle">
-              <i class="fa-solid fa-phone"></i> Phone
-            </button>
-          </div>
-
-          <div class="divider">Or</div>
-
-          <form class="login-form" id="login-form">
-            <div id="email-group">
-              <div id="confirm-name-div" style="display: none">
-                <input type="text" id="name" placeholder="Full Name" />
-              </div>
-              <div>
-                <input type="email" id="email" placeholder="Enter your email" required />
-              </div>
-              <div>
-                <input type="password" id="password" placeholder="Password" required />
-              </div>
-            </div>
-
-            <div class="phone-group" id="phone-group">
-              <input type="tel" id="phone-number" placeholder="+1 555-555-1234" />
-              <button type="button" id="send-code-btn">Send</button>
-            </div>
-
-            <div class="phone-group" id="code-group">
-              <input type="text" id="verification-code" placeholder="Enter 6-digit code" />
-            </div>
-
-            <div id="recaptcha-container"></div>
-            <div id="error-message"></div>
-
-            <button type="submit" class="login-btn" id="submit-btn">
-              Sign in with email
-            </button>
-          </form>
-
-          <p class="toggle-link">
-            Don't have an account?
-            <a href="#" id="toggle-form-link">Sign Up</a>
-          </p>
-
-          <div style="
+            <div
+              style="
                 margin-top: 20px;
                 font-size: 0.7rem;
                 color: var(--text-secondary);
                 opacity: 0.6;
-              ">
-            <a href="#" style="
+              "
+            >
+              <a
+                href="#"
+                style="
                   color: inherit;
                   text-decoration: none;
                   margin-right: 10px;
-                ">Help</a>
-            <a href="#" style="
+                "
+                >Help</a
+              >
+              <a
+                href="#"
+                style="
                   color: inherit;
                   text-decoration: none;
                   margin-right: 10px;
-                ">Terms</a>
-            <a href="#" style="color: inherit; text-decoration: none">Privacy</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT PANEL: Image & Overlay -->
-      <div class="auth-right">
-        <div class="image-overlay"></div>
-        <div class="overlay-content">
-          <h2 class="overlay-title">Get Started<br />with Us</h2>
-          <p class="overlay-sub">
-            Complete these easy steps to register your account.
-          </p>
-
-          <div class="steps-container">
-            <div class="step-card active">
-              <div class="step-number">1</div>
-              <div class="step-text">Sign up your account</div>
-            </div>
-            <div class="step-card">
-              <div class="step-number">2</div>
-              <div class="step-text">Set up your workspace</div>
-            </div>
-            <div class="step-card">
-              <div class="step-number">3</div>
-              <div class="step-text">Set up your profile</div>
+                "
+                >Terms</a
+              >
+              <a href="#" style="color: inherit; text-decoration: none"
+                >Privacy</a
+              >
             </div>
           </div>
         </div>
+
+        <!-- RIGHT PANEL: Image & Overlay -->
+        <div class="auth-right">
+          <div class="image-overlay"></div>
+          <div class="overlay-content">
+            <h2 class="overlay-title">Get Started<br />with Us</h2>
+            <p class="overlay-sub">
+              Complete these easy steps to register your account.
+            </p>
+
+            <div class="steps-container">
+              <div class="step-card active">
+                <div class="step-number">1</div>
+                <div class="step-text">Sign up your account</div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-text">Set up your workspace</div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-text">Set up your profile</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      <!-- End .auth-card -->
     </div>
-    <!-- End .auth-card -->
-  </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-  <script src="js/auth.js"></script>
+    <script src="js/accessibility-utils.js"></script>
+    <script src="js/auth.js"></script>
 
-  <script>
-    let isLogin = true;
-    let authMode = "email";
+    <script>
+      let isLogin = true;
+      let authMode = "email";
 
-    const authLoader = document.getElementById("auth-loader");
-    const loginView = document.getElementById("login-view");
+      const authLoader = document.getElementById("auth-loader");
+      const loginView = document.getElementById("login-view");
 
-    const form = document.getElementById("login-form");
-    const submitBtn = document.getElementById("submit-btn");
-    const formTitle = document.getElementById("form-title");
-    const subtitle = document.getElementById("form-subtitle");
-    const toggleLink = document.getElementById("toggle-form-link");
-    const nameDiv = document.getElementById("confirm-name-div");
+      const form = document.getElementById("login-form");
+      const submitBtn = document.getElementById("submit-btn");
+      const formTitle = document.getElementById("form-title");
+      const subtitle = document.getElementById("form-subtitle");
+      const toggleLink = document.getElementById("toggle-form-link");
+      const nameDiv = document.getElementById("confirm-name-div");
 
-    const emailGroup = document.getElementById("email-group");
-    const phoneGroup = document.getElementById("phone-group");
-    const codeGroup = document.getElementById("code-group");
-    const phoneToggleBtn = document.getElementById("phone-signin-toggle");
-    const sendCodeBtn = document.getElementById("send-code-btn");
+      const emailGroup = document.getElementById("email-group");
+      const phoneGroup = document.getElementById("phone-group");
+      const codeGroup = document.getElementById("code-group");
+      const phoneToggleBtn = document.getElementById("phone-signin-toggle");
+      const sendCodeBtn = document.getElementById("send-code-btn");
 
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const nameInput = document.getElementById("name");
-    const phoneInput = document.getElementById("phone-number");
-    const codeInput = document.getElementById("verification-code");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const nameInput = document.getElementById("name");
+      const phoneInput = document.getElementById("phone-number");
+      const codeInput = document.getElementById("verification-code");
 
-    const googleBtn = document.getElementById("google-signin");
-    const githubBtn = document.getElementById("github-signin");
-    const errorMessage = document.getElementById("error-message");
+      const googleBtn = document.getElementById("google-signin");
+      const githubBtn = document.getElementById("github-signin");
+      const errorMessage = document.getElementById("error-message");
 
-    // Firebase config is now centralized in auth.js (FIREBASE_CONFIG)
-    initializeFirebase(); // Uses centralized config from auth.js
-    setupRecaptcha("recaptcha-container");
+      // Firebase config is now centralized in auth.js (FIREBASE_CONFIG)
+      initializeFirebase(); // Uses centralized config from auth.js
+      setupRecaptcha("recaptcha-container");
 
-    document.addEventListener("authStateReady", (e) => {
-      const user = e.detail.user;
-      if (user) {
-        if (authLoader)
-          authLoader.innerHTML =
-            '<p style="margin-top:15px;">Redirecting...</p>';
-      } else {
-        if (authLoader) authLoader.style.display = "none";
-        if (loginView) loginView.style.display = "flex";
+      document.addEventListener("authStateReady", (e) => {
+        const user = e.detail.user;
+        if (user) {
+          if (authLoader)
+            authLoader.innerHTML =
+              '<p style="margin-top:15px;">Redirecting...</p>';
+        } else {
+          if (authLoader) authLoader.style.display = "none";
+          if (loginView) loginView.style.display = "flex";
+        }
+      });
+
+      function showError(message) {
+        errorMessage.innerText = message;
+        errorMessage.style.display = "block";
       }
-    });
 
-    function showError(message) {
-      errorMessage.innerText = message;
-      errorMessage.style.display = "block";
-    }
+      function hideError() {
+        errorMessage.innerText = "";
+        errorMessage.style.display = "none";
+      }
 
-    function hideError() {
-      errorMessage.innerText = "";
-      errorMessage.style.display = "none";
-    }
+      function toggleFormMode(event) {
+        event?.preventDefault();
+        isLogin = !isLogin;
+        hideError();
 
-    function toggleFormMode(event) {
-      event?.preventDefault();
-      isLogin = !isLogin;
-      hideError();
+        nameDiv.style.display = isLogin ? "none" : "block";
+        formTitle.innerText = isLogin ? "Welcome back!" : "Create Account";
+        subtitle.innerText = isLogin
+          ? "Your work, your team, your flow — all in one place."
+          : "Join us and get started with LYNQ AI today.";
+        submitBtn.innerText = isLogin ? "Sign in with email" : "Create Account";
+        toggleLink.innerHTML = isLogin
+          ? `Don't have an account? <a href="#" id="toggle-form-link">Sign Up</a>`
+          : `Already have an account? <a href="#" id="toggle-form-link">Log In</a>`;
 
-      nameDiv.style.display = isLogin ? "none" : "block";
-      formTitle.innerText = isLogin ? "Welcome back!" : "Create Account";
-      subtitle.innerText = isLogin
-        ? "Your work, your team, your flow — all in one place."
-        : "Join us and get started with LYNQ AI today.";
-      submitBtn.innerText = isLogin ? "Sign in with email" : "Create Account";
-      toggleLink.innerHTML = isLogin
-        ? `Don't have an account? <a href="#" id="toggle-form-link">Sign Up</a>`
-        : `Already have an account? <a href="#" id="toggle-form-link">Log In</a>`;
+        document
+          .getElementById("toggle-form-link")
+          .addEventListener("click", toggleFormMode);
+      }
+
+      function setAuthMode(mode) {
+        authMode = mode;
+        hideError();
+        if (mode === "email") {
+          emailGroup.style.display = "grid";
+          phoneGroup.style.display = "none";
+          codeGroup.style.display = "none";
+          submitBtn.innerText = isLogin
+            ? "Sign in with email"
+            : "Create Account";
+        } else if (mode === "phone") {
+          emailGroup.style.display = "none";
+          phoneGroup.style.display = "flex";
+          codeGroup.style.display = "flex";
+          submitBtn.innerText = "Verify Code & Sign In";
+        }
+      }
 
       document
         .getElementById("toggle-form-link")
         .addEventListener("click", toggleFormMode);
-    }
 
-    function setAuthMode(mode) {
-      authMode = mode;
-      hideError();
-      if (mode === "email") {
-        emailGroup.style.display = "grid";
-        phoneGroup.style.display = "none";
-        codeGroup.style.display = "none";
-        submitBtn.innerText = isLogin
-          ? "Sign in with email"
-          : "Create Account";
-      } else if (mode === "phone") {
-        emailGroup.style.display = "none";
-        phoneGroup.style.display = "flex";
-        codeGroup.style.display = "flex";
-        submitBtn.innerText = "Verify Code & Sign In";
-      }
-    }
+      googleBtn.addEventListener("click", async () => {
+        hideError();
+        try {
+          await signInWithGoogle();
+        } catch (error) {
+          showError(error.message);
+        }
+      });
 
-    document
-      .getElementById("toggle-form-link")
-      .addEventListener("click", toggleFormMode);
+      githubBtn.addEventListener("click", async () => {
+        hideError();
+        try {
+          await signInWithGitHub();
+        } catch (error) {
+          showError(error.message);
+        }
+      });
 
-    googleBtn.addEventListener("click", async () => {
-      hideError();
-      try {
-        await signInWithGoogle();
-      } catch (error) {
-        showError(error.message);
-      }
-    });
+      phoneToggleBtn.addEventListener("click", () => {
+        setAuthMode(authMode === "email" ? "phone" : "email");
+      });
 
-    githubBtn.addEventListener("click", async () => {
-      hideError();
-      try {
-        await signInWithGitHub();
-      } catch (error) {
-        showError(error.message);
-      }
-    });
+      sendCodeBtn.addEventListener("click", async () => {
+        hideError();
+        const phoneNumber = phoneInput.value;
+        if (!phoneNumber) {
+          showError("Please enter a phone number.");
+          return;
+        }
+        try {
+          sendCodeBtn.disabled = true;
+          sendCodeBtn.innerText = "...";
+          await signInWithPhone(phoneNumber);
+          showError("Verification code sent!");
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.innerText = "Sent";
+        } catch (error) {
+          showError(error.message);
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.innerText = "Send";
+        }
+      });
 
-    phoneToggleBtn.addEventListener("click", () => {
-      setAuthMode(authMode === "email" ? "phone" : "email");
-    });
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideError();
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Processing...";
 
-    sendCodeBtn.addEventListener("click", async () => {
-      hideError();
-      const phoneNumber = phoneInput.value;
-      if (!phoneNumber) {
-        showError("Please enter a phone number.");
-        return;
-      }
-      try {
-        sendCodeBtn.disabled = true;
-        sendCodeBtn.innerText = "...";
-        await signInWithPhone(phoneNumber);
-        showError("Verification code sent!");
-        sendCodeBtn.disabled = false;
-        sendCodeBtn.innerText = "Sent";
-      } catch (error) {
-        showError(error.message);
-        sendCodeBtn.disabled = false;
-        sendCodeBtn.innerText = "Send";
-      }
-    });
+        try {
+          if (authMode === "email") {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            const name = nameInput.value;
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      hideError();
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Processing...";
-
-      try {
-        if (authMode === "email") {
-          const email = emailInput.value;
-          const password = passwordInput.value;
-          const name = nameInput.value;
-
-          if (isLogin) {
-            await logInWithEmail(email, password);
-          } else {
-            await signUpWithEmail(email, password, name);
+            if (isLogin) {
+              await logInWithEmail(email, password);
+            } else {
+              await signUpWithEmail(email, password, name);
+            }
+          } else if (authMode === "phone") {
+            const code = codeInput.value;
+            if (!code) throw new Error("Please enter the verification code.");
+            await verifyPhoneCode(code);
           }
-        } else if (authMode === "phone") {
-          const code = codeInput.value;
-          if (!code) throw new Error("Please enter the verification code.");
-          await verifyPhoneCode(code);
+        } catch (error) {
+          showError(error.message);
+          submitBtn.disabled = false;
+          if (authMode === "email") {
+            submitBtn.innerText = isLogin
+              ? "Sign in with email"
+              : "Create Account";
+          } else {
+            submitBtn.innerText = "Verify Code & Sign In";
+          }
         }
-      } catch (error) {
-        showError(error.message);
-        submitBtn.disabled = false;
-        if (authMode === "email") {
-          submitBtn.innerText = isLogin
-            ? "Sign in with email"
-            : "Create Account";
-        } else {
-          submitBtn.innerText = "Verify Code & Sign In";
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("action") === "signup") {
+          isLogin = true;
+          toggleFormMode(null);
         }
-      }
-    });
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get("action") === "signup") {
-        isLogin = true;
-        toggleFormMode(null);
-      }
-    });
-  </script>
-</body>
-
+      });
+    </script>
+  </body>
 </html>

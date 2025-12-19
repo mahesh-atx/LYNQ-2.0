@@ -1,0 +1,105 @@
+/*
+  Z-Index System
+  Establishes a consistent layering hierarchy across the application
+*/
+
+:root {
+  /* Base Layers (0-99) */
+  --z-base: 0;
+  --z-background: 1;
+  
+  /* Content Layers (100-199) */
+  --z-content: 100;
+  --z-sticky: 150;
+  
+  /* UI Elements (200-299) */
+  --z-dropdown: 200;
+  --z-tooltip: 250;
+  
+  /* Overlays (300-399) */
+  --z-sidebar: 300;
+  --z-topbar: 310;
+  
+  /* Modals & Sheets (400-499) */
+  --z-modal-overlay: 400;
+  --z-modal: 410;
+  --z-action-sheet: 420;
+  
+  /* Critical UI (500-599) */
+  --z-toast: 500;
+  --z-profile-popup: 510;
+  
+  /* System (600+) */
+  --z-skeleton-loader: 600;
+  --z-debug: 9999;
+}
+
+/* Apply z-index system to existing components */
+
+/* Sidebar */
+#sidebar {
+  z-index: var(--z-sidebar);
+}
+
+@media (max-width: 768px) {
+  #sidebar {
+    z-index: var(--z-sidebar);
+  }
+}
+
+/* Top Bar */
+.top-bar {
+  z-index: var(--z-topbar);
+}
+
+/* Dropdowns */
+.tool-dropdown-menu,
+.input-model-dropdown,
+.model-dropdown {
+  z-index: var(--z-dropdown);
+}
+
+/* Chat Context Menu */
+.chat-context-menu {
+  z-index: calc(var(--z-dropdown) + 1);
+}
+
+/* Modals */
+.modal-overlay {
+  z-index: var(--z-modal-overlay);
+}
+
+.pricing-modal {
+  z-index: var(--z-modal);
+}
+
+/* Profile Popup */
+.profile-popup-overlay {
+  z-index: var(--z-profile-popup);
+}
+
+/* Mobile Sheets */
+.mobile-action-sheet,
+.mobile-model-sheet {
+  z-index: var(--z-action-sheet);
+}
+
+.mobile-sheet-overlay,
+.mobile-model-overlay {
+  z-index: calc(var(--z-action-sheet) - 1);
+}
+
+/* Toast Notifications */
+#toast {
+  z-index: var(--z-toast);
+}
+
+/* Skeleton Loader */
+#skeleton-loader {
+  z-index: var(--z-skeleton-loader);
+}
+
+/* Guest Banner */
+.guest-notice-banner {
+  z-index: var(--z-content);
+}
