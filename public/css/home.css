@@ -748,24 +748,139 @@ body.dark-mode .hero-question {
 
 /* --- END MODIFIED --- */
 
-/* THINKING ANIMATION */
+/* THINKING ANIMATION - Modern Design */
+.thinking-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
 .thinking-dots {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   align-items: center;
-  height: 24px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(100, 120, 255, 0.1), rgba(139, 92, 246, 0.1));
+  border-radius: 20px;
+  border: 1px solid rgba(100, 120, 255, 0.2);
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
-  background: var(--text-secondary);
+  width: 8px;
+  height: 8px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   border-radius: 50%;
-  opacity: 0.6;
-  /* Note: animation and animation-delay are defined in animations.css */
+  animation: thinkingPulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.4);
+}
+
+.dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes thinkingPulse {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(102, 126, 234, 0.6);
+  }
+}
+
+/* Shimmer text effect for thinking label */
+.thinking-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: linear-gradient(
+    90deg,
+    var(--text-secondary) 0%,
+    #667eea 25%,
+    #764ba2 50%,
+    #667eea 75%,
+    var(--text-secondary) 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerText 2s linear infinite;
+}
+
+@keyframes shimmerText {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Alternative: Orb-style thinking animation */
+.thinking-orb {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thinking-orb::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #667eea, #764ba2, #ec4899, #667eea);
+  animation: orbSpin 1.5s linear infinite;
+  opacity: 0.8;
+}
+
+.thinking-orb::after {
+  content: '';
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+}
+
+.thinking-orb i {
+  position: relative;
+  z-index: 1;
+  font-size: 0.9rem;
+  color: #667eea;
+  animation: orbPulse 1s ease-in-out infinite;
+}
+
+@keyframes orbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 /* Note: @keyframes bounce is defined in animations.css */
+
 
 .edit-container {
   background: var(--bg-chat-bubble-user);
@@ -2061,7 +2176,16 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 /* --- INPUT MODEL SELECTOR --- */
 .input-model-selector {
   position: relative;
+  display: none; /* Hidden on desktop - models in top bar */
 }
+
+/* Show model selector only on mobile */
+@media (max-width: 768px) {
+  .input-model-selector {
+    display: block;
+  }
+}
+
 
 .input-model-btn {
   display: flex;
@@ -2481,4 +2605,426 @@ textarea#chat-input::-webkit-scrollbar-thumb:hover {
 .tool-btn-round.little:hover {
     background: rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
+}
+
+/* ===========================================
+   TOPBAR DROPDOWNS (Tools, Groq, OpenRouter)
+   =========================================== */
+
+.topbar-dropdown-wrapper {
+  position: relative;
+}
+
+/* LYNQ Brand Text */
+.topbar-brand-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
+  margin-right: 8px;
+}
+
+
+.topbar-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.topbar-dropdown-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-heading);
+  border-color: var(--border-primary);
+}
+
+.topbar-dropdown-btn.active {
+  background: var(--bg-tertiary);
+  color: var(--text-heading);
+  border-color: var(--border-secondary);
+}
+
+.topbar-dropdown-btn i:first-child {
+  font-size: 1rem;
+}
+
+.topbar-dropdown-btn i:last-child {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.topbar-dropdown-btn.active i:last-child {
+  transform: rotate(180deg);
+}
+
+.topbar-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: var(--bg-primary);
+  backdrop-filter: none;
+  border: 1px solid var(--border-secondary);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  padding: 8px;
+  display: none;
+  z-index: 1000;
+  animation: dropdownSlideIn 0.2s ease;
+}
+
+.topbar-dropdown-menu.active {
+  display: block;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.topbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.topbar-dropdown-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-heading);
+}
+
+.topbar-dropdown-item.selected {
+  background: rgba(100, 120, 255, 0.1);
+  color: var(--text-heading);
+}
+
+.topbar-dropdown-item i {
+  width: 20px;
+  text-align: center;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+/* Model menu specific */
+.topbar-model-menu .topbar-dropdown-item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.topbar-model-menu .model-item-name {
+  font-weight: 500;
+  color: var(--text-heading);
+}
+
+.topbar-model-menu .model-item-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.topbar-model-menu .topbar-dropdown-item:hover .model-item-desc {
+  color: var(--text-primary);
+}
+
+/* Selected model check */
+.topbar-dropdown-item .check-icon {
+  margin-left: auto;
+  color: var(--accent-color, #6366f1);
+  display: none;
+}
+
+.topbar-dropdown-item.selected .check-icon {
+  display: block;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .topbar-dropdown-wrapper {
+    display: none;
+  }
+}
+
+/* ===========================================
+   NESTED PROVIDER SUBMENUS (Groq, OpenRouter)
+   =========================================== */
+
+.lynq-model-menu {
+  min-width: 220px;
+}
+
+.provider-submenu-wrapper {
+  position: relative;
+}
+
+.provider-item {
+  justify-content: flex-start;
+}
+
+.provider-item .submenu-arrow {
+  margin-left: auto;
+  font-size: 0.7rem;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+
+.provider-submenu-wrapper:hover .submenu-arrow {
+  transform: translateX(2px);
+  opacity: 1;
+}
+
+.provider-submenu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 240px;
+  max-height: 350px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  backdrop-filter: none;
+  border: 1px solid var(--border-secondary);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  padding: 8px;
+  display: none;
+  z-index: 1001;
+  margin-left: 4px;
+}
+
+.provider-submenu-wrapper:hover .provider-submenu {
+  display: block;
+  animation: submenuSlideIn 0.2s ease;
+}
+
+@keyframes submenuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.provider-submenu .model-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.provider-submenu .model-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.provider-submenu .model-item.selected {
+  background: rgba(100, 120, 255, 0.1);
+}
+
+.provider-submenu .model-item-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-heading);
+}
+
+.provider-submenu .model-item-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  line-height: 1.3;
+}
+
+.provider-submenu .model-item:hover .model-item-desc {
+  color: var(--text-primary);
+}
+
+/* Scrollbar for submenu */
+.provider-submenu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.provider-submenu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.provider-submenu::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 2px;
+}
+
+/* ===========================================
+   MOBILE MODEL SHEET (Full Screen Bottom Sheet)
+   =========================================== */
+
+.mobile-model-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-model-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-model-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 70vh;
+  background: var(--bg-secondary);
+  border-radius: 20px 20px 0 0;
+  z-index: 2001;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mobile-model-sheet.active {
+  transform: translateY(0);
+}
+
+.model-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-secondary);
+  border-radius: 2px;
+  margin: 10px auto;
+  flex-shrink: 0;
+}
+
+.model-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px 16px;
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.model-sheet-header .sheet-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.model-sheet-header .sheet-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.model-sheet-list {
+
+  padding: 12px 16px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Provider headers in mobile sheet */
+.mobile-provider-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mobile-provider-header:first-child {
+  padding-top: 0;
+}
+
+/* Compact model options for mobile */
+.model-sheet-option-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.model-sheet-option-compact:hover,
+.model-sheet-option-compact:active {
+  background: var(--bg-tertiary);
+}
+
+.model-sheet-option-compact.selected {
+  background: rgba(100, 120, 255, 0.1);
+}
+
+.model-sheet-option-compact i:first-child {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+}
+
+.model-sheet-option-compact span {
+  flex: 1;
+}
+
+.model-sheet-option-compact .model-check-icon {
+  color: var(--accent-color, #6366f1);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.model-sheet-option-compact.selected .model-check-icon {
+  opacity: 1;
 }

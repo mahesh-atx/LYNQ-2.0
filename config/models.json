@@ -6,8 +6,19 @@
     "contextWindow": 128000,
     "maxOutputTokens": 32768,
     "description": "Powerful open model by Meta, hosted on Groq.",
-    "icon": "zap",
+    "icon": "bolt",
     "color": "#f59e0b",
+    "limits": "Groq Free Tier limits"
+  },
+  {
+    "id": "huihui-ai/gpt-oss-120b",
+    "name": "GPT OSS 120B",
+    "provider": "groq",
+    "contextWindow": 128000,
+    "maxOutputTokens": 32768,
+    "description": "Open-source GPT model with 120B parameters.",
+    "icon": "microchip",
+    "color": "#22c55e",
     "limits": "Groq Free Tier limits"
   },
   {
@@ -17,7 +28,7 @@
     "contextWindow": 128000,
     "maxOutputTokens": 8192,
     "description": "Groq's compound AI system with tool use capabilities.",
-    "icon": "layers",
+    "icon": "layer-group",
     "color": "#8b5cf6",
     "limits": "Groq Free Tier limits"
   },
@@ -28,8 +39,8 @@
     "contextWindow": 128000,
     "maxOutputTokens": 8192,
     "description": "Fast and lightweight open model.",
-    "icon": "box",
-    "color": "#10b981",
+    "icon": "rocket",
+    "color": "#06b6d4",
     "limits": "Groq Free Tier limits"
   },
   {
@@ -40,7 +51,7 @@
     "maxOutputTokens": 8192,
     "description": "Newest Llama model with vision capabilities.",
     "icon": "eye",
-    "color": "#8b5cf6",
+    "color": "#ec4899",
     "limits": "Groq Free Tier limits"
   },
   {
@@ -62,7 +73,7 @@
     "maxOutputTokens": 8192,
     "description": "Specialized for agentic coding and long-context reasoning.",
     "icon": "code",
-    "color": "#8b5cf6",
+    "color": "#a855f7",
     "limits": "OpenRouter Free: 50 req/day"
   },
   {
@@ -88,3 +99,4 @@
     "limits": "OpenRouter Free: 50 req/day"
   }
 ]
+

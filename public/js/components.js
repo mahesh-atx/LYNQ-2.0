@@ -41,15 +41,11 @@ function injectSidebar(activePage = '') {
             <i class="fa-solid fa-magnifying-glass"></i> Search chats
           </button>
           
-          <!-- Library (Tools) -->
-          <a href="tools.html" class="nav-item ${activePage === 'tools' ? 'active' : ''}" id="nav-tools">
-            <i class="fa-solid fa-bookmark"></i> Library
-          </a>
-          
           <!-- Projects -->
           <a href="projects.html" class="nav-item ${activePage === 'projects' ? 'active' : ''}" id="nav-projects">
             <i class="fa-solid fa-folder"></i> Projects
           </a>
+
 
           <!-- Your Chats Section -->
           <div class="nav-label">
@@ -92,9 +88,10 @@ function injectSidebar(activePage = '') {
         <button class="profile-menu-item" onclick="togglePricing(); closeSidebarProfileMenu();">
           <i class="fa-solid fa-arrow-up-right-from-square"></i> Upgrade plan
         </button>
-        <a href="settings.html" class="profile-menu-item">
-          <i class="fa-solid fa-sliders"></i> Personalization
+        <a href="personalization.html" class="profile-menu-item">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Personalization
         </a>
+
         <a href="settings.html" class="profile-menu-item">
           <i class="fa-solid fa-gear"></i> Settings
         </a>
@@ -133,40 +130,42 @@ function injectTopBar(activePage = '') {
           <i class="fa-solid fa-bolt top-logo-bolt"></i>
           <i class="fa-solid fa-sidebar top-logo-sidebar-icon"></i>
         </div>
+        <!-- LYNQ Brand Text (no dropdown) -->
+        <span class="topbar-brand-text">LYNQ</span>
         
-        <!-- LYNQ Tier Selector (Restored) -->
-        <div class="header-model-selector">
-          <div class="model-selector-group">
-            <button class="header-model-btn" id="header-model-btn" onclick="toggleHeaderModelDropdown()">
-              <span class="header-model-name" id="header-model-name">LYNQ</span>
-              <i class="fa-solid fa-chevron-down header-model-chevron"></i>
-            </button>
-            
-            <div class="header-model-dropdown" id="header-model-dropdown" style="display: none;">
-              <div class="model-dropdown-item" onclick="selectHeaderTier(this, 'LYNQ Pro', 'Upgrade for advanced reasoning')">
-                <div class="model-dropdown-icon">
-                  <i class="fa-solid fa-bolt-lightning"></i>
-                </div>
-                <div class="model-dropdown-info">
-                  <span class="model-dropdown-title">LYNQ Pro</span>
-                  <span class="model-dropdown-desc">Our smartest model & more</span>
-                </div>
-                <button class="model-upgrade-badge" onclick="event.stopPropagation(); togglePricing();">Upgrade</button>
+        <!-- Models Dropdown -->
+        <div class="topbar-dropdown-wrapper">
+          <button class="topbar-dropdown-btn" id="topbar-models-btn" onclick="toggleTopbarDropdown('models')">
+            <span id="topbar-models-label">Models</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="topbar-dropdown-menu lynq-model-menu" id="topbar-models-dropdown">
+            <!-- Groq Provider -->
+            <div class="provider-submenu-wrapper">
+              <button class="topbar-dropdown-item provider-item" data-provider="groq">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Groq</span>
+                <i class="fa-solid fa-chevron-right submenu-arrow"></i>
+              </button>
+              <div class="provider-submenu" id="groq-submenu">
+                <!-- Dynamically populated -->
               </div>
-              
-              <div class="model-dropdown-item selected" onclick="selectHeaderTier(this, 'LYNQ', 'Great for everyday tasks')">
-                <div class="model-dropdown-icon">
-                  <i class="fa-solid fa-message"></i>
-                </div>
-                <div class="model-dropdown-info">
-                  <span class="model-dropdown-title">LYNQ</span>
-                  <span class="model-dropdown-desc">Great for everyday tasks</span>
-                </div>
-                <i class="fa-solid fa-check model-check-icon"></i>
+            </div>
+            <!-- OpenRouter Provider -->
+            <div class="provider-submenu-wrapper">
+              <button class="topbar-dropdown-item provider-item" data-provider="openrouter">
+                <i class="fa-solid fa-route"></i>
+                <span>OpenRouter</span>
+                <i class="fa-solid fa-chevron-right submenu-arrow"></i>
+              </button>
+              <div class="provider-submenu" id="openrouter-submenu">
+                <!-- Dynamically populated -->
               </div>
             </div>
           </div>
         </div>
+
+
       </div>
       
       <div style="flex: 1"></div>

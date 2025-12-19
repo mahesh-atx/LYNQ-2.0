@@ -332,12 +332,13 @@
                         </button>
                         <button
                           class="tool-dropdown-item"
-                          onclick="handleDesktopTool('image')"
+                          id="data-analysis-toggle-btn"
+                          onclick="handleDesktopTool('data-analysis')"
                         >
-                          <i class="fa-solid fa-paintbrush"></i>
+                          <i class="fa-solid fa-chart-line"></i>
                           <div>
-                            <span>Create Image</span>
-                            <span class="tool-desc">Visualize anything</span>
+                            <span>Data Analysis</span>
+                            <span class="tool-desc">Analyze datasets</span>
                           </div>
                         </button>
                         <button
@@ -374,6 +375,7 @@
                     </div>
 
                     <!-- Selected Tool Indicator -->
+
                     <div
                       class="selected-tool-indicator"
                       id="selected-tool-indicator"
@@ -560,6 +562,22 @@
     <div id="toast-container"></div>
     <div id="pricing-modal-container"></div>
     <div id="profile-popup-container"></div>
+    <!-- Mobile Model Sheet -->
+    <div
+      class="mobile-model-overlay"
+      id="mobile-model-overlay"
+      onclick="toggleMobileModelSheet(false)"
+    ></div>
+    <div class="mobile-model-sheet" id="mobile-model-sheet">
+      <div class="model-sheet-handle"></div>
+      <div class="model-sheet-header">
+        <span class="sheet-title">Select Model</span>
+        <span class="sheet-hint">Swipe down to close</span>
+      </div>
+      <div class="model-sheet-list">
+        <!-- Dynamically populated by model-selector.js -->
+      </div>
+    </div>
 
     <div class="confirm-modal-overlay" id="confirm-delete-modal">
       <div class="confirm-modal">
@@ -662,16 +680,6 @@
 
       <!-- List Actions -->
       <div class="sheet-list-actions">
-        <button class="sheet-list-item" onclick="handleMobileAction('image')">
-          <div class="sheet-item-left">
-            <i class="fa-solid fa-paintbrush"></i>
-            <div class="sheet-item-text">
-              <span class="sheet-item-title">Create image</span>
-              <span class="sheet-item-subtitle">Visualize anything</span>
-            </div>
-          </div>
-        </button>
-
         <button
           class="sheet-list-item"
           onclick="handleMobileAction('deep-research')"

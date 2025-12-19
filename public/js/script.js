@@ -200,17 +200,26 @@ function filterRecentChats() {
 async function getSystemMessage(taskSpecificContext) {
   // If there's no task-specific context, return null so backend uses its loaded systemprompt.txt
   const customInstructions = localStorage.getItem("lynq_custom_instructions");
+  
+  // Load personalization settings
+  const personalizationPrompt = buildPersonalizationPrompt();
 
-  // If no custom instructions and no context, let backend handle the system prompt
-  if (!customInstructions && !taskSpecificContext) {
+  // If no custom instructions, personalization, and no context, let backend handle the system prompt
+  if (!customInstructions && !personalizationPrompt && !taskSpecificContext) {
     return null;
   }
 
-  // Build prompt only if we have custom instructions or context
+  // Build prompt with personalization first
   let finalPrompt = "";
 
+  if (personalizationPrompt) {
+    finalPrompt = personalizationPrompt;
+  }
+
   if (customInstructions) {
-    finalPrompt = customInstructions;
+    finalPrompt = finalPrompt
+      ? `${finalPrompt}\n\n${customInstructions}`
+      : customInstructions;
   }
 
   if (taskSpecificContext) {
@@ -221,6 +230,98 @@ async function getSystemMessage(taskSpecificContext) {
 
   return finalPrompt || null;
 }
+
+// Build personalization prompt from saved settings
+function buildPersonalizationPrompt() {
+  const saved = localStorage.getItem('lynq_personalization_settings');
+  if (!saved) return null;
+
+  try {
+    const settings = JSON.parse(saved);
+    const parts = [];
+
+    // User name
+    if (settings.userName) {
+      parts.push(`The user's name is ${settings.userName}. Address them by name occasionally.`);
+    }
+
+    // Response style
+    const styles = {
+      'concise': 'Be concise and direct. Avoid unnecessary explanations.',
+      'detailed': 'Provide detailed, thorough explanations with context.',
+      'friendly': 'Use a friendly, casual tone. Be warm and approachable.',
+      'professional': 'Use a professional, formal tone.',
+      'creative': 'Be creative and expressive. Use metaphors and engaging language.'
+    };
+    if (settings.responseStyle && styles[settings.responseStyle]) {
+      parts.push(styles[settings.responseStyle]);
+    }
+
+    // Emoji usage
+    if (settings.emojiEnabled === false) {
+      parts.push('Do NOT use emojis in your responses.');
+    }
+
+    // Code examples
+    if (settings.codeExamples === true) {
+      parts.push('Always include code examples when relevant.');
+    }
+
+    // User role/profession
+    if (settings.userRole) {
+      const roleMap = {
+        'student': 'The user is a student. Explain concepts clearly.',
+        'developer': 'The user is a software developer. Use technical language.',
+        'designer': 'The user is a designer. Focus on visual and UX aspects.',
+        'data-scientist': 'The user is a data scientist. Include statistical details.',
+        'product-manager': 'The user is a product manager. Focus on strategy and priorities.',
+        'marketer': 'The user is a marketer. Focus on engagement and metrics.',
+        'writer': 'The user is a writer. Focus on clarity and style.',
+        'entrepreneur': 'The user is an entrepreneur. Be practical and actionable.',
+        'researcher': 'The user is a researcher. Be thorough and cite sources.'
+      };
+      if (roleMap[settings.userRole]) {
+        parts.push(roleMap[settings.userRole]);
+      }
+    }
+
+    // Experience level
+    const levels = {
+      'beginner': 'Explain concepts in simple terms. Avoid jargon.',
+      'intermediate': 'Balance explanation depth. Some jargon is acceptable.',
+      'advanced': 'You can use technical terminology freely.',
+      'expert': 'Assume deep expertise. Be concise and advanced.'
+    };
+    if (settings.experienceLevel && levels[settings.experienceLevel]) {
+      parts.push(levels[settings.experienceLevel]);
+    }
+
+    // Language preference
+    if (settings.language && settings.language !== 'en') {
+      const langs = {
+        'es': 'Spanish', 'fr': 'French', 'de': 'German', 'pt': 'Portuguese',
+        'zh': 'Chinese', 'ja': 'Japanese', 'ko': 'Korean', 'hi': 'Hindi', 'ar': 'Arabic'
+      };
+      if (langs[settings.language]) {
+        parts.push(`Respond in ${langs[settings.language]} when possible.`);
+      }
+    }
+
+    // Interests
+    if (settings.interests && settings.interests.length > 0) {
+      parts.push(`User interests: ${settings.interests.join(', ')}. Relate examples to these when relevant.`);
+    }
+
+    if (parts.length === 0) return null;
+
+    return `[User Personalization]\n${parts.join('\n')}`;
+
+  } catch (e) {
+    console.warn('Failed to build personalization prompt:', e);
+    return null;
+  }
+}
+
 
 // function saveSidebarState removed - handles by sidebar.js
 
@@ -1038,7 +1139,134 @@ function deselectTool() {
   // Toast removed for cleaner UX
 }
 
+/* --- TOPBAR DROPDOWN FUNCTIONS --- */
+function toggleTopbarDropdown(dropdownId) {
+  const allDropdowns = ['models'];
+
+
+  
+  allDropdowns.forEach(id => {
+    const btn = document.getElementById(`topbar-${id}-btn`);
+    const dropdown = document.getElementById(`topbar-${id}-dropdown`);
+    
+    if (id === dropdownId) {
+      // Toggle this one
+      btn?.classList.toggle('active');
+      dropdown?.classList.toggle('active');
+    } else {
+      // Close others
+      btn?.classList.remove('active');
+      dropdown?.classList.remove('active');
+    }
+  });
+}
+
+// Close topbar dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.topbar-dropdown-wrapper')) {
+    document.querySelectorAll('.topbar-dropdown-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.topbar-dropdown-menu').forEach(menu => menu.classList.remove('active'));
+  }
+});
+
+// Tools selection from topbar
+function selectTopbarTool(toolId) {
+  toggleTopbarDropdown(null); // Close all dropdowns
+  
+  const toolMap = {
+    'canvas': { icon: 'fa-solid fa-file-invoice', name: 'Canvas' },
+    'websearch': { icon: 'fa-solid fa-earth-americas', name: 'Web Search' },
+    'dataanalysis': { icon: 'fa-solid fa-chart-line', name: 'Data Analysis' },
+    'deepresearch': { icon: 'fa-solid fa-microscope', name: 'Deep Research' },
+    'shopping': { icon: 'fa-solid fa-bag-shopping', name: 'Shopping' },
+    'thinking': { icon: 'fa-solid fa-brain', name: 'Thinking' }
+  };
+  
+  const tool = toolMap[toolId];
+  if (tool) {
+    // Use existing function if available, else set indicator directly
+    if (toolId === 'canvas' && typeof toggleCanvasMode === 'function') {
+      toggleCanvasMode();
+    } else if (toolId === 'websearch' && typeof toggleWebSearch === 'function') {
+      toggleWebSearch();
+    } else {
+      showSelectedToolIndicator(toolId, tool.icon, tool.name);
+    }
+  }
+}
+
+// Model selection from topbar
+function selectTopbarModel(modelId, modelName, provider) {
+  toggleTopbarDropdown(null); // Close all dropdowns
+  
+  // Update global selected model
+  currentSelectedModel = modelId;
+  
+  // Update Models button label with selected model
+  const modelsLabel = document.getElementById('topbar-models-label');
+  if (modelsLabel) {
+    modelsLabel.textContent = modelName;
+  }
+
+  
+  // Update selected state in submenu
+  document.querySelectorAll('.provider-submenu .model-item').forEach(item => {
+    item.classList.remove('selected');
+  });
+  const selectedItem = document.querySelector(`.provider-submenu [data-model-id="${modelId}"]`);
+  if (selectedItem) {
+    selectedItem.classList.add('selected');
+  }
+  
+  showToast(`Model: ${modelName}`);
+}
+
+// Populate model submenus dynamically from /api/models
+async function populateTopbarModelDropdowns() {
+  try {
+    const response = await fetch('/api/models');
+    if (!response.ok) throw new Error('Failed to fetch models');
+    
+    const models = await response.json();
+    
+    const groqModels = models.filter(m => m.provider === 'groq');
+    const openrouterModels = models.filter(m => m.provider === 'openrouter');
+    
+    // Populate Groq submenu
+    const groqSubmenu = document.getElementById('groq-submenu');
+    if (groqSubmenu) {
+      groqSubmenu.innerHTML = groqModels.map(model => `
+        <button class="model-item" data-model-id="${model.id}" onclick="selectTopbarModel('${model.id}', '${model.name}', 'groq')">
+          <span class="model-item-name">${model.name}</span>
+          <span class="model-item-desc">${model.description || ''}</span>
+        </button>
+      `).join('');
+    }
+    
+    // Populate OpenRouter submenu
+    const openrouterSubmenu = document.getElementById('openrouter-submenu');
+    if (openrouterSubmenu) {
+      openrouterSubmenu.innerHTML = openrouterModels.map(model => `
+        <button class="model-item" data-model-id="${model.id}" onclick="selectTopbarModel('${model.id}', '${model.name}', 'openrouter')">
+          <span class="model-item-name">${model.name}</span>
+          <span class="model-item-desc">${model.description || ''}</span>
+        </button>
+      `).join('');
+    }
+  } catch (error) {
+    console.error('Error populating model dropdowns:', error);
+  }
+}
+
+// Initialize topbar models on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    populateTopbarModelDropdowns();
+  }, 500); // Small delay to ensure DOM is ready
+});
+
 /* --- DESKTOP TOOL HANDLERS --- */
+
 function handleDesktopTool(action) {
   // Close dropdown and remove active state from button
   const dropdown = document.getElementById("tools-dropdown");
@@ -1048,8 +1276,8 @@ function handleDesktopTool(action) {
 
   // Handle tool selection
   switch (action) {
-    case 'image':
-      showSelectedToolIndicator('imagegen', 'fa-solid fa-paintbrush', 'Create Image');
+    case 'data-analysis':
+      showSelectedToolIndicator('dataanalysis', 'fa-solid fa-chart-line', 'Data Analysis');
       break;
     case 'deep-research':
       showSelectedToolIndicator('deepresearch', 'fa-solid fa-microscope', 'Deep Research');
@@ -1062,6 +1290,8 @@ function handleDesktopTool(action) {
       break;
   }
 }
+
+
 
 function handleDesktopAttach(action) {
   // Close attach dropdown
@@ -1176,10 +1406,8 @@ function handleMobileAction(action) {
           setTimeout(() => fileInputF.setAttribute('accept', 'application/pdf'), 1000);
         }
         break;
-      case 'image':
-        showSelectedToolIndicator('imagegen', 'fa-solid fa-paintbrush', 'Create Image');
-        break;
       case 'deep-research':
+
         showSelectedToolIndicator('deepresearch', 'fa-solid fa-microscope', 'Deep Research');
         break;
       case 'shopping':

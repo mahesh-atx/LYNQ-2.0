@@ -956,7 +956,11 @@ function addMessage(text, sender, skipHistory = false, attachment = null) {
 
   if (isThinking) {
     bubble.innerHTML =
-      '<div class="thinking-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+      '<div class="thinking-container">' +
+        '<div class="thinking-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>' +
+        '<span class="thinking-label">Thinking...</span>' +
+      '</div>';
+
   } else if (sender === "user") {
     bubble.innerText = text;
   } else {

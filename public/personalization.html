@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <title>Personalization — LYNQ AI</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./favicons/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./favicons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./favicons/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./favicons/site.webmanifest" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css"
+    />
+
+    <link rel="stylesheet" href="css/design-system.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/animations.css" />
+    <link rel="stylesheet" href="css/z-index-system.css" />
+    <link rel="stylesheet" href="css/accessibility.css" />
+    <link rel="stylesheet" href="css/loading-states.css" />
+    <link rel="stylesheet" href="css/performance.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/home.css" />
+    <link rel="stylesheet" href="css/settings.css" />
+  </head>
+
+  <body class="dark-mode">
+    <!-- Hero Spotlight Glow Background Effect -->
+    <div class="hero-spotlight-bg" aria-hidden="true">
+      <div class="spotlight-glow spotlight-main"></div>
+      <div class="spotlight-glow spotlight-accent"></div>
+    </div>
+
+    <script src="js/theme-init.js"></script>
+
+    <div id="app-container">
+      <!-- Sidebar injected by components.js -->
+      <div id="sidebar-container"></div>
+
+      <main id="main-content">
+        <!-- Top Bar injected by components.js -->
+        <div id="topbar-container"></div>
+
+        <div id="personalization-view" class="view-section active">
+          <div class="settings-container">
+            <div class="settings-header">
+              <h1>Personalization</h1>
+              <p class="settings-subtitle">
+                Customize how LYNQ responds and interacts with you
+              </p>
+            </div>
+
+            <!-- AI Personality Section -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-masks-theater"></i> AI Personality</h3>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Response Style</h4>
+                  <p>Choose how LYNQ communicates with you</p>
+                </div>
+                <select class="select-field" id="response-style-select">
+                  <option value="balanced">Balanced</option>
+                  <option value="concise">Concise & Direct</option>
+                  <option value="detailed">Detailed & Thorough</option>
+                  <option value="friendly">Friendly & Casual</option>
+                  <option value="professional">Professional & Formal</option>
+                  <option value="creative">Creative & Expressive</option>
+                </select>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Emoji Usage</h4>
+                  <p>Allow LYNQ to use emojis in responses</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="emoji-toggle" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Code Examples</h4>
+                  <p>Always include code examples when relevant</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="code-examples-toggle" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- User Profile Section -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-user-circle"></i> About You</h3>
+
+              <div class="setting-item vertical">
+                <div class="setting-info" style="width: 100%">
+                  <h4>Your Name</h4>
+                  <p>LYNQ will use this to personalize responses</p>
+                  <input
+                    type="text"
+                    class="input-field-styled"
+                    id="user-name-input"
+                    placeholder="What should I call you?"
+                  />
+                </div>
+              </div>
+
+              <div class="setting-item vertical">
+                <div class="setting-info" style="width: 100%">
+                  <h4>Your Role / Profession</h4>
+                  <p>Helps tailor responses to your expertise level</p>
+                  <select
+                    class="select-field"
+                    id="user-role-select"
+                    style="margin-top: 8px"
+                  >
+                    <option value="">Select your role...</option>
+                    <option value="student">Student</option>
+                    <option value="developer">Software Developer</option>
+                    <option value="designer">Designer</option>
+                    <option value="data-scientist">Data Scientist</option>
+                    <option value="product-manager">Product Manager</option>
+                    <option value="marketer">Marketer</option>
+                    <option value="writer">Writer / Content Creator</option>
+                    <option value="entrepreneur">Entrepreneur</option>
+                    <option value="researcher">Researcher</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="setting-item vertical">
+                <div class="setting-info" style="width: 100%">
+                  <h4>Experience Level</h4>
+                  <p>Adjust technical depth of explanations</p>
+                </div>
+                <div
+                  class="experience-levels"
+                  style="
+                    display: flex;
+                    gap: 10px;
+                    margin-top: 8px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <button class="level-btn" data-level="beginner">
+                    <i class="fa-solid fa-seedling"></i> Beginner
+                  </button>
+                  <button class="level-btn active" data-level="intermediate">
+                    <i class="fa-solid fa-leaf"></i> Intermediate
+                  </button>
+                  <button class="level-btn" data-level="advanced">
+                    <i class="fa-solid fa-tree"></i> Advanced
+                  </button>
+                  <button class="level-btn" data-level="expert">
+                    <i class="fa-solid fa-crown"></i> Expert
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Language & Region Section -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-globe"></i> Language & Region</h3>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Preferred Language</h4>
+                  <p>Language for AI responses</p>
+                </div>
+                <select class="select-field" id="language-select">
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="pt">Português</option>
+                  <option value="zh">中文</option>
+                  <option value="ja">日本語</option>
+                  <option value="ko">한국어</option>
+                  <option value="hi">हिन्दी</option>
+                  <option value="ar">العربية</option>
+                </select>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Date Format</h4>
+                  <p>How dates are displayed</p>
+                </div>
+                <select class="select-field" id="date-format-select">
+                  <option value="mdy">MM/DD/YYYY (US)</option>
+                  <option value="dmy">DD/MM/YYYY (EU)</option>
+                  <option value="ymd">YYYY-MM-DD (ISO)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Interests Section -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-heart"></i> Interests & Topics</h3>
+
+              <div class="setting-item vertical">
+                <div class="setting-info" style="width: 100%">
+                  <h4>Your Interests</h4>
+                  <p>
+                    Select topics you're interested in for better suggestions
+                  </p>
+                </div>
+                <div class="interests-grid" style="margin-top: 12px">
+                  <button class="interest-chip" data-interest="coding">
+                    <i class="fa-solid fa-code"></i> Coding
+                  </button>
+                  <button class="interest-chip" data-interest="ai">
+                    <i class="fa-solid fa-robot"></i> AI / ML
+                  </button>
+                  <button class="interest-chip" data-interest="design">
+                    <i class="fa-solid fa-palette"></i> Design
+                  </button>
+                  <button class="interest-chip" data-interest="writing">
+                    <i class="fa-solid fa-pen-fancy"></i> Writing
+                  </button>
+                  <button class="interest-chip" data-interest="marketing">
+                    <i class="fa-solid fa-bullhorn"></i> Marketing
+                  </button>
+                  <button class="interest-chip" data-interest="business">
+                    <i class="fa-solid fa-briefcase"></i> Business
+                  </button>
+                  <button class="interest-chip" data-interest="science">
+                    <i class="fa-solid fa-flask"></i> Science
+                  </button>
+                  <button class="interest-chip" data-interest="education">
+                    <i class="fa-solid fa-graduation-cap"></i> Education
+                  </button>
+                  <button class="interest-chip" data-interest="productivity">
+                    <i class="fa-solid fa-rocket"></i> Productivity
+                  </button>
+                  <button class="interest-chip" data-interest="gaming">
+                    <i class="fa-solid fa-gamepad"></i> Gaming
+                  </button>
+                  <button class="interest-chip" data-interest="music">
+                    <i class="fa-solid fa-music"></i> Music
+                  </button>
+                  <button class="interest-chip" data-interest="health">
+                    <i class="fa-solid fa-heart-pulse"></i> Health
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Memory Section -->
+            <div class="settings-group">
+              <h3><i class="fa-solid fa-brain"></i> Memory & Context</h3>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Remember Preferences</h4>
+                  <p>Let LYNQ learn from your conversations</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="memory-toggle" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Context Length</h4>
+                  <p>How much conversation history to include</p>
+                </div>
+                <select class="select-field" id="context-length-select">
+                  <option value="short">Short (last 3 messages)</option>
+                  <option value="medium" selected>
+                    Medium (last 10 messages)
+                  </option>
+                  <option value="long">Long (last 25 messages)</option>
+                  <option value="full">Full conversation</option>
+                </select>
+              </div>
+
+              <div
+                class="setting-item"
+                style="border-color: rgba(100, 120, 255, 0.3)"
+              >
+                <div class="setting-info">
+                  <h4>Clear Memory</h4>
+                  <p>Reset what LYNQ has learned about you</p>
+                </div>
+                <button class="btn-secondary" id="clear-memory-btn">
+                  <i class="fa-solid fa-eraser"></i> Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Save Button -->
+            <div
+              class="settings-actions"
+              style="
+                margin-top: 24px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+              "
+            >
+              <button class="btn-secondary" id="reset-personalization-btn">
+                Reset to Defaults
+              </button>
+              <button class="btn-primary" id="save-personalization-btn">
+                <i class="fa-solid fa-check"></i> Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Shared Components Containers -->
+    <div id="toast-container"></div>
+    <div id="pricing-modal-container"></div>
+    <div id="profile-popup-container"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/auth.js"></script>
+    <!-- Core modular files -->
+    <script src="js/store.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/model-selector.js"></script>
+    <script src="js/chat-list.js"></script>
+    <script src="js/accessibility-utils.js"></script>
+    <script src="js/script.js"></script>
+
+    <script>
+      // Initialize shared components
+      initSharedComponents("personalization");
+
+      // Storage key prefix
+      const STORAGE_PREFIX = "lynq_personalization_";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadPersonalizationSettings();
+        bindEventListeners();
+      });
+
+      function bindEventListeners() {
+        // Experience level buttons
+        document.querySelectorAll(".level-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll(".level-btn")
+              .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+          });
+        });
+
+        // Interest chips
+        document.querySelectorAll(".interest-chip").forEach((chip) => {
+          chip.addEventListener("click", () => {
+            chip.classList.toggle("active");
+          });
+        });
+
+        // Save button
+        const saveBtn = document.getElementById("save-personalization-btn");
+        if (saveBtn)
+          saveBtn.addEventListener("click", savePersonalizationSettings);
+
+        // Reset button
+        const resetBtn = document.getElementById("reset-personalization-btn");
+        if (resetBtn) resetBtn.addEventListener("click", resetToDefaults);
+
+        // Clear memory button
+        const clearMemoryBtn = document.getElementById("clear-memory-btn");
+        if (clearMemoryBtn)
+          clearMemoryBtn.addEventListener("click", clearMemory);
+      }
+
+      function savePersonalizationSettings() {
+        const settings = {
+          responseStyle:
+            document.getElementById("response-style-select")?.value ||
+            "balanced",
+          emojiEnabled:
+            document.getElementById("emoji-toggle")?.checked ?? true,
+          codeExamples:
+            document.getElementById("code-examples-toggle")?.checked ?? true,
+          userName: document.getElementById("user-name-input")?.value || "",
+          userRole: document.getElementById("user-role-select")?.value || "",
+          experienceLevel:
+            document.querySelector(".level-btn.active")?.dataset.level ||
+            "intermediate",
+          language: document.getElementById("language-select")?.value || "en",
+          dateFormat:
+            document.getElementById("date-format-select")?.value || "mdy",
+          interests: Array.from(
+            document.querySelectorAll(".interest-chip.active")
+          ).map((c) => c.dataset.interest),
+          memoryEnabled:
+            document.getElementById("memory-toggle")?.checked ?? true,
+          contextLength:
+            document.getElementById("context-length-select")?.value || "medium",
+        };
+
+        localStorage.setItem(
+          STORAGE_PREFIX + "settings",
+          JSON.stringify(settings)
+        );
+        if (typeof showToast === "function")
+          showToast("Personalization saved!");
+      }
+
+      function loadPersonalizationSettings() {
+        const saved = localStorage.getItem(STORAGE_PREFIX + "settings");
+        if (!saved) return;
+
+        try {
+          const settings = JSON.parse(saved);
+
+          // Response style
+          const styleSelect = document.getElementById("response-style-select");
+          if (styleSelect && settings.responseStyle)
+            styleSelect.value = settings.responseStyle;
+
+          // Toggles
+          const emojiToggle = document.getElementById("emoji-toggle");
+          if (emojiToggle) emojiToggle.checked = settings.emojiEnabled ?? true;
+
+          const codeToggle = document.getElementById("code-examples-toggle");
+          if (codeToggle) codeToggle.checked = settings.codeExamples ?? true;
+
+          // User info
+          const nameInput = document.getElementById("user-name-input");
+          if (nameInput && settings.userName)
+            nameInput.value = settings.userName;
+
+          const roleSelect = document.getElementById("user-role-select");
+          if (roleSelect && settings.userRole)
+            roleSelect.value = settings.userRole;
+
+          // Experience level
+          if (settings.experienceLevel) {
+            document.querySelectorAll(".level-btn").forEach((btn) => {
+              btn.classList.toggle(
+                "active",
+                btn.dataset.level === settings.experienceLevel
+              );
+            });
+          }
+
+          // Language
+          const langSelect = document.getElementById("language-select");
+          if (langSelect && settings.language)
+            langSelect.value = settings.language;
+
+          // Date format
+          const dateSelect = document.getElementById("date-format-select");
+          if (dateSelect && settings.dateFormat)
+            dateSelect.value = settings.dateFormat;
+
+          // Interests
+          if (settings.interests && Array.isArray(settings.interests)) {
+            settings.interests.forEach((interest) => {
+              const chip = document.querySelector(
+                `.interest-chip[data-interest="${interest}"]`
+              );
+              if (chip) chip.classList.add("active");
+            });
+          }
+
+          // Memory toggle
+          const memoryToggle = document.getElementById("memory-toggle");
+          if (memoryToggle)
+            memoryToggle.checked = settings.memoryEnabled ?? true;
+
+          // Context length
+          const contextSelect = document.getElementById(
+            "context-length-select"
+          );
+          if (contextSelect && settings.contextLength)
+            contextSelect.value = settings.contextLength;
+        } catch (e) {
+          console.warn("Failed to load personalization settings:", e);
+        }
+      }
+
+      function resetToDefaults() {
+        if (!confirm("Reset all personalization settings to defaults?")) return;
+
+        localStorage.removeItem(STORAGE_PREFIX + "settings");
+        location.reload();
+      }
+
+      function clearMemory() {
+        if (!confirm("This will clear all learned preferences. Continue?"))
+          return;
+
+        localStorage.removeItem(STORAGE_PREFIX + "memory");
+        localStorage.removeItem("lynq_rag_memory");
+        if (typeof showToast === "function") showToast("Memory cleared!");
+      }
+    </script>
+
+    <style>
+      /* Personalization Page Specific Styles */
+      .settings-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-top: 4px;
+      }
+
+      .select-field {
+        padding: 10px 14px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-secondary);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+        cursor: pointer;
+        min-width: 180px;
+        transition: all 0.2s ease;
+      }
+
+      .select-field:hover {
+        border-color: var(--border-primary);
+      }
+
+      .select-field:focus {
+        outline: none;
+        border-color: var(--bg-gold);
+      }
+
+      .level-btn {
+        padding: 10px 16px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-secondary);
+        border-radius: 20px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .level-btn:hover {
+        border-color: var(--border-primary);
+        color: var(--text-primary);
+      }
+
+      .level-btn.active {
+        background: rgba(100, 120, 255, 0.15);
+        border-color: rgba(100, 120, 255, 0.5);
+        color: var(--text-heading);
+      }
+
+      .level-btn.active i {
+        color: #667eea;
+      }
+
+      .interests-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .interest-chip {
+        padding: 8px 14px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-secondary);
+        border-radius: 20px;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+      }
+
+      .interest-chip:hover {
+        border-color: var(--border-primary);
+        color: var(--text-primary);
+      }
+
+      .interest-chip.active {
+        background: rgba(100, 120, 255, 0.15);
+        border-color: rgba(100, 120, 255, 0.5);
+        color: var(--text-heading);
+      }
+
+      .interest-chip.active i {
+        color: #667eea;
+      }
+
+      .btn-primary {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-size: 0.95rem;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .select-field {
+          min-width: 100%;
+          margin-top: 8px;
+        }
+
+        .setting-item {
+          flex-direction: column;
+          align-items: flex-start !important;
+        }
+
+        .experience-levels {
+          width: 100%;
+        }
+
+        .level-btn {
+          flex: 1;
+          justify-content: center;
+          padding: 10px 12px;
+        }
+      }
+    </style>
+  </body>
+</html>
