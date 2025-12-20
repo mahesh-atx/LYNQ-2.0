@@ -432,6 +432,22 @@ async function getApiResponse(
     }
 
     const data = await response.json();
+    
+    // Store sources globally for the Sources Panel feature
+    if (data.sources && data.sources.length > 0) {
+      window.lastResponseSources = data.sources;
+      console.log(`📋 Received ${data.sources.length} sources from API`);
+    } else {
+      window.lastResponseSources = null;
+    }
+    
+    // Store tools used for display
+    if (data.toolsUsed) {
+      window.lastToolsUsed = data.toolsUsed;
+    } else {
+      window.lastToolsUsed = null;
+    }
+    
     return data.text;
   } catch (error) {
     if (error.name === "AbortError") {

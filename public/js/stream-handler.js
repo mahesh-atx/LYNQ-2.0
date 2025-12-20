@@ -108,6 +108,10 @@ async function streamTextToBubble(textToStream, bubble) {
 
     currentText += words[i] + " ";
     let displayHtml = marked.parse(currentText);
+    
+    // NOTE: Citations are processed ONLY at the end to prevent flickering
+    // The [[cite:X]] markers will be visible briefly during streaming
+    
     bubble.innerHTML = displayHtml;
 
     const currentCodeBlocks = bubble.querySelectorAll("pre code");
@@ -139,14 +143,35 @@ async function streamTextToBubble(textToStream, bubble) {
     );
   }
 
-  bubble.innerHTML = marked.parse(currentText.trim());
+  // Final render with all processing
+  let finalHtml = marked.parse(currentText.trim());
+  if (typeof processInlineCitations === "function") {
+    finalHtml = processInlineCitations(finalHtml);
+  }
+  bubble.innerHTML = finalHtml;
+  
   bubble
     .querySelectorAll("pre code")
     .forEach((block) => hljs.highlightElement(block));
   enhanceCodeBlocks(bubble);
   
+  // FIX 12: Add onerror handlers to carousel images to hide broken ones
+  bubble.querySelectorAll('.image-carousel img, .image-card img').forEach(img => {
+    img.onerror = function() {
+      // Hide the entire image card if image fails to load
+      const card = this.closest('.image-card');
+      if (card) card.style.display = 'none';
+      else this.style.display = 'none';
+    };
+  });
+  
   // Render any chartdata blocks as interactive charts
   renderChartBlocks(bubble);
+  
+  // Attach hover listeners to the citation badges
+  if (typeof attachCitationHoverListeners === "function") {
+    attachCitationHoverListeners(bubble);
+  }
 }
 
 // ============================================
@@ -227,6 +252,29 @@ async function streamResponse(fullText) {
   const stopBtn = document.getElementById("stop-btn");
 
   embedYouTubeVideos(bubble);
+  
+  // ATTACH SOURCES TO THIS MESSAGE ELEMENT (prevents race conditions)
+  const parentWrapper = bubble.parentElement;
+  if (window.lastResponseSources && window.lastResponseSources.length > 0) {
+    // Store sources on the message element itself
+    parentWrapper.dataset.sources = JSON.stringify(window.lastResponseSources);
+    console.log(`📋 Attached ${window.lastResponseSources.length} sources to message element`);
+  }
+  
+  // ADD STACKED SOURCES INDICATOR BEFORE appendSourcesPanel clears sources
+  const actionsDiv = parentWrapper.querySelector(".message-actions");
+  if (actionsDiv && window.lastResponseSources && window.lastResponseSources.length > 0) {
+    if (typeof createSourcesStackIndicator === "function") {
+      const sourcesIndicator = createSourcesStackIndicator(window.lastResponseSources);
+      actionsDiv.appendChild(sourcesIndicator);
+      console.log(`🔗 Added stacked sources indicator with ${window.lastResponseSources.length} sources`);
+    }
+  }
+  
+  // Append Sources Panel if sources are available from web search
+  if (typeof appendSourcesPanel === "function") {
+    appendSourcesPanel(parentWrapper);
+  }
 
   if (sendBtn) sendBtn.style.display = "flex";
   if (stopBtn) {
@@ -236,9 +284,6 @@ async function streamResponse(fullText) {
     if (toolbarRight) toolbarRight.classList.remove("generating");
   }
   isResponding = false;
-
-  const parentWrapper = bubble.parentElement;
-  const actionsDiv = parentWrapper.querySelector(".message-actions");
 
   const copyBtn = actionsDiv.querySelector(".fa-copy").parentElement;
   copyBtn.onclick = () => {

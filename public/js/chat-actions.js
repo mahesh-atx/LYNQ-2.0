@@ -262,10 +262,22 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
 
   try {
     const systemMsg = await buildContextualSystemMessage(attachment);
-    const response = await getApiResponse([
-      { role: "system", content: systemMsg },
-      ...mainChatHistory,
-    ]);
+    
+    // Check if web search is currently enabled
+    const isWebSearchOn = typeof isWebSearchActive !== 'undefined' ? isWebSearchActive : false;
+    const isCanvasOn = typeof isCanvasModeActive !== 'undefined' ? isCanvasModeActive : false;
+    const toolId = typeof currentToolId !== 'undefined' ? currentToolId : null;
+    
+    const response = await getApiResponse(
+      newPrompt,
+      systemMsg,
+      mainChatHistory,
+      null, // signal
+      isWebSearchOn,
+      isCanvasOn,
+      toolId,
+      attachment
+    );
 
     // Remove thinking indicator
     const thinkingMsg = messagesWrapper.querySelector(".message.thinking");

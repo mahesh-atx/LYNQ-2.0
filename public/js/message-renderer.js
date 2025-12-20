@@ -11,6 +11,188 @@
 const chartInstances = new Map();
 
 // ============================================
+// INLINE CITATIONS PROCESSING
+// ============================================
+
+/**
+ * Processes inline citation markers and converts them to clickable badges
+ * Format: [[cite:1]]  (Reference ID)
+ * Output: <a class="inline-citation" href="URL" target="_blank">[Source Name]</a>
+ */
+function processInlineCitations(html) {
+  // Regex to match [[cite:ID]]
+  // Also handles potentially auto-linked IDs if that ever happens, though unlikely with digits
+  const citationRegex = /\[\[cite:(\d+)\]\]/g;
+  
+  // Replace all citation markers with styled badges
+  return html.replace(citationRegex, (match, id) => {
+    const sourceIndex = parseInt(id) - 1;
+    
+    // Look up the real source data from the global array
+    if (window.lastResponseSources && window.lastResponseSources[sourceIndex]) {
+        const source = window.lastResponseSources[sourceIndex];
+        // Use a short name for the badge (e.g. "Apple", "Wiki")
+        let shortName = source.title.split(/[-|–:]/)[0].trim();
+        if (shortName.length > 15) shortName = new URL(source.url).hostname.replace('www.', '').split('.')[0];
+        
+        // Get favicon URL from Google's service
+        const domain = new URL(source.url).hostname;
+        const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+        
+        // Create the safe, verified inline citation badge with favicon
+        return `<a class="inline-citation" href="${source.url}" target="_blank" rel="noopener noreferrer" title="Source: ${source.title}"><img src="${faviconUrl}" class="citation-favicon" alt="" onerror="this.style.display='none'">${shortName}</a>`;
+    }
+    
+    // FALLBACK: Source ID doesn't exist - show generic badge or hide
+    // Option 1: Hide completely (return empty string)
+    // Option 2: Show generic badge
+    console.warn(`⚠️ Citation [${id}] not found in sources array`);
+    return `<span class="inline-citation inline-citation-missing" title="Source ${id} not found">Source ${id}</span>`;
+  });
+}
+
+/**
+ * Applies inline citation processing to a bubble element
+ */
+function renderInlineCitations(bubble) {
+  if (!bubble) return;
+  
+  // Get current HTML and process citations
+  const originalHtml = bubble.innerHTML;
+  const processedHtml = processInlineCitations(originalHtml);
+  
+  // Only update if there were changes
+  if (processedHtml !== originalHtml) {
+    bubble.innerHTML = processedHtml;
+    const citationCount = (processedHtml.match(/inline-citation/g) || []).length;
+    console.log(`📎 Processed ${citationCount} inline citations`);
+    
+    // Attach hover listeners for the cards
+    attachCitationHoverListeners(bubble);
+  }
+}
+
+// --- HOVER CARD IMPLEMENTATION ---
+let hoverCardElement = null;
+let sourcesCache = new Map(); // Cache to store sources globally
+let citationDelegationSetup = false; // Prevent multiple setups
+
+function getOrCreateHoverCard() {
+  if (hoverCardElement) return hoverCardElement;
+  
+  hoverCardElement = document.createElement('div');
+  hoverCardElement.className = 'citation-hover-card';
+  document.body.appendChild(hoverCardElement);
+  return hoverCardElement;
+}
+
+// MEMORY LEAK FIX: Use event delegation instead of per-element listeners
+function setupCitationEventDelegation() {
+  if (citationDelegationSetup) return; // Only setup once
+  citationDelegationSetup = true;
+  
+  const card = getOrCreateHoverCard();
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // Delegated event handler for all .inline-citation elements
+  document.body.addEventListener(isTouchDevice ? 'click' : 'mouseenter', (e) => {
+    const citation = e.target.closest('.inline-citation');
+    if (!citation || citation.classList.contains('inline-citation-missing')) return;
+    
+    if (isTouchDevice && card.classList.contains('visible')) {
+      // On mobile, second tap on same citation should navigate
+      return; 
+    }
+    if (isTouchDevice) {
+      e.preventDefault(); // Prevent first tap navigation
+    }
+    
+    showHoverCard(citation, card);
+  }, isTouchDevice ? false : true); // Use capture for mouseenter
+  
+  // Hide card on mouseleave (desktop) or touchstart elsewhere (mobile)
+  if (!isTouchDevice) {
+    document.body.addEventListener('mouseleave', (e) => {
+      if (e.target.closest('.inline-citation')) {
+        card.classList.remove('visible');
+      }
+    }, true);
+  } else {
+    document.addEventListener('touchstart', (e) => {
+      if (!e.target.closest('.inline-citation') && !e.target.closest('.citation-hover-card')) {
+        card.classList.remove('visible');
+      }
+    }, { passive: true });
+  }
+  
+  console.log('📎 Citation event delegation setup complete');
+}
+
+function showHoverCard(citation, card) {
+  const url = citation.getAttribute('href');
+  const sourceName = citation.innerText;
+  
+  let sourceData = sourcesCache.get(url);
+  if (!sourceData) {
+    try {
+      const urlObj = new URL(url);
+      sourceData = sourcesCache.get(urlObj.hostname + urlObj.pathname);
+    } catch (e) {}
+  }
+  if (!sourceData && window.lastResponseSources) {
+    sourceData = window.lastResponseSources.find(s => s.url === url || s.url.includes(url) || url.includes(s.url));
+  }
+
+  if (sourceData) {
+    const domain = new URL(sourceData.url).hostname;
+    const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    
+    card.innerHTML = `
+      <div class="citation-card-header">
+        <img src="${faviconUrl}" class="citation-card-favicon" alt="" onerror="this.style.display='none'">
+        <span class="citation-card-source-name">${sourceName}</span>
+      </div>
+      <div class="citation-card-title">${sourceData.title}</div>
+      <div class="citation-card-snippet">${sourceData.snippet || "No description available."}</div>
+    `;
+    
+    const rect = citation.getBoundingClientRect();
+    card.style.left = `${Math.min(rect.left, window.innerWidth - 310)}px`;
+    card.style.top = `${rect.bottom + 10}px`;
+    
+    card.classList.add('visible');
+  }
+}
+
+function attachCitationHoverListeners(bubble) {
+  // Try to get sources from the message element first (per-message), then global fallback
+  let messageSources = null;
+  const parentWrapper = bubble.closest('.content-wrapper') || bubble.parentElement;
+  if (parentWrapper && parentWrapper.dataset.sources) {
+    try {
+      messageSources = JSON.parse(parentWrapper.dataset.sources);
+    } catch (e) {}
+  }
+  
+  // Use message sources if available, otherwise use global
+  const sourcesToUse = messageSources || window.lastResponseSources || [];
+  
+  // Cache sources by URL for quick lookup (this is safe to call multiple times)
+  if (sourcesToUse.length > 0) {
+    sourcesToUse.forEach(source => {
+      sourcesCache.set(source.url, source);
+      try {
+        const urlObj = new URL(source.url);
+        sourcesCache.set(urlObj.hostname + urlObj.pathname, source);
+      } catch (e) {}
+    });
+  }
+  
+  // Setup event delegation once (prevents memory leaks)
+  setupCitationEventDelegation();
+}
+
+// ============================================
 // HELPER FUNCTIONS
 // ============================================
 
@@ -313,6 +495,99 @@ function createVideoPlayer(linkElement, videoId) {
 }
 
 // ============================================
+// SOURCES PANEL RENDERING
+// ============================================
+
+/**
+ * Renders a collapsible Sources Panel showing web search citations
+ * @param {Array} sources - Array of source objects from API
+ * @returns {HTMLElement} - The sources panel element
+ */
+function renderSourcesPanel(sources) {
+  if (!sources || sources.length === 0) return null;
+
+  const panel = document.createElement("div");
+  panel.className = "sources-panel";
+
+  // Determine authority badge
+  const getAuthorityBadge = (score) => {
+    if (score >= 70) return { class: "high", icon: "fa-shield-halved", label: `${score}/100` };
+    if (score >= 40) return { class: "medium", icon: "fa-shield", label: `${score}/100` };
+    return { class: "low", icon: "fa-circle-info", label: `${score}/100` };
+  };
+
+  // Extract domain from URL
+  const getDomain = (url) => {
+    try {
+      return new URL(url).hostname.replace("www.", "");
+    } catch {
+      return url;
+    }
+  };
+
+  // Build sources HTML
+  let sourcesHTML = sources.map((source, index) => {
+    const badge = getAuthorityBadge(source.authorityScore);
+    const domain = getDomain(source.url);
+    
+    return `
+      <div class="source-card ${source.isVideo ? 'video' : ''}">
+        <div class="source-number">${index + 1}</div>
+        <div class="source-info">
+          <div class="source-title">
+            <a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}</a>
+          </div>
+          <div class="source-meta">
+            <span class="authority-badge ${badge.class}">
+              <i class="fa-solid ${badge.icon}"></i> ${badge.label}
+            </span>
+            <span class="source-url">${domain}</span>
+          </div>
+        </div>
+        <button class="source-verify-btn" onclick="window.open('${source.url}', '_blank')" title="Open source">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  panel.innerHTML = `
+    <div class="sources-panel-header" onclick="this.parentElement.classList.toggle('expanded')">
+      <div class="sources-panel-title">
+        <i class="fa-solid fa-quote-left"></i>
+        <span>Sources</span>
+        <span class="sources-count">${sources.length}</span>
+      </div>
+      <i class="fa-solid fa-chevron-down sources-toggle-icon"></i>
+    </div>
+    <div class="sources-panel-content">
+      <div class="sources-list">
+        ${sourcesHTML}
+      </div>
+    </div>
+  `;
+
+  return panel;
+}
+
+/**
+ * Appends the Sources Panel to a message content wrapper
+ * Should be called after streaming is complete
+ */
+function appendSourcesPanel(contentWrapper) {
+  if (!window.lastResponseSources || window.lastResponseSources.length === 0) return;
+  
+  const panel = renderSourcesPanel(window.lastResponseSources);
+  if (panel) {
+    contentWrapper.appendChild(panel);
+    console.log(`📋 Sources Panel added with ${window.lastResponseSources.length} sources`);
+  }
+  
+  // Clear the sources after use
+  window.lastResponseSources = null;
+}
+
+// ============================================
 // ADD MESSAGE FUNCTION
 // ============================================
 
@@ -416,6 +691,12 @@ function addMessage(text, sender, skipHistory = false, attachment = null) {
     actionsDiv.appendChild(copyBtn);
     actionsDiv.appendChild(regenBtn);
     actionsDiv.appendChild(shareBtn);
+    
+    // Add stacked sources indicator if sources are available
+    if (window.lastResponseSources && window.lastResponseSources.length > 0) {
+      const sourcesIndicator = createSourcesStackIndicator(window.lastResponseSources);
+      actionsDiv.appendChild(sourcesIndicator);
+    }
   }
 
   contentWrapper.appendChild(bubble);
@@ -435,4 +716,72 @@ function addMessage(text, sender, skipHistory = false, attachment = null) {
   if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 
   return bubble;
+}
+
+/**
+ * Creates a stacked favicons indicator for sources (GLOBAL FUNCTION)
+ */
+function createSourcesStackIndicator(sources) {
+  const container = document.createElement('div');
+  container.className = 'sources-stack-container';
+  
+  // Stacked favicons (show max 4)
+  const stackDiv = document.createElement('div');
+  stackDiv.className = 'sources-stack';
+  
+  const uniqueDomains = [...new Set(sources.map(s => {
+    try { return new URL(s.url).hostname; } catch { return null; }
+  }).filter(Boolean))].slice(0, 4);
+  
+  uniqueDomains.forEach((domain, index) => {
+    const favicon = document.createElement('img');
+    favicon.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    favicon.className = 'stack-favicon';
+    favicon.style.zIndex = 10 - index;
+    favicon.style.marginLeft = index > 0 ? '-8px' : '0';
+    favicon.onerror = () => favicon.style.display = 'none';
+    stackDiv.appendChild(favicon);
+  });
+  
+  // Count badge
+  const countBadge = document.createElement('span');
+  countBadge.className = 'sources-count-badge';
+  countBadge.innerText = sources.length;
+  stackDiv.appendChild(countBadge);
+  
+  container.appendChild(stackDiv);
+  
+  // Dropdown panel (hidden by default)
+  const dropdown = document.createElement('div');
+  dropdown.className = 'sources-dropdown';
+  dropdown.innerHTML = `<div class="sources-dropdown-header">Sources (${sources.length})</div>`;
+  
+  sources.slice(0, 6).forEach(source => {
+    const domain = new URL(source.url).hostname;
+    const item = document.createElement('a');
+    item.className = 'sources-dropdown-item';
+    item.href = source.url;
+    item.target = '_blank';
+    item.innerHTML = `
+      <img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" class="dropdown-favicon" onerror="this.style.display='none'">
+      <div class="dropdown-item-text">
+        <span class="dropdown-item-title">${source.title.substring(0, 40)}${source.title.length > 40 ? '...' : ''}</span>
+        <span class="dropdown-item-domain">${domain}</span>
+      </div>
+    `;
+    dropdown.appendChild(item);
+  });
+  
+  container.appendChild(dropdown);
+  
+  // Toggle dropdown on click
+  stackDiv.onclick = (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('visible');
+  };
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => dropdown.classList.remove('visible'));
+  
+  return container;
 }

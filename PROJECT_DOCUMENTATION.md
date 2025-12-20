@@ -117,6 +117,16 @@ The backend is a monolithic Express server that handles API requests and serves 
   - It cleans the HTML (removes ads, navs) and feeds the raw text to the LLM.
 - **Caching:** Results are cached in-memory (`Map`) for 5 minutes to save API quotas.
 - **Image Carousels:** Extracts images from search results (via `pagemap.cse_image`) and YouTube video links for rich visual responses.
+- **Inline Citations (Perplexity-style):**
+  - Sources appear as clickable badges directly after each fact in the response
+  - AI uses format `[[cite:Source Name:URL]]` which renders as styled badges
+  - Colorful badges with different colors for variety (purple, pink, green, orange)
+  - Clicking a badge opens the source URL in a new tab
+- **Sources Panel (Collapsible):**
+  - A collapsible UI panel below AI responses showing all sources
+  - Displays source titles, URLs, and authority scores (0-100)
+  - One-click "verify" button to open sources in new tab
+  - Provides a summary view of all referenced sources
 
 ### Compound AI System (Agentic Models)
 

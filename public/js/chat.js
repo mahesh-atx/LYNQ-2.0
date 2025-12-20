@@ -155,6 +155,9 @@ function toggleWebSearch() {
 
   // Toggle state
   isWebSearchActive = !isWebSearchActive;
+  
+  // PERSIST to localStorage
+  localStorage.setItem('lynq_webSearchActive', isWebSearchActive.toString());
 
   // Close the tools dropdown when toggling
   const toolsDropdown = document.getElementById("tools-dropdown");
@@ -179,6 +182,20 @@ function toggleWebSearch() {
     if (typeof deselectTool === "function") {
       deselectTool();
     }
+  }
+}
+
+// RESTORE web search state on page load
+function restoreWebSearchState() {
+  const saved = localStorage.getItem('lynq_webSearchActive');
+  if (saved === 'true') {
+    isWebSearchActive = true;
+    const btn = document.getElementById("web-search-toggle-btn");
+    if (btn) btn.classList.add("active");
+    if (typeof showSelectedToolIndicator === "function") {
+      showSelectedToolIndicator("websearch", "fa-solid fa-earth-americas", "Web Search");
+    }
+    console.log("🔍 Web Search restored from localStorage");
   }
 }
 
@@ -1182,6 +1199,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     handleToolModeFromURL();
+    
+    // Restore web search toggle from localStorage
+    restoreWebSearchState();
   }
 
   window.addEventListener("click", (event) => {

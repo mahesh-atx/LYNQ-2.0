@@ -734,6 +734,7 @@ function setCachedResult(query, data) {
 }
 
 // --- ENHANCED WEB SEARCH FUNCTION ---
+// Returns: { markdown: string, sources: array } or null
 async function performWebSearch(query) {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
   const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
@@ -746,7 +747,8 @@ async function performWebSearch(query) {
   // Check cache first
   const cachedResult = getCachedResult(query);
   if (cachedResult) {
-    return cachedResult;
+    // For cached results, return without sources (sources were already shown)
+    return { markdown: cachedResult, sources: null };
   }
 
   // Check rate limits
@@ -785,13 +787,30 @@ async function performWebSearch(query) {
     // Record API request
     rateLimiter.recordRequest();
 
-    const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
+    // 1. INDIA-FIRST SEARCH ATTEMPT
+    // Try to get results specifically from India first
+    console.log(`🔎 Attempting India-specific search: "${finalQuery}"`);
+    let searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
       finalQuery
-    )}&num=8&gl=in&safe=active`;
+    )}&num=8&gl=in&cr=countryIN&safe=active`;
 
-    console.log(`🔎 Searching: "${finalQuery}"`);
-    const response = await fetch(searchUrl);
-    const data = await response.json();
+    let response = await fetch(searchUrl);
+    let data = await response.json();
+
+    // 2. GLOBAL FALLBACK
+    // If we get few/no results from India, switch to global search
+    if (!data.items || data.items.length < 4) {
+      console.log("🌍 Few Indian results found. Switching to Global Search...");
+      
+      searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
+        finalQuery
+      )}&num=8&gl=in&safe=active`; // Keep gl=in for relevance, but remove cr=countryIN restriction
+      
+      response = await fetch(searchUrl);
+      data = await response.json();
+    } else {
+      console.log(`🇮🇳 Found ${data.items.length} relevant Indian results.`);
+    }
 
     if (data.error) {
       console.error("❌ Google API Error:", data.error.message);
@@ -799,7 +818,7 @@ async function performWebSearch(query) {
     }
 
     if (!data.items || data.items.length === 0) {
-      console.log("❌ No search results found");
+      console.log("❌ No search results found (Global fallback also empty)");
       return null;
     }
 
@@ -812,8 +831,31 @@ async function performWebSearch(query) {
       .sort((a, b) => b.authorityInfo.score - a.authorityInfo.score);
 
     // --- BUILD IMAGE CAROUSEL DATA ---
+    // Separate real images from video thumbnails
     const images = [];
+    const videos = [];
+    
+    // YouTube/video domain patterns to exclude from images
+    const videoDomainsForImages = [
+      'youtube.com', 'youtu.be', 'ytimg.com', 'i.ytimg.com',
+      'vimeo.com', 'dailymotion.com', 'twitch.tv'
+    ];
+    
     scoredResults.forEach((item) => {
+      const isVideoSource = item.link.includes('youtube.com') || 
+                           item.link.includes('youtu.be') || 
+                           item.link.includes('vimeo.com');
+      
+      // If it's a video source, extract as video, not image
+      if (isVideoSource && videos.length < 4) {
+        videos.push({
+          title: item.title || 'Video',
+          url: item.link,
+          platform: item.link.includes('youtube') ? 'YouTube' : 'Video'
+        });
+        return; // Skip image extraction for this item
+      }
+      
       if (item.pagemap) {
         let imageUrl = null;
         let imageAlt = item.title || "Image";
@@ -832,25 +874,41 @@ async function performWebSearch(query) {
           imageAlt = item.pagemap.metatags[0]["og:title"];
         }
 
+        // Filter out video thumbnails and placeholders
+        const isVideoThumbnail = imageUrl && videoDomainsForImages.some(domain => 
+          imageUrl.toLowerCase().includes(domain)
+        );
+
         if (
           imageUrl &&
           !imageUrl.includes("placeholder") &&
+          !isVideoThumbnail &&
           images.length < 6
         ) {
           images.push({ url: imageUrl, alt: imageAlt, source: item.link });
         }
       }
     });
+    
+    console.log(`📷 Found ${images.length} real images, ${videos.length} videos`);
 
     // --- BUILD MARKDOWN OUTPUT ---
     let markdownOutput = "";
 
-    // Add images section (for non-video queries)
+    // Add images section (only real images, no video thumbnails)
     if (images.length > 0 && !isVideoMode) {
       markdownOutput += "### 🖼️ Related Images\n\n";
       markdownOutput += `**IMAGE_CAROUSEL_DATA:** ${JSON.stringify(
         images
       )}\n\n`;
+    }
+
+    // Add videos section (separate from images)
+    if (videos.length > 0) {
+      markdownOutput += "### 🎬 Related Videos\n\n";
+      videos.forEach((video, index) => {
+        markdownOutput += `**▶ ${video.platform}:** [${video.title}](${video.url})\n\n`;
+      });
     }
 
     markdownOutput += "### 🌐 Web Results (Sorted by Authority)\n\n";
@@ -873,49 +931,128 @@ async function performWebSearch(query) {
       markdownOutput += `---\n\n`;
     });
 
-    // --- DEEP RESEARCH: Scrape top 3 authoritative results ---
-    console.log("🕵️ Deep Research: Scraping top 3 authoritative results...");
+    // --- CONSTRUCT FINAL CONTEXT WITH EXPLICIT SOURCE IDs ---
+    // We rebuild the markdown output to strictly key every piece of info to a Source ID.
+    // This allows the AI to simply cite [[cite:1]] instead of hallucinating URLs.
+    
+    // 1. Build structured sources array first (so we have IDs)
+    const sourcesData = scoredResults.slice(0, 8).map((item, index) => ({
+      id: index + 1,
+      title: item.title || "Untitled Source",
+      url: item.link,
+      snippet: item.snippet || "",
+      authorityScore: item.authorityInfo.score,
+      authorityTier: item.authorityInfo.tier,
+      isVideo: item.link.includes('youtube.com') || item.link.includes('youtu.be'),
+      timestamp: new Date().toISOString()
+    }));
+    
+    console.log(`📋 Built ${sourcesData.length} sources with IDs for context mapping`);
 
-    // Filter out video URLs for scraping, take top 3
+    // Filter out video URLs for scraping
     const scrapableResults = scoredResults
       .filter(
         (item) =>
           !item.link.includes("youtube.com") && !item.link.includes("youtu.be")
-      )
-      .slice(0, 3);
-
-    const scrapePromises = scrapableResults.map((item) =>
-      scrapeUrl(item.link, { maxLength: 3500, timeout: 8000 })
-    );
-    const scrapedContents = await Promise.all(scrapePromises);
-
-    markdownOutput += `\n### 🕵️ Deep Research Insights\n\n`;
-
+      );
+    const topResult = scrapableResults[0];
     let insightsAdded = 0;
-    scrapableResults.forEach((item, index) => {
-      const content = scrapedContents[index];
-      if (content && content.length > 100) {
-        markdownOutput += `#### From [${item.title}](${item.link}) ${item.authorityInfo.tier}\n`;
-        markdownOutput += `${content}\n\n`;
-        insightsAdded++;
-      }
-    });
 
+    // 2. Clear and Rebuild Markdown Context
+    markdownOutput = `### 🔍 Search Results & Context\n`;
+    markdownOutput += `Use the [Source ID] to cite your answers. E.g. [[cite:1]]\n\n`;
+
+    // Add deep research content first (Single Source or Multi Sources)
+    if (topResult && topResult.authorityInfo.score >= 80) {
+       // DEEP DIVE MODE: Primary source (10k) + Secondary source (2k) for verification
+       console.log(`🚀 Deep Dive Mode: Primary + Secondary source for cross-verification`);
+       
+       const sourceId = sourcesData.findIndex(s => s.url === topResult.link) + 1;
+       const deepContent = await scrapeUrl(topResult.link, { maxLength: 10000, timeout: 12000 }); 
+       
+       if (deepContent && deepContent.length > 500) {
+           markdownOutput += `#### 🌟 PRIMARY SOURCE [Source ${sourceId}]: ${topResult.title}\n`;
+           markdownOutput += `${deepContent}\n\n`;
+           insightsAdded = 1;
+       }
+       
+       // ADD SECONDARY SOURCE FOR CROSS-VERIFICATION
+       const secondaryResult = scrapableResults[1];
+       if (secondaryResult) {
+         const secondaryId = sourcesData.findIndex(s => s.url === secondaryResult.link) + 1;
+         const secondaryContent = await scrapeUrl(secondaryResult.link, { maxLength: 2500, timeout: 6000 });
+         if (secondaryContent && secondaryContent.length > 200) {
+           markdownOutput += `#### 📋 SECONDARY SOURCE [Source ${secondaryId}]: ${secondaryResult.title}\n`;
+           markdownOutput += `${secondaryContent}\n\n`;
+           insightsAdded++;
+           console.log(`   ↳ Added secondary source for verification: ${secondaryResult.title.substring(0,40)}`);
+         }
+       }
+    } else {
+       // Multi-Source Content
+       const scoutingResults = scrapableResults.slice(0, 3);
+       const scrapePromises = scoutingResults.map((item) =>
+        scrapeUrl(item.link, { maxLength: 3500, timeout: 8000 })
+       );
+       const scrapedContents = await Promise.all(scrapePromises);
+       
+       scoutingResults.forEach((item, index) => {
+           const content = scrapedContents[index];
+           if (content && content.length > 100) {
+               const sourceId = sourcesData.findIndex(s => s.url === item.link) + 1;
+               markdownOutput += `#### [Source ${sourceId}] Detailed Content (${item.title}):\n`;
+               markdownOutput += `${content}\n\n`;
+               insightsAdded++;
+           }
+       });
+    }
+    
+    // SCRAPING FAILURE WARNING
     if (insightsAdded === 0) {
-      markdownOutput += `> No detailed content could be extracted from the sources.\n\n`;
+      markdownOutput += `\n⚠️ **NOTE:** Could not extract detailed content from sources. Using snippets only.\n\n`;
+      console.log("⚠️ Scraping failed for all sources - using snippets only");
     }
 
-    // Add query metadata for AI context
+    // Add all result summaries as backup context
+    markdownOutput += `### 📄 All Search Snippets:\n`;
+    sourcesData.forEach(source => {
+        markdownOutput += `[Source ${source.id}] ${source.title}\n`;
+        markdownOutput += `Snippet: ${source.snippet}\n\n`;
+    });
+
+    // --- ADD IMAGES TO CONTEXT ---
+    if (images.length > 0) {
+      markdownOutput += `\n**IMAGE_CAROUSEL_DATA:** ${JSON.stringify(images.slice(0, 6))}\n`;
+      console.log(`📷 Added ${images.length} images to AI context`);
+    }
+    
+    // NOTE: Videos disabled - they were often irrelevant
+    // Educational queries already have YouTube mode handled separately
+
+    // Add metadata
     markdownOutput += `\n---\n**Query Metadata:**\n`;
     markdownOutput += `- Query Intent: ${queryIntent}\n`;
-    markdownOutput += `- Results Retrieved: ${scoredResults.length}\n`;
-    markdownOutput += `- Sources Scraped: ${insightsAdded}\n`;
     markdownOutput += `- Images Found: ${images.length}\n`;
 
-    // Cache the result
+    // Return logic (unchanged)
+    setCachedResult(query, markdownOutput); // Cache the context
+    return {
+      markdown: markdownOutput,
+      sources: sourcesData
+    };
+
+
+
+    console.log(`📋 Built ${sourcesData.length} sources for citations panel`);
+
+    // Cache the result (markdown only)
     setCachedResult(query, markdownOutput);
 
-    return markdownOutput;
+    // Return both markdown and structured sources
+    return {
+      markdown: markdownOutput,
+      sources: sourcesData
+    };
   } catch (error) {
     console.error("❌ Web search error:", error);
     return null;
@@ -1035,8 +1172,11 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
   const isCompoundModel =
     selectedModelConfig.isCompound || model?.startsWith("groq/compound");
 
-  let searchResults = null;
+  let searchResult = null;  // Will hold { markdown, sources } or null
+  let searchMarkdown = null;
+  let searchSources = null;  // For the Sources Panel feature
   let visualsOnlyData = null;
+  let videosOnlyData = null;
 
   // --- WEB SEARCH LOGIC ---
   // HYBRID APPROACH:
@@ -1045,15 +1185,20 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
   if (webSearch) {
     console.log(`🔎 Web Search ON. Query: "${prompt}"`);
 
-    searchResults = await performWebSearch(prompt);
+    searchResult = await performWebSearch(prompt);
+    
+    if (searchResult) {
+      searchMarkdown = searchResult.markdown;
+      searchSources = searchResult.sources;
+    }
 
-    if (isCompoundModel && searchResults) {
-      // HYBRID MODE: Extract only images/videos for Compound models
+    if (isCompoundModel && searchMarkdown) {
+      // HYBRID MODE: Extract images AND videos for Compound models
       // Compound will handle real-time text search itself
       console.log("🔀 Hybrid Mode: Extracting visuals for Compound AI...");
       
       // Extract IMAGE_CAROUSEL_DATA if present
-      const imageMatch = searchResults.match(/\*\*IMAGE_CAROUSEL_DATA:\*\* (\[.*?\])/s);
+      const imageMatch = searchMarkdown.match(/\*\*IMAGE_CAROUSEL_DATA:\*\* (\[.*?\])/s);
       if (imageMatch) {
         try {
           visualsOnlyData = JSON.parse(imageMatch[1]);
@@ -1063,11 +1208,40 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
         }
       }
       
-      // Clear searchResults so we don't inject full text (Compound will search itself)
-      searchResults = null;
+      // Extract video links from the "Related Videos" section
+      const videoMatches = searchMarkdown.match(/\*\*▶ (YouTube|Video):\*\* \[(.*?)\]\((.*?)\)/g);
+      if (videoMatches && videoMatches.length > 0) {
+        videosOnlyData = videoMatches.map(match => {
+          const parsed = match.match(/\*\*▶ (YouTube|Video):\*\* \[(.*?)\]\((.*?)\)/);
+          return parsed ? { platform: parsed[1], title: parsed[2], url: parsed[3] } : null;
+        }).filter(v => v !== null);
+        console.log(`   ↳ Found ${videosOnlyData.length} videos for Compound`);
+      }
+      
+      // BUILD SOURCES CONTEXT FOR COMPOUND (lightweight, just for citations)
+      // Don't inject full research text - Compound will search itself
+      // But give it the source IDs so it can cite them
+      if (searchSources && searchSources.length > 0) {
+        let compoundSourcesContext = `\n\n📋 AVAILABLE SOURCES FOR CITATIONS:\n`;
+        compoundSourcesContext += `Use [[cite:ID]] to cite these preloaded sources:\n\n`;
+        
+        searchSources.forEach(source => {
+          compoundSourcesContext += `[Source ${source.id}] ${source.title} (${new URL(source.url).hostname})\n`;
+        });
+        
+        compoundSourcesContext += `\n⚠️ When citing facts, use [[cite:ID]] format. Example: "The phone has 5000mAh battery [[cite:2]]"\n`;
+        compoundSourcesContext += `\nNOTE: You also have your own real-time search. Use preloaded sources when relevant, or your own if more current.\n`;
+        
+        finalSystemMessage += compoundSourcesContext;
+        console.log(`   ↳ Injected ${searchSources.length} source IDs for Compound citations`);
+      }
+      
+      // Clear searchMarkdown so we don't inject full text (Compound will search itself)
+      // But keep searchSources for the Sources Panel!
+      searchMarkdown = null;
     }
 
-    if (searchResults) {
+    if (searchMarkdown) {
       // Always combine search results with AI for better response
       console.log("🧠 Combining web search results with AI response.");
 
@@ -1075,7 +1249,7 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
 
 You have access to the following REAL-TIME search results from Google:
 
-${searchResults}
+${searchMarkdown}
 
 ⚠️ CRITICAL REQUIREMENTS - YOU MUST FOLLOW THESE:
 
@@ -1092,31 +1266,40 @@ ${searchResults}
     - Put ALL relevant images into this single carousel at the very top.
 
 
-2.  **INTENT-AWARE RESPONSE:**
+2.  **INLINE CITATIONS (MANDATORY - NO EXCEPTIONS):**
+    - EVERY factual claim MUST have a citation. NO EXCEPTIONS.
+    - Use ONLY the Source ID format: \`[[cite:ID]]\`
+    - Examples: "The display is 6.7 inches [[cite:1]]." "Battery is 5000mAh [[cite:2]]."
+    - **DO NOT** write any fact without immediately following it with [[cite:X]].
+    - **DO NOT** write URLs. Only use the source number.
+    - If you cannot cite a fact, DO NOT include it in your response.
+    - A response without citations is INCORRECT. You MUST cite sources.
+
+3.  **INTENT-AWARE RESPONSE:**
     - **FOR PRODUCTS (e.g., iPhone 17):** Focus on Specs, Price, Release Date, Leaks. Do NOT give generic definitions.
     - **FOR TUTORIALS:** Focus on Steps and "How-To".
     - **FOR CONCEPTS:** Focus on Definitions and Explanations.
     - **FOR NEWS:** Focus on "What happened", "When", and "Why".
 
-3.  **DEEP RESEARCH SYNTHESIS:**
+4.  **DEEP RESEARCH SYNTHESIS:**
     - Use the "Deep Research Insights" provided above.
     - Quote specific facts, numbers, or code snippets from the scraped content.
-    - Cite sources using [Title](url) format.
+    - Each fact MUST have an inline citation.
 
-4.  **VIDEOS & MEDIA:**
+5.  **VIDEOS & MEDIA:**
     - Provide video links as: **▶ Watch:** [Video Title](youtube_url)
 
-5.  **RESPONSE STRUCTURE:**
+6.  **RESPONSE STRUCTURE:**
     - **Top:** \`<div class="image-carousel">...</div>\`
-    - **Middle:** Intent-Specific Answer (synthesized from search + scraped content).
-    - **Bottom:** Sources / Useful Links.
+    - **Middle:** Intent-Specific Answer with INLINE CITATIONS after each fact.
+    - **Bottom:** Optional additional resources (videos, related topics).
 
-6.  **DATE AWARENESS:**
+7.  **DATE AWARENESS:**
     - Today is ${new Date().toLocaleDateString()}. Prioritize recent results.
 
-REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if they ask for specs.
+CRITICAL: Every factual claim MUST have an inline [[cite:Source:URL]] citation. This is non-negotiable.
 
-⚠️ IMPORTANT: Do NOT call any tools or functions. The web search has already been performed for you. Simply use the search results provided above to craft your response.
+⚠️ IMPORTANT: Do NOT call any tools or functions. The web search has already been performed for you. Simply use the search results provided above to craft your response with inline citations.
 `;
     } else {
       console.log("❌ Search returned no data. Falling back to standard AI.");
@@ -1156,6 +1339,18 @@ ${visualsOnlyData.map(img => `  <div class="image-card"><img src="${img.url}" al
 \`\`\`
 
 Output this HTML at the very beginning of your response (without code block wrapper), then provide your answer below it.`;
+    }
+
+    // HYBRID: Inject pre-fetched YouTube videos for Compound
+    if (videosOnlyData && videosOnlyData.length > 0) {
+      console.log(`🎬 Injecting ${videosOnlyData.length} videos into Compound prompt`);
+      
+      finalSystemMessage += `\n\n### 🎬 PRE-FETCHED VIDEOS (INCLUDE THESE IN YOUR RESPONSE):
+The following YouTube/video links were found for this query. Include them in your response as clickable links:
+
+${videosOnlyData.map(v => `- **▶ ${v.platform}:** [${v.title}](${v.url})`).join('\n')}
+
+Display these video links in a "Related Videos" section of your response after the main content.`;
     }
   }
 
@@ -1479,9 +1674,17 @@ Output this HTML at the very beginning of your response (without code block wrap
 
     // Return response with optional tool info for Compound models
     const responsePayload = { text: cleanReply };
+    
+    // Add executed tools info for Compound models
     if (executedTools && executedTools.length > 0) {
       responsePayload.executedTools = executedTools;
       responsePayload.toolsUsed = executedTools.map(t => t.name || t.type).join(", ");
+    }
+
+    // Add sources for the Sources Panel (if web search was used)
+    if (searchSources && searchSources.length > 0) {
+      responsePayload.sources = searchSources;
+      console.log(`📋 Returning ${searchSources.length} sources to frontend`);
     }
 
     res.json(responsePayload);
