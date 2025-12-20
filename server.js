@@ -35,8 +35,16 @@ try {
 }
 
 // --- Load Canvas Prompts from config files (Web & Doc Modes) ---
-const canvasWebPromptPath = path.join(__dirname, "config", "canvas_web_prompt.txt");
-const canvasDocPromptPath = path.join(__dirname, "config", "canvas_doc_prompt.txt");
+const canvasWebPromptPath = path.join(
+  __dirname,
+  "config",
+  "canvas_web_prompt.txt"
+);
+const canvasDocPromptPath = path.join(
+  __dirname,
+  "config",
+  "canvas_doc_prompt.txt"
+);
 let CANVAS_WEB_PROMPT = "";
 let CANVAS_DOC_PROMPT = "";
 
@@ -45,14 +53,17 @@ try {
   console.log("✅ Canvas WEB prompt loaded from config/canvas_web_prompt.txt");
 } catch (err) {
   console.warn("⚠️ Could not load canvas_web_prompt.txt, using fallback.");
-  CANVAS_WEB_PROMPT = "You are an expert web developer. Output HTML/CSS/JS applications.";
+  CANVAS_WEB_PROMPT =
+    "You are an expert web developer. Output HTML/CSS/JS applications.";
 }
 
 try {
   CANVAS_DOC_PROMPT = fs.readFileSync(canvasDocPromptPath, "utf-8");
   console.log("✅ Canvas DOC prompt loaded from config/canvas_doc_prompt.txt");
 } catch (err) {
-  console.warn("⚠️ Could not load canvas_doc_prompt.txt, doc mode will be limited.");
+  console.warn(
+    "⚠️ Could not load canvas_doc_prompt.txt, doc mode will be limited."
+  );
 }
 
 // --- Load Tool Prompts from config file ---
@@ -61,9 +72,16 @@ let TOOL_PROMPTS = {};
 try {
   const data = fs.readFileSync(toolPromptsPath, "utf-8");
   TOOL_PROMPTS = JSON.parse(data);
-  console.log(`✅ Loaded ${Object.keys(TOOL_PROMPTS).length} tool prompts from config/tool_prompts.json`);
+  console.log(
+    `✅ Loaded ${
+      Object.keys(TOOL_PROMPTS).length
+    } tool prompts from config/tool_prompts.json`
+  );
 } catch (err) {
-  console.warn("⚠️ Could not load tool_prompts.json, tool specific prompts will not work.", err.message);
+  console.warn(
+    "⚠️ Could not load tool_prompts.json, tool specific prompts will not work.",
+    err.message
+  );
 }
 
 // --- Load Models Config ---
@@ -72,12 +90,14 @@ let AVAILABLE_MODELS = [];
 try {
   const data = fs.readFileSync(modelsConfigPath, "utf-8");
   AVAILABLE_MODELS = JSON.parse(data);
-  console.log(`✅ Loaded ${AVAILABLE_MODELS.length} models from config/models.json`);
+  console.log(
+    `✅ Loaded ${AVAILABLE_MODELS.length} models from config/models.json`
+  );
 } catch (err) {
   console.warn("⚠️ Could not load models.json, using defaults.");
   // Fallback defaults
   AVAILABLE_MODELS = [
-     { id: "openai/gpt-oss-120b", name: "gpt-oss-120b", provider: "groq" }
+    { id: "openai/gpt-oss-120b", name: "gpt-oss-120b", provider: "groq" },
   ];
 }
 
@@ -338,15 +358,27 @@ let VECTOR_STORE = [];
 
 // Negative phrases to block from auto-memory
 const NEGATIVE_MEMORY_PHRASES = [
-  "unknown", "not known", "don't know", "do not know", 
-  "not specify", "not specified", "no information", "not shared",
-  "not registered", "doesn't have", "does not have", 
-  "no name", "not mentioned", "n/a"
+  "unknown",
+  "not known",
+  "don't know",
+  "do not know",
+  "not specify",
+  "not specified",
+  "no information",
+  "not shared",
+  "not registered",
+  "doesn't have",
+  "does not have",
+  "no name",
+  "not mentioned",
+  "n/a",
 ];
 
 // Initialize Google Generative AI for Embeddings
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_KEY);
-const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });
+const embeddingModel = genAI.getGenerativeModel({
+  model: "text-embedding-004",
+});
 
 // Load Vector Store
 function loadVectorStore() {
@@ -354,7 +386,9 @@ function loadVectorStore() {
     if (fs.existsSync(VECTOR_STORE_PATH)) {
       const data = fs.readFileSync(VECTOR_STORE_PATH, "utf-8");
       VECTOR_STORE = JSON.parse(data);
-      console.log(`🧠 Loaded ${VECTOR_STORE.length} memories from vector store.`);
+      console.log(
+        `🧠 Loaded ${VECTOR_STORE.length} memories from vector store.`
+      );
     } else {
       console.log("🧠 No vector store found. Starting fresh.");
       VECTOR_STORE = [];
@@ -378,7 +412,7 @@ function saveVectorStore() {
 // Generate Embedding
 async function getEmbedding(text) {
   try {
-    if (!text || typeof text !== 'string') return null;
+    if (!text || typeof text !== "string") return null;
     const result = await embeddingModel.embedContent(text);
     return result.embedding.values;
   } catch (err) {
@@ -409,7 +443,7 @@ async function addToMemory(text, metadata = {}) {
       text,
       vector,
       metadata,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
     VECTOR_STORE.push(memory);
     saveVectorStore();
@@ -424,9 +458,9 @@ async function searchMemory(query, topK = 3) {
   const queryVector = await getEmbedding(query);
   if (!queryVector) return [];
 
-  const scored = VECTOR_STORE.map(memory => ({
+  const scored = VECTOR_STORE.map((memory) => ({
     ...memory,
-    score: cosineSimilarity(queryVector, memory.vector)
+    score: cosineSimilarity(queryVector, memory.vector),
   }));
 
   // Sort by score (descending)
@@ -443,7 +477,7 @@ loadVectorStore();
 app.post("/api/rag/add", verifyAuthToken, async (req, res) => {
   const { text, metadata } = req.body;
   if (!text) return res.status(400).json({ error: "Text is required" });
-  
+
   const id = await addToMemory(text, metadata);
   if (id) {
     res.json({ success: true, id });
@@ -476,7 +510,7 @@ const rateLimiter = {
 
   canMakeRequest() {
     const now = Date.now();
-    
+
     // Reset daily counter at midnight
     if (now - this.lastDayReset > 24 * 60 * 60 * 1000) {
       this.dailyCount = 0;
@@ -491,7 +525,7 @@ const rateLimiter = {
     }
 
     // Clean old requests (older than 1 minute)
-    this.requests = this.requests.filter(time => now - time < 60000);
+    this.requests = this.requests.filter((time) => now - time < 60000);
 
     // Check per-minute limit
     if (this.requests.length >= this.maxRequestsPerMinute) {
@@ -505,47 +539,76 @@ const rateLimiter = {
   recordRequest() {
     this.requests.push(Date.now());
     this.dailyCount++;
-    console.log(`📊 API Usage: ${this.dailyCount}/${this.maxRequestsPerDay} daily, ${this.requests.length}/${this.maxRequestsPerMinute} per minute`);
-  }
+    console.log(
+      `📊 API Usage: ${this.dailyCount}/${this.maxRequestsPerDay} daily, ${this.requests.length}/${this.maxRequestsPerMinute} per minute`
+    );
+  },
 };
 
 // --- SOURCE AUTHORITY SCORING ---
 const SOURCE_AUTHORITY = {
   // Highest authority (score: 100)
-  highAuthority: ['.gov', '.edu', 'wikipedia.org', 'britannica.com'],
+  highAuthority: [".gov", ".edu", "wikipedia.org", "britannica.com"],
   // High authority (score: 80)
-  techAuthority: ['github.com', 'stackoverflow.com', 'developer.mozilla.org', 'docs.microsoft.com', 'cloud.google.com', 'aws.amazon.com'],
+  techAuthority: [
+    "github.com",
+    "stackoverflow.com",
+    "developer.mozilla.org",
+    "docs.microsoft.com",
+    "cloud.google.com",
+    "aws.amazon.com",
+  ],
   // News authority (score: 70)
-  newsAuthority: ['reuters.com', 'bbc.com', 'nytimes.com', 'theguardian.com', 'techcrunch.com', 'theverge.com', 'wired.com', 'arstechnica.com'],
+  newsAuthority: [
+    "reuters.com",
+    "bbc.com",
+    "nytimes.com",
+    "theguardian.com",
+    "techcrunch.com",
+    "theverge.com",
+    "wired.com",
+    "arstechnica.com",
+  ],
   // Medium authority (score: 50)
-  mediumAuthority: ['medium.com', 'dev.to', 'freecodecamp.org', 'geeksforgeeks.org', 'tutorialspoint.com']
+  mediumAuthority: [
+    "medium.com",
+    "dev.to",
+    "freecodecamp.org",
+    "geeksforgeeks.org",
+    "tutorialspoint.com",
+  ],
 };
 
 function getSourceAuthorityScore(url) {
   const urlLower = url.toLowerCase();
-  
+
   for (const domain of SOURCE_AUTHORITY.highAuthority) {
-    if (urlLower.includes(domain)) return { score: 100, tier: '🏛️ Official' };
+    if (urlLower.includes(domain)) return { score: 100, tier: "🏛️ Official" };
   }
   for (const domain of SOURCE_AUTHORITY.techAuthority) {
-    if (urlLower.includes(domain)) return { score: 80, tier: '💻 Tech Authority' };
+    if (urlLower.includes(domain))
+      return { score: 80, tier: "💻 Tech Authority" };
   }
   for (const domain of SOURCE_AUTHORITY.newsAuthority) {
-    if (urlLower.includes(domain)) return { score: 70, tier: '📰 News' };
+    if (urlLower.includes(domain)) return { score: 70, tier: "📰 News" };
   }
   for (const domain of SOURCE_AUTHORITY.mediumAuthority) {
-    if (urlLower.includes(domain)) return { score: 50, tier: '📝 Community' };
+    if (urlLower.includes(domain)) return { score: 50, tier: "📝 Community" };
   }
-  
-  return { score: 30, tier: '🌐 Web' };
+
+  return { score: 30, tier: "🌐 Web" };
 }
 
 // --- ENHANCED SCRAPE FUNCTION ---
 async function scrapeUrl(url, options = {}) {
   const { maxLength = 3500, timeout = 8000 } = options;
-  
+
   // Skip video URLs (can't scrape)
-  if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')) {
+  if (
+    url.includes("youtube.com") ||
+    url.includes("youtu.be") ||
+    url.includes("vimeo.com")
+  ) {
     return null;
   }
 
@@ -556,8 +619,10 @@ async function scrapeUrl(url, options = {}) {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
       },
     });
@@ -572,12 +637,23 @@ async function scrapeUrl(url, options = {}) {
     const $ = cheerio.load(html);
 
     // Remove unwanted elements (expanded list)
-    $("script, style, nav, footer, iframe, noscript, aside, .sidebar, .advertisement, .ad, .ads, .cookie-banner, .popup, .modal, header, .nav, .menu, .comments, .related-posts").remove();
+    $(
+      "script, style, nav, footer, iframe, noscript, aside, .sidebar, .advertisement, .ad, .ads, .cookie-banner, .popup, .modal, header, .nav, .menu, .comments, .related-posts"
+    ).remove();
 
     // Try to extract main content first (more relevant text)
     let text = "";
-    const mainSelectors = ['article', 'main', '.content', '.post-content', '.article-body', '.entry-content', '#content', '.main-content'];
-    
+    const mainSelectors = [
+      "article",
+      "main",
+      ".content",
+      ".post-content",
+      ".article-body",
+      ".entry-content",
+      "#content",
+      ".main-content",
+    ];
+
     for (const selector of mainSelectors) {
       const mainContent = $(selector).text();
       if (mainContent && mainContent.length > 200) {
@@ -595,21 +671,22 @@ async function scrapeUrl(url, options = {}) {
     text = text.replace(/\s+/g, " ").trim();
 
     // Extract metadata for context
-    const metaDescription = $('meta[name="description"]').attr('content') || '';
-    const pageTitle = $('title').text() || '';
+    const metaDescription = $('meta[name="description"]').attr("content") || "";
+    const pageTitle = $("title").text() || "";
 
     // Combine metadata with content
-    let enrichedContent = '';
+    let enrichedContent = "";
     if (metaDescription) {
       enrichedContent += `Summary: ${metaDescription}\n\n`;
     }
     enrichedContent += text.substring(0, maxLength);
 
-    console.log(`✅ Scraped ${url.substring(0, 50)}... (${enrichedContent.length} chars)`);
+    console.log(
+      `✅ Scraped ${url.substring(0, 50)}... (${enrichedContent.length} chars)`
+    );
     return enrichedContent;
-
   } catch (error) {
-    if (error.name === 'AbortError') {
+    if (error.name === "AbortError") {
       console.log(`⏱️ Scrape timeout for ${url}`);
     } else {
       console.error(`❌ Scrape error for ${url}:`, error.message);
@@ -620,36 +697,40 @@ async function scrapeUrl(url, options = {}) {
 
 // --- CACHE HELPER FUNCTIONS ---
 function getCacheKey(query) {
-  return query.toLowerCase().trim().replace(/\s+/g, ' ');
+  return query.toLowerCase().trim().replace(/\s+/g, " ");
 }
 
 function getCachedResult(query) {
   const key = getCacheKey(query);
   const cached = searchCache.get(key);
-  
-  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     console.log(`📦 Cache HIT for: "${query.substring(0, 30)}..."`);
     return cached.data;
   }
-  
+
   if (cached) {
     searchCache.delete(key); // Clean expired cache
   }
-  
+
   return null;
 }
 
 function setCachedResult(query, data) {
   const key = getCacheKey(query);
   searchCache.set(key, { data, timestamp: Date.now() });
-  
+
   // Limit cache size (max 50 entries)
   if (searchCache.size > 50) {
     const oldestKey = searchCache.keys().next().value;
     searchCache.delete(oldestKey);
   }
-  
-  console.log(`💾 Cached result for: "${query.substring(0, 30)}..." (cache size: ${searchCache.size})`);
+
+  console.log(
+    `💾 Cached result for: "${query.substring(0, 30)}..." (cache size: ${
+      searchCache.size
+    })`
+  );
 }
 
 // --- ENHANCED WEB SEARCH FUNCTION ---
@@ -677,31 +758,33 @@ async function performWebSearch(query) {
   // --- QUERY ENHANCEMENT ---
   let finalQuery = query;
   let isVideoMode = false;
-  let queryIntent = 'general';
+  let queryIntent = "general";
 
   // Detect query intent for better handling
   const queryLower = query.toLowerCase();
-  
+
   if (queryLower.match(/(tutorial|learning|guide|course|how to|learn)/)) {
     finalQuery += " youtube";
     isVideoMode = true;
-    queryIntent = 'educational';
+    queryIntent = "educational";
     console.log(`🎥 Educational query detected: "${finalQuery}"`);
   } else if (queryLower.match(/(news|latest|today|breaking|update)/)) {
-    queryIntent = 'news';
+    queryIntent = "news";
     console.log(`📰 News query detected: "${query}"`);
   } else if (queryLower.match(/(buy|price|review|best|vs|comparison|deal)/)) {
-    queryIntent = 'shopping';
+    queryIntent = "shopping";
     console.log(`🛒 Shopping/comparison query detected: "${query}"`);
-  } else if (queryLower.match(/(code|programming|developer|api|library|framework)/)) {
-    queryIntent = 'technical';
+  } else if (
+    queryLower.match(/(code|programming|developer|api|library|framework)/)
+  ) {
+    queryIntent = "technical";
     console.log(`💻 Technical query detected: "${query}"`);
   }
 
   try {
     // Record API request
     rateLimiter.recordRequest();
-    
+
     const searchUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(
       finalQuery
     )}&num=8&gl=in&safe=active`;
@@ -721,18 +804,20 @@ async function performWebSearch(query) {
     }
 
     // --- SCORE AND SORT RESULTS BY AUTHORITY ---
-    const scoredResults = data.items.map(item => ({
-      ...item,
-      authorityInfo: getSourceAuthorityScore(item.link)
-    })).sort((a, b) => b.authorityInfo.score - a.authorityInfo.score);
+    const scoredResults = data.items
+      .map((item) => ({
+        ...item,
+        authorityInfo: getSourceAuthorityScore(item.link),
+      }))
+      .sort((a, b) => b.authorityInfo.score - a.authorityInfo.score);
 
     // --- BUILD IMAGE CAROUSEL DATA ---
     const images = [];
     scoredResults.forEach((item) => {
       if (item.pagemap) {
         let imageUrl = null;
-        let imageAlt = item.title || 'Image';
-        
+        let imageAlt = item.title || "Image";
+
         // Try multiple image sources
         if (item.pagemap.cse_image?.length > 0) {
           imageUrl = item.pagemap.cse_image[0].src;
@@ -747,7 +832,11 @@ async function performWebSearch(query) {
           imageAlt = item.pagemap.metatags[0]["og:title"];
         }
 
-        if (imageUrl && !imageUrl.includes('placeholder') && images.length < 6) {
+        if (
+          imageUrl &&
+          !imageUrl.includes("placeholder") &&
+          images.length < 6
+        ) {
           images.push({ url: imageUrl, alt: imageAlt, source: item.link });
         }
       }
@@ -759,7 +848,9 @@ async function performWebSearch(query) {
     // Add images section (for non-video queries)
     if (images.length > 0 && !isVideoMode) {
       markdownOutput += "### 🖼️ Related Images\n\n";
-      markdownOutput += `**IMAGE_CAROUSEL_DATA:** ${JSON.stringify(images)}\n\n`;
+      markdownOutput += `**IMAGE_CAROUSEL_DATA:** ${JSON.stringify(
+        images
+      )}\n\n`;
     }
 
     markdownOutput += "### 🌐 Web Results (Sorted by Authority)\n\n";
@@ -784,13 +875,16 @@ async function performWebSearch(query) {
 
     // --- DEEP RESEARCH: Scrape top 3 authoritative results ---
     console.log("🕵️ Deep Research: Scraping top 3 authoritative results...");
-    
+
     // Filter out video URLs for scraping, take top 3
     const scrapableResults = scoredResults
-      .filter(item => !item.link.includes('youtube.com') && !item.link.includes('youtu.be'))
+      .filter(
+        (item) =>
+          !item.link.includes("youtube.com") && !item.link.includes("youtu.be")
+      )
       .slice(0, 3);
 
-    const scrapePromises = scrapableResults.map((item) => 
+    const scrapePromises = scrapableResults.map((item) =>
       scrapeUrl(item.link, { maxLength: 3500, timeout: 8000 })
     );
     const scrapedContents = await Promise.all(scrapePromises);
@@ -822,7 +916,6 @@ async function performWebSearch(query) {
     setCachedResult(query, markdownOutput);
 
     return markdownOutput;
-
   } catch (error) {
     console.error("❌ Web search error:", error);
     return null;
@@ -832,59 +925,78 @@ async function performWebSearch(query) {
 // --- MAIN GENERATION ENDPOINT ---
 app.post("/api/generate", optionalAuthToken, async (req, res) => {
   // Get request parameters
-  let { prompt, systemMessage, history, model, max_tokens, webSearch, canvasMode, toolId, attachment } =
-    req.body;
+  let {
+    prompt,
+    systemMessage,
+    history,
+    model,
+    max_tokens,
+    webSearch,
+    canvasMode,
+    toolId,
+    attachment,
+  } = req.body;
 
   // Determine the system message based on mode
   let finalSystemMessage;
-  
+
   if (canvasMode) {
     let baseCanvasPrompt;
-    if (canvasMode === 'doc') {
-       // Document Mode (Resume, Essays, Markdown)
-       baseCanvasPrompt = CANVAS_DOC_PROMPT || CANVAS_WEB_PROMPT; 
-       console.log("🎨 Canvas Mode: Using DOC prompt (Resume/Text)");
+    if (canvasMode === "doc") {
+      // Document Mode (Resume, Essays, Markdown)
+      baseCanvasPrompt = CANVAS_DOC_PROMPT || CANVAS_WEB_PROMPT;
+      console.log("🎨 Canvas Mode: Using DOC prompt (Resume/Text)");
     } else {
-       // Web/App Mode (Default for Canvas)
-       baseCanvasPrompt = CANVAS_WEB_PROMPT;
-       console.log("🎨 Canvas Mode: Using WEB prompt (HTML/App)");
+      // Web/App Mode (Default for Canvas)
+      baseCanvasPrompt = CANVAS_WEB_PROMPT;
+      console.log("🎨 Canvas Mode: Using WEB prompt (HTML/App)");
     }
 
-    // CRITICAL: If the frontend sent a systemMessage (likely containing FILE CONTEXT), 
+    // CRITICAL: If the frontend sent a systemMessage (likely containing FILE CONTEXT),
     // we must combine it with the Canvas Prompt, otherwise the AI ignores the file.
-    if (systemMessage && systemMessage !== DEFAULT_SYSTEM_PROMPT && systemMessage.length > 100) {
-        console.log("📎 Combining Canvas Prompt with File Context/System Message");
-        finalSystemMessage = baseCanvasPrompt + "\n\n" + 
-            "## 📎 CONTEXT & DATA\n" + 
-            "The user has provided the following context (files/data). USE THIS DATA to generate the document:\n\n" + 
-            systemMessage;
+    if (
+      systemMessage &&
+      systemMessage !== DEFAULT_SYSTEM_PROMPT &&
+      systemMessage.length > 100
+    ) {
+      console.log(
+        "📎 Combining Canvas Prompt with File Context/System Message"
+      );
+      finalSystemMessage =
+        baseCanvasPrompt +
+        "\n\n" +
+        "## 📎 CONTEXT & DATA\n" +
+        "The user has provided the following context (files/data). USE THIS DATA to generate the document:\n\n" +
+        systemMessage;
     } else {
-        finalSystemMessage = baseCanvasPrompt;
+      finalSystemMessage = baseCanvasPrompt;
     }
-
   } else {
     finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
   }
 
   // --- RAG INJECTION (Retrieval Augmented Generation) ---
   // If we have a prompt, let's check our long-term memory
-  if (prompt && prompt.length > 5) { // Skip very short greetings
+  if (prompt && prompt.length > 5) {
+    // Skip very short greetings
     try {
-        console.log("🧠 Checking long-term memory for:", prompt);
-        const relevantMemories = await searchMemory(prompt, 3);
-        
-        // Filter for meaningful relevance (arbitrary score > 0.4)
-        const goodMemories = relevantMemories.filter(m => m.score > 0.4);
-        
-        if (goodMemories.length > 0) {
-            console.log(`🧠 Found ${goodMemories.length} relevant memories.`);
-            const memoryBlock = goodMemories.map(m => `- ${m.text} (Relevance: ${Math.round(m.score * 100)}%)`).join("\n");
-            
-            finalSystemMessage += `\n\n### 🧠 LONG-TERM MEMORY (RAG):\nThe following relevant information was retrieved from your past conversations/database:\n${memoryBlock}\n\nIMPORTANT: You MUST prioritize this information to answer the user's request. Integrate this information NATURALLY as if you just remembered it. DO NOT explicitly mention "system memory", "database", or "retrieved information" unless the user specifically asks how you know. Just answer the question directly.`;
-            finalSystemMessage += `\n\n### 🧠 LONG-TERM MEMORY (RAG):\nThe following relevant information was retrieved from your past conversations/database:\n${memoryBlock}\n\nIMPORTANT: You MUST prioritize this information to answer the user's request. Integrate this information NATURALLY as if you just remembered it. DO NOT explicitly mention "system memory", "database", or "retrieved information" unless the user specifically asks how you know. Just answer the question directly.`;
-        }
+      console.log("🧠 Checking long-term memory for:", prompt);
+      const relevantMemories = await searchMemory(prompt, 3);
+
+      // Filter for meaningful relevance (arbitrary score > 0.4)
+      const goodMemories = relevantMemories.filter((m) => m.score > 0.4);
+
+      if (goodMemories.length > 0) {
+        console.log(`🧠 Found ${goodMemories.length} relevant memories.`);
+        const memoryBlock = goodMemories
+          .map((m) => `- ${m.text} (Relevance: ${Math.round(m.score * 100)}%)`)
+          .join("\n");
+
+        finalSystemMessage += `\n\n### 🧠 LONG-TERM MEMORY (RAG):\nThe following relevant information was retrieved from your past conversations/database:\n${memoryBlock}\n\nIMPORTANT: You MUST prioritize this information to answer the user's request. Integrate this information NATURALLY as if you just remembered it. DO NOT explicitly mention "system memory", "database", or "retrieved information" unless the user specifically asks how you know. Just answer the question directly.`;
+        finalSystemMessage += `\n\n### 🧠 LONG-TERM MEMORY (RAG):\nThe following relevant information was retrieved from your past conversations/database:\n${memoryBlock}\n\nIMPORTANT: You MUST prioritize this information to answer the user's request. Integrate this information NATURALLY as if you just remembered it. DO NOT explicitly mention "system memory", "database", or "retrieved information" unless the user specifically asks how you know. Just answer the question directly.`;
+      }
     } catch (err) {
-        console.error("⚠️ RAG Retrieval Failed:", err.message);
+      console.error("⚠️ RAG Retrieval Failed:", err.message);
     }
   }
 
@@ -901,26 +1013,59 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
   // Tool-specific prompts are APPENDED to preserve any context (like uploaded data)
   if (toolId && TOOL_PROMPTS[toolId]) {
     // APPEND tool prompt to existing system message (which may contain data context)
-    finalSystemMessage = finalSystemMessage + "\n\n---\n\n" + TOOL_PROMPTS[toolId];
-    console.log(`🔧 Tool Mode Active: "${toolId}" - Appended specialized prompt (${TOOL_PROMPTS[toolId].length} chars)`);
+    finalSystemMessage =
+      finalSystemMessage + "\n\n---\n\n" + TOOL_PROMPTS[toolId];
+    console.log(
+      `🔧 Tool Mode Active: "${toolId}" - Appended specialized prompt (${TOOL_PROMPTS[toolId].length} chars)`
+    );
   }
 
   // --- OPENROUTER REASONING SUPPRESSION ---
   // Add instruction to hide chain-of-thought reasoning for OpenRouter models
-  const selectedModelConfig = AVAILABLE_MODELS.find(m => m.id === model) || { provider: "groq" };
+  const selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === model) || {
+    provider: "groq",
+  };
   if (selectedModelConfig.provider === "openrouter") {
-    finalSystemMessage += "\n\n---\nIMPORTANT: Provide ONLY your final answer. Do NOT show your thinking process, chain-of-thought, reasoning steps, or internal thoughts. Give direct, clean responses without any <thinking>, <reasoning>, or similar tags.";
+    finalSystemMessage +=
+      "\n\n---\nIMPORTANT: Provide ONLY your final answer. Do NOT show your thinking process, chain-of-thought, reasoning steps, or internal thoughts. Give direct, clean responses without any <thinking>, <reasoning>, or similar tags.";
     console.log("🧠 OpenRouter: Added reasoning suppression prompt");
   }
 
+  // --- CHECK IF MODEL IS COMPOUND (has built-in web search) ---
+  const isCompoundModel =
+    selectedModelConfig.isCompound || model?.startsWith("groq/compound");
+
   let searchResults = null;
+  let visualsOnlyData = null;
 
   // --- WEB SEARCH LOGIC ---
-  // Only perform web search if user explicitly enabled it via toggle
+  // HYBRID APPROACH:
+  // - For Compound models: Run Google search for images/videos only (Compound has its own web search)
+  // - For other models: Full Google search with text + images + scraping
   if (webSearch) {
     console.log(`🔎 Web Search ON. Query: "${prompt}"`);
 
     searchResults = await performWebSearch(prompt);
+
+    if (isCompoundModel && searchResults) {
+      // HYBRID MODE: Extract only images/videos for Compound models
+      // Compound will handle real-time text search itself
+      console.log("🔀 Hybrid Mode: Extracting visuals for Compound AI...");
+      
+      // Extract IMAGE_CAROUSEL_DATA if present
+      const imageMatch = searchResults.match(/\*\*IMAGE_CAROUSEL_DATA:\*\* (\[.*?\])/s);
+      if (imageMatch) {
+        try {
+          visualsOnlyData = JSON.parse(imageMatch[1]);
+          console.log(`   ↳ Found ${visualsOnlyData.length} images for Compound`);
+        } catch (e) {
+          console.log("   ↳ Could not parse image data");
+        }
+      }
+      
+      // Clear searchResults so we don't inject full text (Compound will search itself)
+      searchResults = null;
+    }
 
     if (searchResults) {
       // Always combine search results with AI for better response
@@ -978,6 +1123,42 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
     }
   }
 
+  // --- COMPOUND MODEL HANDLING ---
+  // If using groq/compound or groq/compound-mini, the model has built-in tools
+  // (Web Search, Code Execution, Browser Automation, Wolfram Alpha)
+  if (isCompoundModel) {
+    console.log(`🔧 Compound Model Active: ${model}`);
+    console.log("   ↳ Built-in tools available: Web Search, Code Execution, Browser Automation, Wolfram Alpha");
+    
+    // Add a note to the system message about the available tools
+    finalSystemMessage += `\n\n---\n**COMPOUND AI CAPABILITIES:**
+You have access to built-in tools that execute automatically when needed:
+- **Web Search**: Search the internet for current information
+- **Code Execution**: Run Python code to solve problems  
+- **Browser Automation**: Interact with web pages
+- **Wolfram Alpha**: Complex calculations and data queries
+
+Use these tools when the user's query would benefit from real-time information, calculations, or code execution. The tools are executed server-side automatically.
+
+Today's date: ${new Date().toLocaleDateString()}.`;
+
+    // HYBRID: Inject pre-fetched images/videos for Compound (since its web search doesn't return visuals)
+    if (visualsOnlyData && visualsOnlyData.length > 0) {
+      console.log(`🖼️ Injecting ${visualsOnlyData.length} images into Compound prompt`);
+      
+      finalSystemMessage += `\n\n### 🖼️ PRE-FETCHED IMAGES (USE THESE IN YOUR RESPONSE):
+The following images were retrieved for this query. Include them at the TOP of your response using this HTML structure:
+
+\`\`\`html
+<div class="image-carousel">
+${visualsOnlyData.map(img => `  <div class="image-card"><img src="${img.url}" alt="${img.alt}"><p class="caption">${img.alt}</p></div>`).join('\n')}
+</div>
+\`\`\`
+
+Output this HTML at the very beginning of your response (without code block wrapper), then provide your answer below it.`;
+    }
+  }
+
   // --- STANDARD AI GENERATION ---
   let messages = [{ role: "system", content: finalSystemMessage }];
 
@@ -988,7 +1169,7 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
   if (prompt) {
     const userMsg = { role: "user", content: prompt };
     if (attachment) {
-        userMsg.attachment = attachment;
+      userMsg.attachment = attachment;
     }
     messages.push(userMsg);
   } else {
@@ -999,53 +1180,70 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
   if (prompt && prompt.trim().startsWith("/remember")) {
     const memoryText = prompt.replace("/remember", "").trim();
     if (memoryText.length < 5) {
-        return res.json({ text: "⚠️ Please provide a longer usage: `/remember My wifi password is 123`" });
+      return res.json({
+        text: "⚠️ Please provide a longer usage: `/remember My wifi password is 123`",
+      });
     }
-    
+
     try {
-        await addToMemory(memoryText, { source: "user_slash_command" });
-        return res.json({ text: `🧠 **Memory Stored!**\nI have saved: "_${memoryText}_" to my long-term database.` });
+      await addToMemory(memoryText, { source: "user_slash_command" });
+      return res.json({
+        text: `🧠 **Memory Stored!**\nI have saved: "_${memoryText}_" to my long-term database.`,
+      });
     } catch (err) {
-        return res.json({ text: `❌ Failed to save memory: ${err.message}` });
+      return res.json({ text: `❌ Failed to save memory: ${err.message}` });
     }
   }
 
   try {
     // --- MODEL SELECTION & PROVIDER LOGIC ---
-    let selectedModelConfig = AVAILABLE_MODELS.find(m => m.id === model);
+    let selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === model);
     if (!selectedModelConfig) {
-        // Fallback or check if it's one of the hardcoded types
-        if (model.includes("llama")) {
-            selectedModelConfig = { provider: "groq" };
-        } else {
-             selectedModelConfig = { provider: "groq" }; // Default to groq
-        }
+      // Fallback or check if it's one of the hardcoded types
+      if (model.includes("llama")) {
+        selectedModelConfig = { provider: "groq" };
+      } else {
+        selectedModelConfig = { provider: "groq" }; // Default to groq
+      }
     }
 
     let apiUrl = "https://api.groq.com/openai/v1/chat/completions";
     let apiKey = process.env.API_KEY;
 
     if (selectedModelConfig.provider === "groq") {
-        apiUrl = "https://api.groq.com/openai/v1/chat/completions";
-        apiKey = process.env.GROQ_API_KEY || process.env.API_KEY;
-        if (!apiKey) {
-            return res.status(500).json({ error: "Groq API Key is missing in server environment." });
-        }
+      apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+      apiKey = process.env.GROQ_API_KEY || process.env.API_KEY;
+      if (!apiKey) {
+        return res
+          .status(500)
+          .json({ error: "Groq API Key is missing in server environment." });
+      }
     } else if (selectedModelConfig.provider === "google") {
-        apiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-        apiKey = process.env.GOOGLE_GENERATIVE_AI_KEY;
-        if (!apiKey) {
-            return res.status(500).json({ error: "Google Generative AI Key is missing in server environment." });
-        }
+      apiUrl =
+        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+      apiKey = process.env.GOOGLE_GENERATIVE_AI_KEY;
+      if (!apiKey) {
+        return res
+          .status(500)
+          .json({
+            error: "Google Generative AI Key is missing in server environment.",
+          });
+      }
     } else if (selectedModelConfig.provider === "openrouter") {
-        apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-        apiKey = process.env.OPENROUTER_API_KEY;
-        if (!apiKey) {
-            return res.status(500).json({ error: "OpenRouter API Key is missing. Get one at openrouter.ai" });
-        }
+      apiUrl = "https://openrouter.ai/api/v1/chat/completions";
+      apiKey = process.env.OPENROUTER_API_KEY;
+      if (!apiKey) {
+        return res
+          .status(500)
+          .json({
+            error: "OpenRouter API Key is missing. Get one at openrouter.ai",
+          });
+      }
     }
-    
-    console.log(`🤖 Processing request with model: ${model} (Provider: ${selectedModelConfig.provider})`);
+
+    console.log(
+      `🤖 Processing request with model: ${model} (Provider: ${selectedModelConfig.provider})`
+    );
 
     // Vision handling for Gemini (Google) if needed
     // The OpenAI compatibility layer for Gemini supports image_url, so the existing formatting might work.
@@ -1053,39 +1251,51 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
 
     // --- AUTO-SWITCH TO VISION MODEL FOR IMAGES ---
     // (Logic preserved but adapted)
-    const hasImageAttachment = messages.some(msg => msg.attachment && msg.attachment.type === "image");
-    
+    const hasImageAttachment = messages.some(
+      (msg) => msg.attachment && msg.attachment.type === "image"
+    );
+
     if (hasImageAttachment) {
-        // Only auto-switch if we aren't already on a multimodal model
-        // Gemini models are multimodal by default usually, but let's check config
-        const isMultimodal = selectedModelConfig.id?.includes("gemini") || selectedModelConfig.id?.includes("vision") || selectedModelConfig.id?.includes("scout");
-        
-        if (!isMultimodal) {
-             const visionModel = "meta-llama/llama-4-scout-17b-16e-instruct"; 
-             model = visionModel;
-             selectedModelConfig = AVAILABLE_MODELS.find(m => m.id === model) || { provider: "groq" };
-             console.log(`🔄 Auto-switched to '${model}' for image support.`);
-        }
+      // Only auto-switch if we aren't already on a multimodal model
+      // Gemini models are multimodal by default usually, but let's check config
+      const isMultimodal =
+        selectedModelConfig.id?.includes("gemini") ||
+        selectedModelConfig.id?.includes("vision") ||
+        selectedModelConfig.id?.includes("scout");
+
+      if (!isMultimodal) {
+        const visionModel = "meta-llama/llama-4-scout-17b-16e-instruct";
+        model = visionModel;
+        selectedModelConfig = AVAILABLE_MODELS.find((m) => m.id === model) || {
+          provider: "groq",
+        };
+        console.log(`🔄 Auto-switched to '${model}' for image support.`);
+      }
     }
 
-     // --- VISION MESSAGE FORMATTING ---
+    // --- VISION MESSAGE FORMATTING ---
     if (hasImageAttachment) {
       const lastMsgIndex = messages.length - 1;
       const lastMsg = messages[lastMsgIndex];
 
-      if (lastMsg.role === "user" && lastMsg.attachment && lastMsg.attachment.type === "image" && lastMsg.attachment.data_url) {
+      if (
+        lastMsg.role === "user" &&
+        lastMsg.attachment &&
+        lastMsg.attachment.type === "image" &&
+        lastMsg.attachment.data_url
+      ) {
         console.log("👁️ Vision request processing...");
-        
+
         const newContent = [
           { type: "text", text: lastMsg.content || "Describe this image." },
-          { 
-            type: "image_url", 
-            image_url: { 
-              url: lastMsg.attachment.data_url 
-            } 
-          }
+          {
+            type: "image_url",
+            image_url: {
+              url: lastMsg.attachment.data_url,
+            },
+          },
         ];
-        
+
         messages[lastMsgIndex].content = newContent;
         // Remove attachment property
         delete messages[lastMsgIndex].attachment;
@@ -1093,9 +1303,9 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
     }
 
     // Prepare clean messages for API (remove internal fields like 'attachment')
-    const finalMessages = messages.map(msg => {
-        const { attachment, ...rest } = msg;
-        return rest;
+    const finalMessages = messages.map((msg) => {
+      const { attachment, ...rest } = msg;
+      return rest;
     });
 
     const requestBody = {
@@ -1126,14 +1336,11 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
 
     while (Date.now() - startTime < MAX_RETRY_TIME_MS) {
       try {
-        response = await fetch(
-          apiUrl,
-          {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify(requestBody),
-          }
-        );
+        response = await fetch(apiUrl, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(requestBody),
+        });
 
         data = await response.json();
 
@@ -1146,20 +1353,23 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
         if (response.status === 429 || response.status >= 500) {
           retryCount++;
           const waitTime = Math.min(1000 * retryCount, 3000); // Exponential backoff, max 3s
-          console.log(`⏳ API failed (${response.status}), retrying in ${waitTime}ms... (Attempt ${retryCount})`);
-          await new Promise(r => setTimeout(r, waitTime));
+          console.log(
+            `⏳ API failed (${response.status}), retrying in ${waitTime}ms... (Attempt ${retryCount})`
+          );
+          await new Promise((r) => setTimeout(r, waitTime));
           continue;
         }
 
         // For other errors, don't retry
         break;
-
       } catch (fetchError) {
         lastError = fetchError;
         retryCount++;
         const waitTime = Math.min(1000 * retryCount, 3000);
-        console.log(`⏳ Fetch error, retrying in ${waitTime}ms... (Attempt ${retryCount})`);
-        await new Promise(r => setTimeout(r, waitTime));
+        console.log(
+          `⏳ Fetch error, retrying in ${waitTime}ms... (Attempt ${retryCount})`
+        );
+        await new Promise((r) => setTimeout(r, waitTime));
       }
     }
 
@@ -1173,30 +1383,34 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
 
     if (!response.ok) {
       console.error(`${selectedModelConfig.provider} API error:`, data);
-      
+
       // Handle tool_use_failed (Groq specific) or generic errors
       if (data?.error?.code === "tool_use_failed") {
-          if (searchResults) {
-             return res.json({
-               text: `Here's what I found:\n\n${searchResults}\n\n*Note: The AI model encountered an issue. Showing raw search results instead.*`
-             });
-          }
+        if (searchResults) {
+          return res.json({
+            text: `Here's what I found:\n\n${searchResults}\n\n*Note: The AI model encountered an issue. Showing raw search results instead.*`,
+          });
+        }
       }
 
       // IMPROVED ERROR HANDLING
       let errorMessage = "An unknown error occurred.";
-      
+
       if (selectedModelConfig.provider === "google") {
-          if (response.status === 429 || data?.error?.status === "RESOURCE_EXHAUSTED") {
-              errorMessage = "Google AI Quota Exceeded. Please try a different model (like Llama) or wait a moment. The free tier limits may have been reached.";
-          } else if (data?.error?.message) {
-              errorMessage = `Google API Error: ${data.error.message}`;
-          } else {
-             errorMessage = `Google API Error (${response.status})`;
-          }
+        if (
+          response.status === 429 ||
+          data?.error?.status === "RESOURCE_EXHAUSTED"
+        ) {
+          errorMessage =
+            "Google AI Quota Exceeded. Please try a different model (like Llama) or wait a moment. The free tier limits may have been reached.";
+        } else if (data?.error?.message) {
+          errorMessage = `Google API Error: ${data.error.message}`;
+        } else {
+          errorMessage = `Google API Error (${response.status})`;
+        }
       } else {
-          // Groq or other provider
-          errorMessage = data?.error?.message || `API Error (${response.status})`;
+        // Groq or other provider
+        errorMessage = data?.error?.message || `API Error (${response.status})`;
       }
 
       return res.status(response.status).json({ error: errorMessage });
@@ -1212,14 +1426,14 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
     let cleanReply = reply;
     if (selectedModelConfig.provider === "openrouter") {
       // Remove <thinking>...</thinking> blocks
-      cleanReply = cleanReply.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+      cleanReply = cleanReply.replace(/<thinking>[\s\S]*?<\/thinking>/gi, "");
       // Remove <reasoning>...</reasoning> blocks
-      cleanReply = cleanReply.replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '');
+      cleanReply = cleanReply.replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, "");
       // Remove <thought>...</thought> blocks
-      cleanReply = cleanReply.replace(/<thought>[\s\S]*?<\/thought>/gi, '');
+      cleanReply = cleanReply.replace(/<thought>[\s\S]*?<\/thought>/gi, "");
       // Clean up any leftover whitespace
       cleanReply = cleanReply.trim();
-      
+
       if (cleanReply !== reply) {
         console.log("🧹 OpenRouter: Stripped reasoning tags from response");
       }
@@ -1231,25 +1445,46 @@ REMEMBER: Adapt your answer to the USER'S INTENT. Do not lecture the user if the
     const memoryMatch = cleanReply.match(memoryRegex);
 
     if (memoryMatch) {
-        let fact = memoryMatch[1].trim();
-        console.log(`🧠 Auto-extracted fact: "${fact}"`);
-        
-        // --- NEGATIVE FILTERING ---
-        // Block facts that are actually the AI saying "I don't know" or "User is unknown"
-        const isNegative = NEGATIVE_MEMORY_PHRASES.some(phrase => fact.toLowerCase().includes(phrase));
-        
-        if (isNegative) {
-             console.log(`⚠️ Blocked negative memory: "${fact}"`);
-        } else {
-            // Save to memory (async, don't block response too much)
-            addToMemory(fact, { source: "auto_extraction" }).catch(err => console.error("❌ Auto-save failed:", err));
-        }
+      let fact = memoryMatch[1].trim();
+      console.log(`🧠 Auto-extracted fact: "${fact}"`);
 
-        // Remove the tag from the user's view
-        cleanReply = cleanReply.replace(memoryMatch[0], "").trim();
+      // --- NEGATIVE FILTERING ---
+      // Block facts that are actually the AI saying "I don't know" or "User is unknown"
+      const isNegative = NEGATIVE_MEMORY_PHRASES.some((phrase) =>
+        fact.toLowerCase().includes(phrase)
+      );
+
+      if (isNegative) {
+        console.log(`⚠️ Blocked negative memory: "${fact}"`);
+      } else {
+        // Save to memory (async, don't block response too much)
+        addToMemory(fact, { source: "auto_extraction" }).catch((err) =>
+          console.error("❌ Auto-save failed:", err)
+        );
+      }
+
+      // Remove the tag from the user's view
+      cleanReply = cleanReply.replace(memoryMatch[0], "").trim();
     }
 
-    res.json({ text: cleanReply });
+    // --- COMPOUND MODEL: Log executed tools ---
+    let executedTools = null;
+    if (isCompoundModel && data.choices?.[0]?.message?.executed_tools) {
+      executedTools = data.choices[0].message.executed_tools;
+      console.log("🔧 Compound Tools Used:");
+      executedTools.forEach((tool, index) => {
+        console.log(`   ${index + 1}. ${tool.name || tool.type || "Unknown Tool"}`);
+      });
+    }
+
+    // Return response with optional tool info for Compound models
+    const responsePayload = { text: cleanReply };
+    if (executedTools && executedTools.length > 0) {
+      responsePayload.executedTools = executedTools;
+      responsePayload.toolsUsed = executedTools.map(t => t.name || t.type).join(", ");
+    }
+
+    res.json(responsePayload);
   } catch (err) {
     console.error("Server-side fetch error:", err);
     res.status(500).json({ error: err.message });
@@ -1294,4 +1529,3 @@ app.listen(port, () => {
     `LYNQ AI app (frontend and backend) listening on http://localhost:${port}`
   );
 });
- 

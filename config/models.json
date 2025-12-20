@@ -11,8 +11,31 @@
     "limits": "Groq Free Tier limits"
   },
   {
-    "id": "huihui-ai/gpt-oss-120b",
-    "name": "GPT OSS 120B",
+    "id": "openai/gpt-oss-120b",
+    "name": "GPT-120B",
+    "provider": "groq",
+    "contextWindow": 128000,
+    "maxOutputTokens": 32768,
+    "description": "Open-source GPT model with 120B parameters.",
+    "icon": "microchip",
+    "color": "#22c55e",
+    "limits": "Groq Free Tier limits"
+  },
+  {
+    "id": "moonshotai/kimi-k2-instruct-0905",
+    "name": "Kimi-K2",
+    "provider": "groq",
+    "contextWindow": 128000,
+    "maxOutputTokens": 32768,
+    "description": "Open-source GPT model with 120B parameters.",
+    "icon": "microchip",
+    "color": "#22c55e",
+    "limits": "Groq Free Tier limits"
+  },
+
+  {
+    "id": "openai/gpt-oss-20b",
+    "name": "GPT-20B",
     "provider": "groq",
     "contextWindow": 128000,
     "maxOutputTokens": 32768,
@@ -27,10 +50,25 @@
     "provider": "groq",
     "contextWindow": 128000,
     "maxOutputTokens": 8192,
-    "description": "Groq's compound AI system with tool use capabilities.",
+    "description": "Agentic AI with built-in Web Search, Code Execution & Browser Automation.",
     "icon": "layer-group",
     "color": "#8b5cf6",
-    "limits": "Groq Free Tier limits"
+    "limits": "Groq Free Tier limits",
+    "hasWebSearch": true,
+    "isCompound": true
+  },
+  {
+    "id": "groq/compound-mini",
+    "name": "Compound Mini",
+    "provider": "groq",
+    "contextWindow": 128000,
+    "maxOutputTokens": 8192,
+    "description": "Faster Compound AI (3x lower latency) with single tool call per request.",
+    "icon": "bolt",
+    "color": "#a855f7",
+    "limits": "Groq Free Tier limits",
+    "hasWebSearch": true,
+    "isCompound": true
   },
   {
     "id": "llama-3.1-8b-instant",
@@ -49,7 +87,7 @@
     "provider": "groq",
     "contextWindow": 128000,
     "maxOutputTokens": 8192,
-    "description": "Newest Llama model with vision capabilities.",
+    "description": "Image recognition model.",
     "icon": "eye",
     "color": "#ec4899",
     "limits": "Groq Free Tier limits"
