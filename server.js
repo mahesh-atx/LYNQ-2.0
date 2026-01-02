@@ -803,17 +803,9 @@ async function performWebSearch(query) {
           imageAlt = item.pagemap.metatags[0]["og:title"];
         }
 
-        // Filter out video thumbnails and placeholders
-        const isVideoThumbnail =
-          imageUrl &&
-          videoDomainsForImages.some((domain) =>
-            imageUrl.toLowerCase().includes(domain)
-          );
-
         if (
           imageUrl &&
           !imageUrl.includes("placeholder") &&
-          !isVideoThumbnail &&
           images.length < 6
         ) {
           images.push({ url: imageUrl, alt: imageAlt, source: item.link });
