@@ -188,18 +188,16 @@ function toggleWebSearch() {
         "Web Search"
       );
     }
-    
-    // Switch to default web search model (GPT-120B)
-    switchToDefaultWebSearchModel();
+    // NOTE: No longer auto-switching model. Web search now works with any model.
+    console.log("🔍 Web Search enabled - using current model:", currentSelectedModel);
   } else {
     btn.classList.remove("active");
     // Hide tool indicator and restore tools button
     if (typeof deselectTool === "function") {
       deselectTool();
     }
-    
-    // RESTORE default model for normal chat (Llama 3.1 8B)
-    restoreDefaultChatModel();
+    // NOTE: No model restore needed since we no longer switch away
+    console.log("🔍 Web Search disabled - keeping current model:", currentSelectedModel);
   }
 }
 
@@ -418,7 +416,7 @@ function handleToolModeFromURL() {
       isWebSearchActive = true;
       const webSearchBtn = document.getElementById("web-search-toggle-btn");
       if (webSearchBtn) webSearchBtn.classList.add("active");
-      switchToDefaultWebSearchModel();
+      // NOTE: No model switch - uses user's current model
       break;
   }
 

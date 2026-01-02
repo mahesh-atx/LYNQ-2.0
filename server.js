@@ -481,9 +481,26 @@ function getSourceAuthorityScore(url) {
   return { score: 30, tier: "🌐 Web" };
 }
 
+// --- VIDEO URL DETECTION UTILITY ---
+function isVideoUrl(url) {
+  const videoPatterns = [
+    "youtube.com",
+    "youtu.be",
+    "vimeo.com",
+    "dailymotion.com",
+    "twitch.tv",
+  ];
+  return videoPatterns.some((pattern) => url.toLowerCase().includes(pattern));
+}
+
 // --- ENHANCED SCRAPE FUNCTION ---
 async function scrapeUrl(url, options = {}) {
   const { maxLength = 3500, timeout = 8000 } = options;
+
+  // Skip video URLs (can't scrape)
+  if (isVideoUrl(url)) {
+    return null;
+  }
 
   try {
     const controller = new AbortController();
@@ -783,7 +800,21 @@ async function performWebSearch(query) {
     // --- BUILD IMAGE CAROUSEL DATA ---
     const images = [];
 
+    // Video domain patterns to exclude from images
+    const videoDomainsForImages = [
+      "youtube.com",
+      "youtu.be",
+      "ytimg.com",
+      "i.ytimg.com",
+      "vimeo.com",
+      "dailymotion.com",
+      "twitch.tv",
+    ];
+
     scoredResults.forEach((item) => {
+      // Skip video sources entirely - only extract images
+      const isVideoSource = isVideoUrl(item.link);
+      if (isVideoSource) return;
 
       if (item.pagemap) {
         let imageUrl = null;
@@ -803,9 +834,17 @@ async function performWebSearch(query) {
           imageAlt = item.pagemap.metatags[0]["og:title"];
         }
 
+        // Filter out video thumbnails and placeholders
+        const isVideoThumbnail =
+          imageUrl &&
+          videoDomainsForImages.some((domain) =>
+            imageUrl.toLowerCase().includes(domain)
+          );
+
         if (
           imageUrl &&
           !imageUrl.includes("placeholder") &&
+          !isVideoThumbnail &&
           images.length < 6
         ) {
           images.push({ url: imageUrl, alt: imageAlt, source: item.link });
@@ -825,10 +864,15 @@ async function performWebSearch(query) {
       snippet: item.snippet || "",
       authorityScore: item.authorityInfo.score,
       authorityTier: item.authorityInfo.tier,
+      isVideo: isVideoUrl(item.link),
       timestamp: new Date().toISOString(),
     }));
 
-    const topResult = scoredResults[0];
+    // Filter out video URLs for scraping
+    const scrapableResults = scoredResults.filter(
+      (item) => !isVideoUrl(item.link)
+    );
+    const topResult = scrapableResults[0];
     let insightsAdded = 0;
 
     // 2. Build Markdown Context
@@ -856,7 +900,7 @@ async function performWebSearch(query) {
       }
 
       // ADD SECONDARY SOURCE FOR CROSS-VERIFICATION
-      const secondaryResult = scoredResults[1];
+      const secondaryResult = scrapableResults[1];
       if (secondaryResult) {
         const secondaryId =
           sourcesData.findIndex((s) => s.url === secondaryResult.link) + 1;
@@ -872,7 +916,7 @@ async function performWebSearch(query) {
       }
     } else {
       // Multi-Source Content (Standard Mode for others or low authority)
-      const scoutingResults = scoredResults.slice(0, 3);
+      const scoutingResults = scrapableResults.slice(0, 3);
       const scrapePromises = scoutingResults.map((item) =>
         scrapeUrl(item.link, { maxLength: 3500, timeout: 8000 })
       );
@@ -1097,17 +1141,9 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
       }
     }
 
-    // Force model to GPT-OSS-120B for synthesis (ignore user's model selection)
-    // Force synthesis model based on intent (Token Optimization)
-    if (use3StagePipeline) {
-      if (intent === 'FAST') {
-        model = "openai/gpt-oss-20b";
-        console.log(`🔄 Stage 3: ⚡ using lightweight GPT-20B for synthesis (cost/speed optimized)`);
-      } else {
-        model = "openai/gpt-oss-120b";
-        console.log(`🔄 Stage 3: using powerful GPT-120B for synthesis (quality optimized)`);
-      }
-    }
+    // NO LONGER forcing model switch - use user's selected model for synthesis
+    // The user's model choice is respected even during web search
+    console.log(`🔄 Stage 3: Using user's selected model "${model}" for synthesis`);
   }
 
   // --- COMPOUND MODEL HANDLING ---
@@ -1146,8 +1182,9 @@ ${visualsOnlyData
 \`\`\`
 
 Output this HTML at the very beginning of your response (without code block wrapper), then provide your answer below it.`;
+    }
+    // Note: Video injection removed - video embedding is disabled
   }
-}
 
   // --- STANDARD AI GENERATION ---
   let messages = [{ role: "system", content: finalSystemMessage }];
