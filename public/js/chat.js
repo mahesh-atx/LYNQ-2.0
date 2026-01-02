@@ -189,7 +189,7 @@ function toggleWebSearch() {
       );
     }
     
-    // Switch to default web search model
+    // Switch to default web search model (GPT-120B)
     switchToDefaultWebSearchModel();
   } else {
     btn.classList.remove("active");
@@ -197,6 +197,9 @@ function toggleWebSearch() {
     if (typeof deselectTool === "function") {
       deselectTool();
     }
+    
+    // RESTORE default model for normal chat (Llama 3.1 8B)
+    restoreDefaultChatModel();
   }
 }
 
@@ -213,8 +216,8 @@ function switchToDefaultWebSearchModel() {
     return;
   }
   
-  const defaultWebModelId = "openai/gpt-oss-120b";
-  const defaultWebModelName = "GPT-120B";
+  const defaultWebModelId = "llama-3.3-70b-versatile";
+  const defaultWebModelName = "Llama 3.3 70B";
   
   if (typeof currentSelectedModel !== "undefined") {
     currentSelectedModel = defaultWebModelId;
@@ -256,6 +259,50 @@ function switchToDefaultWebSearchModel() {
   }
 }
 
+/**
+ * Restores the default chat model (Llama 3.1 8B) when web search is disabled
+ */
+function restoreDefaultChatModel() {
+  const defaultChatModelId = "llama-3.1-8b-instant";
+  const defaultChatModelName = "Llama 3.1 8B";
+  
+  if (typeof currentSelectedModel !== "undefined") {
+    currentSelectedModel = defaultChatModelId;
+    
+    // Update UI Text
+    const modelNameEl = document.getElementById("input-model-name");
+    if (modelNameEl) {
+      modelNameEl.textContent = defaultChatModelName;
+    }
+    
+    // Update UI Selection State (Desktop)
+    const options = document.querySelectorAll(".input-model-option");
+    options.forEach(opt => {
+      const textSpan = opt.querySelector("span");
+      if (textSpan && textSpan.textContent === defaultChatModelName) {
+        options.forEach(o => o.classList.remove("selected"));
+        opt.classList.add("selected");
+      }
+    });
+    
+    // Update UI Selection State (Mobile)
+    const mobileOptions = document.querySelectorAll(".model-sheet-option-compact");
+    mobileOptions.forEach(opt => {
+      if (opt.dataset.modelId === defaultChatModelId) {
+         mobileOptions.forEach(o => o.classList.remove("selected"));
+         opt.classList.add("selected");
+      }
+    });
+
+    // Notify user about the model switch
+    if (typeof showToast === "function") {
+      showToast(`🔄 Switched back to ${defaultChatModelName} for normal chat`, 3000);
+    }
+
+    console.log(`🔄 Restored default chat model: ${defaultChatModelName}`);
+  }
+}
+
 // RESTORE web search state on page load
 function restoreWebSearchState() {
   const saved = localStorage.getItem('lynq_webSearchActive');
@@ -267,10 +314,11 @@ function restoreWebSearchState() {
       showSelectedToolIndicator("websearch", "fa-solid fa-earth-americas", "Web Search");
     }
     
-    // Switch to default web search model on restore
-    switchToDefaultWebSearchModel();
+    // NOTE: Model is NOT auto-switched on page load restore.
+    // The user's default model (Llama 3.1 8B) is kept.
+    // Model only switches when user manually toggles web search.
     
-    console.log("🔍 Web Search restored from localStorage");
+    console.log("🔍 Web Search UI restored from localStorage (model not switched)");
   }
 }
 

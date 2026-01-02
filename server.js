@@ -11,8 +11,7 @@ import mongoose from "mongoose";
 import admin from "firebase-admin";
 import * as cheerio from "cheerio";
 import https from "https";
-// --- RAG Dependencies ---
-import { GoogleGenerativeAI } from "@google/generative-ai";
+// Note: GoogleGenerativeAI for RAG removed
 
 // --- Setup for __dirname in ES Modules ---
 const __filename = fileURLToPath(import.meta.url);
@@ -91,6 +90,17 @@ try {
     "⚠️ Could not load tool_prompts.json, tool specific prompts will not work.",
     err.message
   );
+}
+
+// --- Load Feature Prompts (Refactored System Prompts) ---
+const featurePromptsPath = path.join(__dirname, "config", "feature_prompts.json");
+let FEATURE_PROMPTS = {};
+try {
+  const data = fs.readFileSync(featurePromptsPath, "utf-8");
+  FEATURE_PROMPTS = JSON.parse(data);
+  console.log(`✅ Loaded ${Object.keys(FEATURE_PROMPTS).length} feature prompts from config/feature_prompts.json`);
+} catch (err) {
+  console.warn("⚠️ Could not load feature_prompts.json, check config.", err.message);
 }
 
 // --- Load Models Config ---
@@ -358,143 +368,6 @@ app.delete("/api/chats", verifyAuthToken, async (req, res) => {
   }
 });
 
-// ============================================
-// RAG SYSTEM (Long-term Memory)
-// ============================================
-
-const VECTOR_STORE_PATH = path.join(__dirname, "data", "vector_store.json");
-let VECTOR_STORE = [];
-
-// Negative phrases to block from auto-memory
-const NEGATIVE_MEMORY_PHRASES = [
-  "unknown",
-  "not known",
-  "don't know",
-  "do not know",
-  "not specify",
-  "not specified",
-  "no information",
-  "not shared",
-  "not registered",
-  "doesn't have",
-  "does not have",
-  "no name",
-  "not mentioned",
-  "n/a",
-];
-
-// Initialize Google Generative AI for Embeddings
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_KEY);
-const embeddingModel = genAI.getGenerativeModel({
-  model: "text-embedding-004",
-});
-
-// Load Vector Store
-function loadVectorStore() {
-  try {
-    if (fs.existsSync(VECTOR_STORE_PATH)) {
-      const data = fs.readFileSync(VECTOR_STORE_PATH, "utf-8");
-      VECTOR_STORE = JSON.parse(data);
-      console.log(
-        `🧠 Loaded ${VECTOR_STORE.length} memories from vector store.`
-      );
-    } else {
-      console.log("🧠 No vector store found. Starting fresh.");
-      VECTOR_STORE = [];
-    }
-  } catch (err) {
-    console.error("❌ Failed to load vector store:", err);
-    VECTOR_STORE = []; // Fallback
-  }
-}
-
-// Save Vector Store
-function saveVectorStore() {
-  try {
-    fs.writeFileSync(VECTOR_STORE_PATH, JSON.stringify(VECTOR_STORE, null, 2));
-    // console.log("💾 Vector store saved.");
-  } catch (err) {
-    console.error("❌ Failed to save vector store:", err);
-  }
-}
-
-// Generate Embedding
-async function getEmbedding(text) {
-  try {
-    if (!text || typeof text !== "string") return null;
-    const result = await embeddingModel.embedContent(text);
-    return result.embedding.values;
-  } catch (err) {
-    console.error("❌ Embedding Error:", err.message);
-    return null;
-  }
-}
-
-// Cosine Similarity
-function cosineSimilarity(vecA, vecB) {
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-  for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    normA += vecA[i] * vecA[i];
-    normB += vecB[i] * vecB[i];
-  }
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-}
-
-// Add to Memory
-async function addToMemory(text, metadata = {}) {
-  const vector = await getEmbedding(text);
-  if (vector) {
-    const memory = {
-      id: Date.now().toString(),
-      text,
-      vector,
-      metadata,
-      createdAt: new Date().toISOString(),
-    };
-    VECTOR_STORE.push(memory);
-    saveVectorStore();
-    console.log(`🧠 Added to memory: "${text.substring(0, 30)}..."`);
-    return memory.id;
-  }
-  return null;
-}
-
-// Search Memory
-async function searchMemory(query, topK = 3) {
-  const queryVector = await getEmbedding(query);
-  if (!queryVector) return [];
-
-  const scored = VECTOR_STORE.map((memory) => ({
-    ...memory,
-    score: cosineSimilarity(queryVector, memory.vector),
-  }));
-
-  // Sort by score (descending)
-  scored.sort((a, b) => b.score - a.score);
-
-  // Filter low relevance? (Optional threshold, e.g., > 0.5)
-  return scored.slice(0, topK);
-}
-
-// Load on startup
-loadVectorStore();
-
-// --- RAG API Endpoints ---
-app.post("/api/rag/add", verifyAuthToken, async (req, res) => {
-  const { text, metadata } = req.body;
-  if (!text) return res.status(400).json({ error: "Text is required" });
-
-  const id = await addToMemory(text, metadata);
-  if (id) {
-    res.json({ success: true, id });
-  } else {
-    res.status(500).json({ error: "Failed to create embedding" });
-  }
-});
-
 // ... (rest of search/scrape code)
 // --- Models API Endpoint ---
 app.get("/api/models", (req, res) => {
@@ -653,9 +526,9 @@ async function scrapeUrl(url, options = {}) {
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Remove unwanted elements (expanded list)
+    // Remove unwanted elements (Expanded "Junk" List)
     $(
-      "script, style, nav, footer, iframe, noscript, aside, .sidebar, .advertisement, .ad, .ads, .cookie-banner, .popup, .modal, header, .nav, .menu, .comments, .related-posts"
+      "script, style, nav, footer, iframe, noscript, aside, .sidebar, .advertisement, .ad, .ads, .cookie-banner, .popup, .modal, header, .nav, .menu, .comments, .related-posts, .share-buttons, .social-media, .widget, .legal, form, button, input, svg"
     ).remove();
 
     // Try to extract main content first (more relevant text)
@@ -669,23 +542,39 @@ async function scrapeUrl(url, options = {}) {
       ".entry-content",
       "#content",
       ".main-content",
+      "[role='main']"
     ];
 
     for (const selector of mainSelectors) {
-      const mainContent = $(selector).text();
-      if (mainContent && mainContent.length > 200) {
-        text = mainContent;
-        break;
+      const element = $(selector);
+      if (element.length > 0) {
+        // Smart Text Extraction: Get text from paragraphs/headings to maintain structure
+        // This avoids mashing "Menu Home Contact" into "MenuHomeContact"
+        let structuredText = "";
+        element.find('p, h1, h2, h3, h4, h5, h6, li').each((i, el) => {
+             const t = $(el).text().trim();
+             if (t.length > 20) structuredText += t + "\n"; // Filter short "junk" lines
+        });
+        
+        if (structuredText.length > 200) {
+           text = structuredText;
+           break; // Found good main content
+        }
       }
     }
 
-    // Fallback to body if no main content found
+    // Fallback: If no main content, try body but filter aggressively
     if (!text || text.length < 200) {
-      text = $("body").text();
+       let bodyText = "";
+       $("body").find('p, h1, h2, h3, h4, h5, h6, li').each((i, el) => {
+            const t = $(el).text().trim();
+            if (t.length > 40) bodyText += t + "\n"; // Stricter filter for generic body
+       });
+       text = bodyText;
     }
 
     // Clean up whitespace
-    text = text.replace(/\s+/g, " ").trim();
+    text = text.replace(/\n\s*\n/g, "\n").trim();
 
     // Extract metadata for context
     const metaDescription = $('meta[name="description"]').attr("content") || "";
@@ -991,14 +880,17 @@ async function performWebSearch(query) {
     markdownOutput += `Use the [Source ID] to cite your answers. E.g. [[cite:1]]\n\n`;
 
     // Add deep research content first (Single Source or Multi Sources)
-    if (topResult && topResult.authorityInfo.score >= 80) {
-      // DEEP DIVE MODE: Primary source (10k) + Secondary source (2k) for verification
+    // Add deep research content first (Single Source or Multi Sources)
+    // ONLY for COMPLEX intent (skip for VISUAL/FAST) per user request
+    if (queryIntent === 'COMPLEX' && topResult && topResult.authorityInfo.score >= 60) {
+      // DEEP DIVE MODE: Primary source (15k) + Secondary source (3k) for verification
+      console.log(`🦅 Deep Dive Activated: Fetching 15k chars from ${topResult.link}`);
 
       const sourceId =
         sourcesData.findIndex((s) => s.url === topResult.link) + 1;
       const deepContent = await scrapeUrl(topResult.link, {
-        maxLength: 10000,
-        timeout: 12000,
+        maxLength: 15000,
+        timeout: 15000,
       });
 
       if (deepContent && deepContent.length > 500) {
@@ -1013,8 +905,8 @@ async function performWebSearch(query) {
         const secondaryId =
           sourcesData.findIndex((s) => s.url === secondaryResult.link) + 1;
         const secondaryContent = await scrapeUrl(secondaryResult.link, {
-          maxLength: 2500,
-          timeout: 6000,
+          maxLength: 3000,
+          timeout: 8000,
         });
         if (secondaryContent && secondaryContent.length > 200) {
           markdownOutput += `#### 📋 SECONDARY SOURCE [Source ${secondaryId}]: ${secondaryResult.title}\n`;
@@ -1023,7 +915,7 @@ async function performWebSearch(query) {
         }
       }
     } else {
-      // Multi-Source Content
+      // Multi-Source Content (Standard Mode for others or low authority)
       const scoutingResults = scrapableResults.slice(0, 3);
       const scrapePromises = scoutingResults.map((item) =>
         scrapeUrl(item.link, { maxLength: 3500, timeout: 8000 })
@@ -1131,39 +1023,6 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
     finalSystemMessage = systemMessage || DEFAULT_SYSTEM_PROMPT;
   }
 
-  // --- RAG INJECTION (Retrieval Augmented Generation) ---
-  // If we have a prompt, let's check our long-term memory
-  if (prompt && prompt.length > 5) {
-    // Skip very short greetings
-    try {
-      console.log("🧠 Checking long-term memory for:", prompt);
-      const relevantMemories = await searchMemory(prompt, 3);
-
-      // Filter for meaningful relevance (arbitrary score > 0.4)
-      const goodMemories = relevantMemories.filter((m) => m.score > 0.4);
-
-      if (goodMemories.length > 0) {
-        console.log(`🧠 Found ${goodMemories.length} relevant memories.`);
-        const memoryBlock = goodMemories
-          .map((m) => `- ${m.text} (Relevance: ${Math.round(m.score * 100)}%)`)
-          .join("\n");
-
-        finalSystemMessage += `\n\n### 🧠 LONG-TERM MEMORY (RAG):\nThe following relevant information was retrieved from your past conversations/database:\n${memoryBlock}\n\nIMPORTANT: You MUST prioritize this information to answer the user's request. Integrate this information NATURALLY as if you just remembered it. DO NOT explicitly mention "system memory", "database", or "retrieved information" unless the user specifically asks how you know. Just answer the question directly.`;
-      }
-    } catch (err) {
-      console.error("⚠️ RAG Retrieval Failed:", err.message);
-    }
-  }
-
-  // --- AUTO-MEMORY INSTRUCTION (Single-Pass Tagging) ---
-  // Inject instruction to the model to tag new facts
-  finalSystemMessage += `\n\n### 🧠 AUTO-MEMORY INSTRUCTION:
-If the user mentions a new PERMANENT fact about themselves (e.g., name, location, job, loose preferences) in this message, append \`[[MEMORY: <fact>]]\` to the very end of your response.
-Examples:
-- User: "I live in Paris." -> Response: "Got it. [[MEMORY: User lives in Paris]]"
-- User: "I like coding." -> Response: "Cool! [[MEMORY: User likes coding]]"
-DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permanent facts.`;
-
   // --- TOOL PROMPT INJECTION (APPEND TO PRESERVE CONTEXT) ---
   // Tool-specific prompts are APPENDED to preserve any context (like uploaded data)
   if (toolId && TOOL_PROMPTS[toolId]) {
@@ -1181,8 +1040,9 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
     provider: "groq",
   };
   if (selectedModelConfig.provider === "openrouter") {
-    finalSystemMessage +=
-      "\n\n---\nIMPORTANT: Provide ONLY your final answer. Do NOT show your thinking process, chain-of-thought, reasoning steps, or internal thoughts. Give direct, clean responses without any <thinking>, <reasoning>, or similar tags.";
+    if (FEATURE_PROMPTS.openrouter_no_reasoning) {
+        finalSystemMessage += FEATURE_PROMPTS.openrouter_no_reasoning;
+    }
     console.log("🧠 OpenRouter: Added reasoning suppression prompt");
   }
 
@@ -1256,45 +1116,29 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
     console.log(`📊 Pipeline Status: Google=${googleResult ? '✅' : '❌'}, Compound=${compoundResult ? '✅' : '❌'}`);
 
     // Build combined context for GPT-OSS synthesis
+    // Build combined context for GPT-OSS synthesis
     if (searchMarkdown || compoundSearchData) {
-      let combinedContext = `\n\n🌐 3-STAGE WEB SEARCH SYNTHESIS MODE\n\n`;
-      combinedContext += `You have access to TWO sources of information. Analyze, compare, and synthesize the most accurate response.\n\n`;
-
+      // Prepare Source A (Google)
+      let sourceA = "";
       if (searchMarkdown) {
-        combinedContext += `📊 SOURCE A - GOOGLE SEARCH (Pre-researched with citations):\n`;
-        combinedContext += `${searchMarkdown}\n\n`;
+        sourceA = `📊 SOURCE A - GOOGLE SEARCH (Pre-researched with citations):\n${searchMarkdown}\n\n`;
       }
 
+      // Prepare Source B (Compound)
+      let sourceB = "";
       if (compoundSearchData) {
-        combinedContext += `📊 SOURCE B - REAL-TIME SEARCH (Current data from web):\n`;
-        combinedContext += `${compoundSearchData}\n\n`;
+        sourceB = `📊 SOURCE B - REAL-TIME SEARCH (Current data from web):\n${compoundSearchData}\n\n`;
       }
 
-      combinedContext += `⚠️ CRITICAL RESPONSE REQUIREMENTS:\n\n`;
-      
-      combinedContext += `1. **IMAGES FIRST (MANDATORY - HORIZONTAL CAROUSEL):**\n`;
-      combinedContext += `   - You MUST start your response with a horizontal image row if IMAGE_CAROUSEL_DATA is available.\n`;
-      combinedContext += `   - Use EXACTLY this HTML structure:\n`;
-      combinedContext += `   <div class="image-carousel"><div class="image-card"><img src="URL" alt="desc"><p class="caption">Caption</p></div></div>\n`;
-      combinedContext += `   - Output as RAW HTML (no backticks). Put ALL images in ONE carousel at the TOP.\n\n`;
-      
-      combinedContext += `2. **INLINE CITATIONS (MANDATORY):**\n`;
-      combinedContext += `   - EVERY factual claim MUST have [[cite:ID]] immediately after it.\n`;
-      combinedContext += `   - Use Source IDs from Source A (Google). Example: "The price is ₹79,900 [[cite:1]]."\n\n`;
-      
-      combinedContext += `3. **SYNTHESIS:**\n`;
-      combinedContext += `   - Compare both sources for accuracy.\n`;
-      combinedContext += `   - If data conflicts, prefer the more recent/verified source.\n`;
-      combinedContext += `   - Provide a comprehensive, verified answer.\n\n`;
-      
-      combinedContext += `4. **DIRECT ANSWER ONLY:**\n`;
-      combinedContext += `   - Do NOT explain your search process.\n`;
-      combinedContext += `   - Do NOT say "I will search for..." or "Based on the results...".\n`;
-      combinedContext += `   - Just provide the final answer directly.\n\n`;
-      
-      combinedContext += `Today's date: ${new Date().toLocaleDateString()}\n`;
-
-      finalSystemMessage += combinedContext;
+      // Inject into template from feature_prompts.json
+      if (FEATURE_PROMPTS.web_search_synthesis) {
+        const synthesisPrompt = FEATURE_PROMPTS.web_search_synthesis
+          .replace("${source_a}", sourceA)
+          .replace("${source_b}", sourceB)
+          .replace("${date}", new Date().toLocaleDateString());
+          
+        finalSystemMessage += synthesisPrompt;
+      }
     }
 
     // Force model to GPT-OSS-120B for synthesis (ignore user's model selection)
@@ -1321,16 +1165,9 @@ DO NOT tag temporary states like "I am hungry" or "I am tired". Only tag permane
     );
 
     // Add a note to the system message about the available tools
-    finalSystemMessage += `\n\n---\n**COMPOUND AI CAPABILITIES:**
-You have access to built-in tools that execute automatically when needed:
-- **Web Search**: Search the internet for current information
-- **Code Execution**: Run Python code to solve problems  
-- **Browser Automation**: Interact with web pages
-- **Wolfram Alpha**: Complex calculations and data queries
-
-Use these tools when the user's query would benefit from real-time information, calculations, or code execution. The tools are executed server-side automatically.
-
-Today's date: ${new Date().toLocaleDateString()}.`;
+    if (FEATURE_PROMPTS.compound_capabilities) {
+      finalSystemMessage += FEATURE_PROMPTS.compound_capabilities.replace("${date}", new Date().toLocaleDateString());
+    }
 
     // HYBRID: Inject pre-fetched images/videos for Compound (since its web search doesn't return visuals)
     if (visualsOnlyData && visualsOnlyData.length > 0) {
@@ -1372,25 +1209,6 @@ Output this HTML at the very beginning of your response (without code block wrap
     messages.push(userMsg);
   } else {
     return res.status(400).json({ error: "No prompt provided" });
-  }
-
-  // --- SLASH COMMANDS INTERCEPTION ---
-  if (prompt && prompt.trim().startsWith("/remember")) {
-    const memoryText = prompt.replace("/remember", "").trim();
-    if (memoryText.length < 5) {
-      return res.json({
-        text: "⚠️ Please provide a longer usage: `/remember My wifi password is 123`",
-      });
-    }
-
-    try {
-      await addToMemory(memoryText, { source: "user_slash_command" });
-      return res.json({
-        text: `🧠 **Memory Stored!**\nI have saved: "_${memoryText}_" to my long-term database.`,
-      });
-    } catch (err) {
-      return res.json({ text: `❌ Failed to save memory: ${err.message}` });
-    }
   }
 
   try {
@@ -1537,6 +1355,12 @@ Output this HTML at the very beginning of your response (without code block wrap
         });
 
         data = await response.json();
+        
+        // DEBUG LOGGING
+        if (model === "openai/gpt-oss-120b" || model === "groq/compound") {
+             console.log(`🔍 [${model}] Status: ${response.status}`);
+             if (!response.ok) console.log(`❌ [${model}] Error Body:`, JSON.stringify(data));
+        }
 
         // If successful response, break out of retry loop
         if (response.ok && data?.choices?.[0]?.message?.content) {
@@ -1544,14 +1368,34 @@ Output this HTML at the very beginning of your response (without code block wrap
         }
 
         // If rate limited or server error, retry
-        if (response.status === 429 || response.status >= 500) {
-          retryCount++;
-          const waitTime = Math.min(1000 * retryCount, 3000); // Exponential backoff, max 3s
-          console.log(
-            `⏳ API failed (${response.status}), retrying in ${waitTime}ms... (Attempt ${retryCount})`
-          );
-          await new Promise((r) => setTimeout(r, waitTime));
-          continue;
+        if (response.status === 429) {
+           console.log(`⚠️ Rate Limit hit for ${model}.`);
+           
+           // FAIL FAST STRATEGY: Switch model instead of waiting
+           if (model === "openai/gpt-oss-120b") {
+               const fallbackModel = "llama-3.3-70b-versatile"; // High quality fallback
+               console.log(`🔄 Switching to ${fallbackModel} to avoid wait...`);
+               model = fallbackModel;
+               requestBody.model = fallbackModel;
+               retryCount = 0; // Reset retries for fresh attempt
+               await new Promise((r) => setTimeout(r, 500)); // Short 0.5s pause
+               continue;
+           }
+           
+           // Standard Backoff for other models (or if fallback fails)
+           retryCount++;
+           const waitTime = Math.min(1000 * retryCount, 3000); 
+           console.log(`⏳ Rate limit (429), retrying in ${waitTime}ms...`);
+           await new Promise((r) => setTimeout(r, waitTime));
+           continue;
+        }
+        
+        if (response.status >= 500) {
+           retryCount++;
+           const waitTime = Math.min(1000 * retryCount, 3000);
+           console.log(`⏳ Server error, retrying in ${waitTime}ms...`);
+           await new Promise((r) => setTimeout(r, waitTime));
+           continue;
         }
 
         // For other errors, don't retry
@@ -1658,34 +1502,6 @@ Output this HTML at the very beginning of your response (without code block wrap
       if (cleanReply !== reply) {
         console.log("🧹 OpenRouter: Stripped reasoning tags from response");
       }
-    }
-
-    // --- AUTO-MEMORY EXTRACTION (Server-Side) ---
-    // Check for [[MEMORY: ...]] tag in the response
-    const memoryRegex = /\[\[MEMORY:\s*(.*?)\]\]/i;
-    const memoryMatch = cleanReply.match(memoryRegex);
-
-    if (memoryMatch) {
-      let fact = memoryMatch[1].trim();
-      console.log(`🧠 Auto-extracted fact: "${fact}"`);
-
-      // --- NEGATIVE FILTERING ---
-      // Block facts that are actually the AI saying "I don't know" or "User is unknown"
-      const isNegative = NEGATIVE_MEMORY_PHRASES.some((phrase) =>
-        fact.toLowerCase().includes(phrase)
-      );
-
-      if (isNegative) {
-        console.log(`⚠️ Blocked negative memory: "${fact}"`);
-      } else {
-        // Save to memory (async, don't block response too much)
-        addToMemory(fact, { source: "auto_extraction" }).catch((err) =>
-          console.error("❌ Auto-save failed:", err)
-        );
-      }
-
-      // Remove the tag from the user's view
-      cleanReply = cleanReply.replace(memoryMatch[0], "").trim();
     }
 
     // --- COMPOUND MODEL: Log executed tools ---

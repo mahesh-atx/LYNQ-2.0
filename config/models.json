@@ -1,5 +1,17 @@
 [
   {
+    "id": "llama-3.1-8b-instant",
+    "name": "Llama 3.1 8B",
+    "provider": "groq",
+    "contextWindow": 128000,
+    "maxOutputTokens": 8192,
+    "description": "Fast and lightweight open model. Best for everyday chat.",
+    "icon": "rocket",
+    "color": "#06b6d4",
+    "limits": "Groq Free Tier: 20K TPM",
+    "isDefault": true
+  },
+  {
     "id": "llama-3.3-70b-versatile",
     "name": "Llama 3.3 70B",
     "provider": "groq",
@@ -33,7 +45,6 @@
     "color": "#22c55e",
     "limits": "Groq Free Tier limits"
   },
-
   {
     "id": "openai/gpt-oss-20b",
     "name": "GPT-20B",
@@ -70,17 +81,6 @@
     "limits": "Groq Free Tier limits",
     "hasWebSearch": true,
     "isCompound": true
-  },
-  {
-    "id": "llama-3.1-8b-instant",
-    "name": "Llama 3.1 8B",
-    "provider": "groq",
-    "contextWindow": 128000,
-    "maxOutputTokens": 8192,
-    "description": "Fast and lightweight open model.",
-    "icon": "rocket",
-    "color": "#06b6d4",
-    "limits": "Groq Free Tier limits"
   },
   {
     "id": "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -138,4 +138,3 @@
     "limits": "OpenRouter Free: 50 req/day"
   }
 ]
-
