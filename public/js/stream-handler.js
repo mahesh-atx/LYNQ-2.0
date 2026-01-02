@@ -109,8 +109,14 @@ async function streamTextToBubble(textToStream, bubble) {
     currentText += words[i] + " ";
     let displayHtml = marked.parse(currentText);
     
-    // NOTE: Citations are processed ONLY at the end to prevent flickering
-    // The [[cite:X]] markers will be visible briefly during streaming
+    // PROCESS CITATIONS DURING STREAMING for immediate badge display
+    // Only process if sources are already loaded
+    if (typeof processInlineCitations === "function" && window.lastResponseSources && window.lastResponseSources.length > 0) {
+      displayHtml = processInlineCitations(displayHtml);
+    } else {
+      // If sources not loaded yet, hide the raw citation markers temporarily
+      displayHtml = displayHtml.replace(/\[\[cite:\d+\]\]/g, '<span class="citation-loading"></span>');
+    }
     
     bubble.innerHTML = displayHtml;
 
@@ -250,8 +256,6 @@ async function streamResponse(fullText) {
 
   const sendBtn = document.getElementById("send-btn");
   const stopBtn = document.getElementById("stop-btn");
-
-  embedYouTubeVideos(bubble);
   
   // ATTACH SOURCES TO THIS MESSAGE ELEMENT (prevents race conditions)
   const parentWrapper = bubble.parentElement;
@@ -261,10 +265,11 @@ async function streamResponse(fullText) {
     console.log(`📋 Attached ${window.lastResponseSources.length} sources to message element`);
   }
   
-  // ADD STACKED SOURCES INDICATOR BEFORE appendSourcesPanel clears sources
+  // ADD STACKED SOURCES INDICATOR (only if not already present)
   const actionsDiv = parentWrapper.querySelector(".message-actions");
   if (actionsDiv && window.lastResponseSources && window.lastResponseSources.length > 0) {
-    if (typeof createSourcesStackIndicator === "function") {
+    // Check if sources indicator already exists (prevents duplicates)
+    if (!actionsDiv.querySelector('.sources-stack-container') && typeof createSourcesStackIndicator === "function") {
       const sourcesIndicator = createSourcesStackIndicator(window.lastResponseSources);
       actionsDiv.appendChild(sourcesIndicator);
       console.log(`🔗 Added stacked sources indicator with ${window.lastResponseSources.length} sources`);

@@ -19,7 +19,8 @@
     "description": "Open-source GPT model with 120B parameters.",
     "icon": "microchip",
     "color": "#22c55e",
-    "limits": "Groq Free Tier limits"
+    "limits": "Groq Free Tier limits",
+    "hasWebSearch": true
   },
   {
     "id": "moonshotai/kimi-k2-instruct-0905",

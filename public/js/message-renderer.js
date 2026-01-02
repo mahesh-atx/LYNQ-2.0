@@ -450,142 +450,16 @@ function destroyChartsInElement(element) {
 }
 
 // ============================================
-// YOUTUBE EMBEDDING
+// YOUTUBE EMBEDDING (DISABLED)
 // ============================================
-
-/**
- * Embeds YouTube videos from links in the bubble
- */
-function embedYouTubeVideos(bubbleElement) {
-  const youtubeLinks = bubbleElement.querySelectorAll('a[href*="youtube.com"], a[href*="youtu.be"]');
-  
-  youtubeLinks.forEach((link) => {
-    const url = link.href;
-    let videoId = null;
-    
-    if (url.includes("youtube.com/watch")) {
-      const urlObj = new URL(url);
-      videoId = urlObj.searchParams.get("v");
-    } else if (url.includes("youtu.be/")) {
-      videoId = url.split("youtu.be/")[1]?.split("?")[0];
-    }
-    
-    if (videoId) {
-      createVideoPlayer(link, videoId);
-    }
-  });
-}
-
-/**
- * Creates a video player element to replace the link
- */
-function createVideoPlayer(linkElement, videoId) {
-  const playerWrapper = document.createElement("div");
-  playerWrapper.className = "video-player-wrapper";
-  playerWrapper.style.cssText = "margin: 16px 0; border-radius: 12px; overflow: hidden;";
-  
-  const iframe = document.createElement("iframe");
-  iframe.src = `https://www.youtube.com/embed/${videoId}`;
-  iframe.style.cssText = "width: 100%; aspect-ratio: 16/9; border: none;";
-  iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-  iframe.allowFullscreen = true;
-  
-  playerWrapper.appendChild(iframe);
-  linkElement.parentNode.insertBefore(playerWrapper, linkElement.nextSibling);
-}
+// Video embedding has been temporarily disabled.
+// TODO: Re-enable with YouTube Data API validation when API key is added.
 
 // ============================================
-// SOURCES PANEL RENDERING
+// SOURCES PANEL RENDERING (REMOVED)
 // ============================================
-
-/**
- * Renders a collapsible Sources Panel showing web search citations
- * @param {Array} sources - Array of source objects from API
- * @returns {HTMLElement} - The sources panel element
- */
-function renderSourcesPanel(sources) {
-  if (!sources || sources.length === 0) return null;
-
-  const panel = document.createElement("div");
-  panel.className = "sources-panel";
-
-  // Determine authority badge
-  const getAuthorityBadge = (score) => {
-    if (score >= 70) return { class: "high", icon: "fa-shield-halved", label: `${score}/100` };
-    if (score >= 40) return { class: "medium", icon: "fa-shield", label: `${score}/100` };
-    return { class: "low", icon: "fa-circle-info", label: `${score}/100` };
-  };
-
-  // Extract domain from URL
-  const getDomain = (url) => {
-    try {
-      return new URL(url).hostname.replace("www.", "");
-    } catch {
-      return url;
-    }
-  };
-
-  // Build sources HTML
-  let sourcesHTML = sources.map((source, index) => {
-    const badge = getAuthorityBadge(source.authorityScore);
-    const domain = getDomain(source.url);
-    
-    return `
-      <div class="source-card ${source.isVideo ? 'video' : ''}">
-        <div class="source-number">${index + 1}</div>
-        <div class="source-info">
-          <div class="source-title">
-            <a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.title}</a>
-          </div>
-          <div class="source-meta">
-            <span class="authority-badge ${badge.class}">
-              <i class="fa-solid ${badge.icon}"></i> ${badge.label}
-            </span>
-            <span class="source-url">${domain}</span>
-          </div>
-        </div>
-        <button class="source-verify-btn" onclick="window.open('${source.url}', '_blank')" title="Open source">
-          <i class="fa-solid fa-arrow-up-right-from-square"></i>
-        </button>
-      </div>
-    `;
-  }).join("");
-
-  panel.innerHTML = `
-    <div class="sources-panel-header" onclick="this.parentElement.classList.toggle('expanded')">
-      <div class="sources-panel-title">
-        <i class="fa-solid fa-quote-left"></i>
-        <span>Sources</span>
-        <span class="sources-count">${sources.length}</span>
-      </div>
-      <i class="fa-solid fa-chevron-down sources-toggle-icon"></i>
-    </div>
-    <div class="sources-panel-content">
-      <div class="sources-list">
-        ${sourcesHTML}
-      </div>
-    </div>
-  `;
-
-  return panel;
-}
-
-/**
- * Appends the Sources Panel to a message content wrapper
- * Should be called after streaming is complete
- */
-function appendSourcesPanel(contentWrapper) {
-  if (!window.lastResponseSources || window.lastResponseSources.length === 0) return;
-  
-  const panel = renderSourcesPanel(window.lastResponseSources);
-  if (panel) {
-    contentWrapper.appendChild(panel);
-    console.log(`📋 Sources Panel added with ${window.lastResponseSources.length} sources`);
-  }
-  
-  // Clear the sources after use
-  window.lastResponseSources = null;
-}
+// The large collapsible sources panel has been removed.
+// Sources are now shown only via stacked favicons with dropdown (createSourcesStackIndicator).
 
 // ============================================
 // ADD MESSAGE FUNCTION

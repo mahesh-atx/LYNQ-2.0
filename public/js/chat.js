@@ -34,7 +34,19 @@ fetch('config/file_prompts.json')
 // --- Tool-Specific System Prompts ---
 // Optimization: Prompts moved to backend (config/tool_prompts.json) to reduce bundle size.
 // The backend now injects the correct prompt based on the toolId sent in the request.
-const TOOL_SYSTEM_PROMPTS = {}; // Kept empty object to avoid reference errors
+
+// --- UI Reset Helper ---
+// Centralizes the stop button and responding state reset logic
+function resetResponseUI() {
+  if (sendBtn) sendBtn.style.display = "flex";
+  if (stopBtn) {
+    stopBtn.style.display = "none";
+    stopBtn.classList.remove("generating");
+    const toolbarRight = stopBtn.closest(".toolbar-right");
+    if (toolbarRight) toolbarRight.classList.remove("generating");
+  }
+  isResponding = false;
+}
 
 // --- Tool Welcome Messages ---
 // NOTE: TOOL_MESSAGES is now defined in tools.js (loaded before chat.js)
@@ -176,12 +188,71 @@ function toggleWebSearch() {
         "Web Search"
       );
     }
+    
+    // Switch to default web search model
+    switchToDefaultWebSearchModel();
   } else {
     btn.classList.remove("active");
     // Hide tool indicator and restore tools button
     if (typeof deselectTool === "function") {
       deselectTool();
     }
+  }
+}
+
+/**
+ * Switches the current model to the default one for Web Search (GPT-120B)
+ * EXCEPT when user has a Compound model selected (Compound has built-in search)
+ */
+function switchToDefaultWebSearchModel() {
+  // Skip if user already has a Compound model selected (it has built-in web search)
+  if (typeof currentSelectedModel !== "undefined" && 
+      currentSelectedModel?.includes("compound")) {
+    console.log("🔀 Keeping Compound model for web search (has built-in search)");
+    showToast("Using Compound AI's built-in web search");
+    return;
+  }
+  
+  const defaultWebModelId = "openai/gpt-oss-120b";
+  const defaultWebModelName = "GPT-120B";
+  
+  if (typeof currentSelectedModel !== "undefined") {
+    currentSelectedModel = defaultWebModelId;
+    
+    // Update UI Text
+    const modelNameEl = document.getElementById("input-model-name");
+    if (modelNameEl) {
+      modelNameEl.textContent = defaultWebModelName;
+    }
+    
+    // Update UI Selection State (Desktop)
+    // We try to find the option by text content since data-id is missing on desktop options
+    const options = document.querySelectorAll(".input-model-option");
+    options.forEach(opt => {
+      const textSpan = opt.querySelector("span");
+      if (textSpan && textSpan.textContent === defaultWebModelName) {
+        // Deselect all
+        options.forEach(o => o.classList.remove("selected"));
+        // Select this one
+        opt.classList.add("selected");
+      }
+    });
+    
+    // Update UI Selection State (Mobile)
+    const mobileOptions = document.querySelectorAll(".model-sheet-option-compact");
+    mobileOptions.forEach(opt => {
+      if (opt.dataset.modelId === defaultWebModelId) {
+         mobileOptions.forEach(o => o.classList.remove("selected"));
+         opt.classList.add("selected");
+      }
+    });
+
+    // Notify user about the model switch
+    if (typeof showToast === "function") {
+      showToast(`🔄 Switched to ${defaultWebModelName} for optimal web search results`, 3000);
+    }
+
+    console.log(`🔄 Switched to default web search model: ${defaultWebModelName}`);
   }
 }
 
@@ -195,6 +266,10 @@ function restoreWebSearchState() {
     if (typeof showSelectedToolIndicator === "function") {
       showSelectedToolIndicator("websearch", "fa-solid fa-earth-americas", "Web Search");
     }
+    
+    // Switch to default web search model on restore
+    switchToDefaultWebSearchModel();
+    
     console.log("🔍 Web Search restored from localStorage");
   }
 }
@@ -295,6 +370,7 @@ function handleToolModeFromURL() {
       isWebSearchActive = true;
       const webSearchBtn = document.getElementById("web-search-toggle-btn");
       if (webSearchBtn) webSearchBtn.classList.add("active");
+      switchToDefaultWebSearchModel();
       break;
   }
 
@@ -617,14 +693,7 @@ async function handleSend() {
           "The API returned an empty or invalid response.",
           thinkingBubble
         );
-      if (sendBtn) sendBtn.style.display = "flex";
-      if (stopBtn) {
-        stopBtn.style.display = "none";
-        stopBtn.classList.remove("generating");
-        const toolbarRight = stopBtn.closest(".toolbar-right");
-        if (toolbarRight) toolbarRight.classList.remove("generating");
-      }
-      isResponding = false;
+      resetResponseUI();
       return;
     }
 
@@ -661,14 +730,7 @@ async function handleSend() {
         error.message || "An unknown API error occurred.",
         thinkingBubble
       );
-    if (sendBtn) sendBtn.style.display = "flex";
-    if (stopBtn) {
-      stopBtn.style.display = "none";
-      stopBtn.classList.remove("generating");
-      const toolbarRight = stopBtn.closest(".toolbar-right");
-      if (toolbarRight) toolbarRight.classList.remove("generating");
-    }
-    isResponding = false;
+    resetResponseUI();
   } finally {
     currentController = null;
   }
@@ -873,14 +935,7 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
           "The API returned an empty or invalid response.",
           thinking
         );
-      if (sendBtn) sendBtn.style.display = "flex";
-      if (stopBtn) {
-        stopBtn.style.display = "none";
-        stopBtn.classList.remove("generating");
-        const toolbarRight = stopBtn.closest(".toolbar-right");
-        if (toolbarRight) toolbarRight.classList.remove("generating");
-      }
-      isResponding = false;
+      resetResponseUI();
       return;
     }
 
@@ -908,136 +963,14 @@ async function regenerateResponseAfterEdit(newPrompt, attachment) {
   } catch (error) {
     if (typeof showApiError === "function")
       showApiError(error.message || "An unknown API error occurred.", thinking);
-    if (sendBtn) sendBtn.style.display = "flex";
-    if (stopBtn) {
-      stopBtn.style.display = "none";
-      stopBtn.classList.remove("generating");
-      const toolbarRight = stopBtn.closest(".toolbar-right");
-      if (toolbarRight) toolbarRight.classList.remove("generating");
-    }
-    isResponding = false;
+    resetResponseUI();
   } finally {
     currentController = null;
   }
 }
 
-function addMessage(text, sender, skipHistory = false, attachment = null) {
-  if (!messagesWrapper) return null;
-
-  const isThinking = sender === "ai" && !text;
-
-  const msgDiv = document.createElement("div");
-  msgDiv.className = `message ${sender}`;
-  if (isThinking) msgDiv.classList.add("thinking");
-
-  const avatar = document.createElement("div");
-  avatar.className = `avatar ${sender}`;
-  avatar.innerHTML =
-    sender === "user"
-      ? '<i class="fa-regular fa-user"></i>'
-      : '<i class="fa-solid fa-bolt"></i>';
-
-  const contentWrapper = document.createElement("div");
-  contentWrapper.className = "msg-content-wrapper";
-
-  if (attachment) {
-    const attachmentContainer = document.createElement("div");
-    attachmentContainer.className = "message-attachment-container";
-    
-    if (attachment.type === "image" && attachment.data_url) {
-        // Image Attachment - Compact thumbnail style
-        const img = document.createElement("img");
-        img.src = attachment.data_url;
-        img.className = "message-attachment-image";
-        img.style.width = "80px";
-        img.style.height = "80px";
-        img.style.borderRadius = "8px";
-        img.style.cursor = "pointer";
-        img.style.objectFit = "cover";
-        img.style.border = "1px solid var(--border-secondary)";
-        img.onclick = () => window.open(attachment.data_url, '_blank');
-        
-        attachmentContainer.appendChild(img);
-    } else {
-        // Default / PDF Attachment
-        const pill = document.createElement("div");
-        pill.className = "attachment-pill";
-        pill.innerHTML = `<i class="fa-solid fa-file-pdf"></i> <span>${attachment.name}</span>`;
-        attachmentContainer.appendChild(pill);
-    }
-    contentWrapper.appendChild(attachmentContainer);
-  }
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble";
-
-  if (isThinking) {
-    bubble.innerHTML =
-      '<div class="thinking-container">' +
-        '<div class="thinking-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>' +
-        '<span class="thinking-label">Thinking...</span>' +
-      '</div>';
-
-  } else if (sender === "user") {
-    bubble.innerText = text;
-  } else {
-    if (text) {
-      bubble.innerHTML = marked.parse(text);
-    }
-  }
-
-  const actionsDiv = document.createElement("div");
-  actionsDiv.className = "message-actions";
-
-  const copyBtn = document.createElement("button");
-  copyBtn.className = "action-icon";
-  copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
-  copyBtn.title = "Copy";
-
-  if (sender === "user") {
-    copyBtn.onclick = () => copyToClipboard(text, copyBtn);
-    const editBtn = document.createElement("button");
-    editBtn.className = "action-icon";
-    editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
-    editBtn.title = "Edit";
-    editBtn.onclick = () => toggleEdit(contentWrapper, text, attachment);
-    actionsDiv.appendChild(editBtn);
-    actionsDiv.appendChild(copyBtn);
-  } else {
-    const regenBtn = document.createElement("button");
-    regenBtn.className = "action-icon";
-    regenBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
-    regenBtn.title = "Regenerate";
-    regenBtn.onclick = () => regenerateMessage(msgDiv);
-
-    const shareBtn = document.createElement("button");
-    shareBtn.className = "action-icon";
-    shareBtn.innerHTML = '<i class="fa-solid fa-share-nodes"></i>';
-    shareBtn.title = "Share";
-
-    actionsDiv.appendChild(copyBtn);
-    actionsDiv.appendChild(regenBtn);
-    actionsDiv.appendChild(shareBtn);
-  }
-
-  contentWrapper.appendChild(bubble);
-  contentWrapper.appendChild(actionsDiv);
-  msgDiv.appendChild(avatar);
-  msgDiv.appendChild(contentWrapper);
-  messagesWrapper.appendChild(msgDiv);
-
-  if (sender === "ai" && text) {
-    bubble.querySelectorAll("pre code").forEach((block) => {
-      hljs.highlightElement(block);
-    });
-    enhanceCodeBlocks(bubble);
-  }
-
-  const chatContainer = document.getElementById("chat-container");
-  if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
-
-  return bubble;
-}
+// NOTE: addMessage() is defined in message-renderer.js (loaded before chat.js)
+// This file uses the global addMessage function from message-renderer.js
 
 function regenerateMessage(msgDiv) {
   const userMsg = msgDiv.previousElementSibling;
@@ -1080,39 +1013,7 @@ function regenerateMessage(msgDiv) {
   regenerateResponseAfterEdit(userPromptText, attachment);
 }
 
-function embedYouTubeVideos(bubbleElement) {
-  const ytRegex =
-    /(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|v\/|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/;
-  const links = bubbleElement.querySelectorAll("a");
-
-  links.forEach((link) => {
-    const href = link.getAttribute("href");
-    if (!href) return;
-    const match = href.match(ytRegex);
-    if (match && match[1]) {
-      createVideoPlayer(link, match[1]);
-    }
-  });
-}
-
-function createVideoPlayer(linkElement, videoId) {
-  const container = document.createElement("div");
-  container.className = "video-embed-container";
-
-  const iframe = document.createElement("iframe");
-  iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=0`;
-  iframe.className = "yt-embed";
-  iframe.setAttribute("allowFullScreen", "");
-  iframe.setAttribute(
-    "allow",
-    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  );
-
-  container.appendChild(iframe);
-  if (linkElement.parentNode) {
-    linkElement.replaceWith(container);
-  }
-}
+// NOTE: embedYouTubeVideos() and createVideoPlayer() are defined in message-renderer.js
 
 document.addEventListener("DOMContentLoaded", () => {
   chatInput = document.getElementById("chat-input");
