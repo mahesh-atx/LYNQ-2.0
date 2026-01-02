@@ -32,30 +32,6 @@ describe('Utility Functions', () => {
     });
   });
 
-  describe('isVideoUrl', () => {
-    const isVideoUrl = (url) => {
-      const videoPatterns = ['youtube.com', 'youtu.be', 'vimeo.com', 'dailymotion.com', 'twitch.tv'];
-      return videoPatterns.some(pattern => url.toLowerCase().includes(pattern));
-    };
-
-    it('should detect YouTube URLs', () => {
-      expect(isVideoUrl('https://www.youtube.com/watch?v=abc123')).toBe(true);
-      expect(isVideoUrl('https://youtu.be/abc123')).toBe(true);
-    });
-
-    it('should detect other video platforms', () => {
-      expect(isVideoUrl('https://vimeo.com/123456')).toBe(true);
-      expect(isVideoUrl('https://www.dailymotion.com/video/xyz')).toBe(true);
-      expect(isVideoUrl('https://www.twitch.tv/channel')).toBe(true);
-    });
-
-    it('should return false for non-video URLs', () => {
-      expect(isVideoUrl('https://google.com')).toBe(false);
-      expect(isVideoUrl('https://github.com')).toBe(false);
-      expect(isVideoUrl('https://stackoverflow.com')).toBe(false);
-    });
-  });
-
   describe('getSourceAuthorityScore', () => {
     const SOURCE_AUTHORITY = {
       highAuthority: ['.gov', '.edu', 'wikipedia.org', 'britannica.com'],

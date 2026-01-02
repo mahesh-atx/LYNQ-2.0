@@ -481,26 +481,9 @@ function getSourceAuthorityScore(url) {
   return { score: 30, tier: "🌐 Web" };
 }
 
-// --- VIDEO URL DETECTION UTILITY ---
-function isVideoUrl(url) {
-  const videoPatterns = [
-    "youtube.com",
-    "youtu.be",
-    "vimeo.com",
-    "dailymotion.com",
-    "twitch.tv",
-  ];
-  return videoPatterns.some((pattern) => url.toLowerCase().includes(pattern));
-}
-
 // --- ENHANCED SCRAPE FUNCTION ---
 async function scrapeUrl(url, options = {}) {
   const { maxLength = 3500, timeout = 8000 } = options;
-
-  // Skip video URLs (can't scrape)
-  if (isVideoUrl(url)) {
-    return null;
-  }
 
   try {
     const controller = new AbortController();
@@ -800,21 +783,7 @@ async function performWebSearch(query) {
     // --- BUILD IMAGE CAROUSEL DATA ---
     const images = [];
 
-    // Video domain patterns to exclude from images
-    const videoDomainsForImages = [
-      "youtube.com",
-      "youtu.be",
-      "ytimg.com",
-      "i.ytimg.com",
-      "vimeo.com",
-      "dailymotion.com",
-      "twitch.tv",
-    ];
-
     scoredResults.forEach((item) => {
-      // Skip video sources entirely - only extract images
-      const isVideoSource = isVideoUrl(item.link);
-      if (isVideoSource) return;
 
       if (item.pagemap) {
         let imageUrl = null;
@@ -864,15 +833,10 @@ async function performWebSearch(query) {
       snippet: item.snippet || "",
       authorityScore: item.authorityInfo.score,
       authorityTier: item.authorityInfo.tier,
-      isVideo: isVideoUrl(item.link),
       timestamp: new Date().toISOString(),
     }));
 
-    // Filter out video URLs for scraping
-    const scrapableResults = scoredResults.filter(
-      (item) => !isVideoUrl(item.link)
-    );
-    const topResult = scrapableResults[0];
+    const topResult = scoredResults[0];
     let insightsAdded = 0;
 
     // 2. Build Markdown Context
@@ -900,7 +864,7 @@ async function performWebSearch(query) {
       }
 
       // ADD SECONDARY SOURCE FOR CROSS-VERIFICATION
-      const secondaryResult = scrapableResults[1];
+      const secondaryResult = scoredResults[1];
       if (secondaryResult) {
         const secondaryId =
           sourcesData.findIndex((s) => s.url === secondaryResult.link) + 1;
@@ -916,7 +880,7 @@ async function performWebSearch(query) {
       }
     } else {
       // Multi-Source Content (Standard Mode for others or low authority)
-      const scoutingResults = scrapableResults.slice(0, 3);
+      const scoutingResults = scoredResults.slice(0, 3);
       const scrapePromises = scoutingResults.map((item) =>
         scrapeUrl(item.link, { maxLength: 3500, timeout: 8000 })
       );
@@ -1190,9 +1154,8 @@ ${visualsOnlyData
 \`\`\`
 
 Output this HTML at the very beginning of your response (without code block wrapper), then provide your answer below it.`;
-    }
-    // Note: Video injection removed - video embedding is disabled
   }
+}
 
   // --- STANDARD AI GENERATION ---
   let messages = [{ role: "system", content: finalSystemMessage }];
