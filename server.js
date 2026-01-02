@@ -1141,9 +1141,17 @@ app.post("/api/generate", optionalAuthToken, async (req, res) => {
       }
     }
 
-    // NO LONGER forcing model switch - use user's selected model for synthesis
-    // The user's model choice is respected even during web search
-    console.log(`🔄 Stage 3: Using user's selected model "${model}" for synthesis`);
+    // Force model to GPT-OSS-120B for synthesis (ignore user's model selection)
+    // Force synthesis model based on intent (Token Optimization)
+    if (use3StagePipeline) {
+      if (intent === 'FAST') {
+        model = "openai/gpt-oss-20b";
+        console.log(`🔄 Stage 3: ⚡ using lightweight GPT-20B for synthesis (cost/speed optimized)`);
+      } else {
+        model = "openai/gpt-oss-120b";
+        console.log(`🔄 Stage 3: using powerful GPT-120B for synthesis (quality optimized)`);
+      }
+    }
   }
 
   // --- COMPOUND MODEL HANDLING ---
@@ -1365,7 +1373,7 @@ Output this HTML at the very beginning of your response (without code block wrap
            
            // FAIL FAST STRATEGY: Switch model instead of waiting
            if (model === "openai/gpt-oss-120b") {
-               const fallbackModel = "llama-3.3-70b-versatile"; // High quality fallback
+               const fallbackModel = "openai/gpt-oss-20b"; // Same model family, lower rate limits
                console.log(`🔄 Switching to ${fallbackModel} to avoid wait...`);
                model = fallbackModel;
                requestBody.model = fallbackModel;
